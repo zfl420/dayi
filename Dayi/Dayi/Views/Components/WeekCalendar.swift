@@ -49,7 +49,7 @@ struct WeekCalendar: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .frame(height: geometry.size.width * 0.1272) // 50/393 圆形高度
-                .onChange(of: currentPage) { newPage in
+                .onChange(of: currentPage) { _, newPage in
                     handlePageChange(newPage)
                 }
             }

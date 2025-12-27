@@ -14,41 +14,32 @@ struct HomeView: View {
                 Color(red: 248/255.0, green: 243/255.0, blue: 241/255.0)
                     .ignoresSafeArea()
 
-                // ===== 上半部分渐变背景 =====
                 VStack(spacing: 0) {
-                    LinearGradient(
-                        gradient: Gradient(stops: [
-                            .init(color: Color(red: 247/255.0, green: 240/255.0, blue: 238/255.0), location: 0.0),
-                            .init(color: Color(red: 254/255.0, green: 255/255.0, blue: 254/255.0), location: 1.0)
-                        ]),
-                        startPoint: .top,
-                        endPoint: .bottom
+                    // ===== 渐变背景区域的内容 =====
+                    VStack(spacing: 0) {
+                        // ===== 日期标题 =====
+                        Text(viewModel.displayDateText)
+                            .font(.system(size: geometry.size.height * 0.0188, weight: .medium)) // 16/852
+                            .foregroundColor(.black)
+                            .padding(.top, geometry.size.height * 0.105) // 增加顶部间距，整体下移
+
+                        // ===== 周历 =====
+                        WeekCalendar(viewModel: viewModel, geometry: geometry)
+                            .padding(.top, geometry.size.height * 0.0235) // 20/852
+
+                        // ===== 经期状态 =====
+                        PeriodStatus(viewModel: viewModel, geometry: geometry)
+                            .padding(.top, geometry.size.height * 0.14) // 增加间距，让提示文案和按钮下移
+
+                        // ===== 编辑按钮 =====
+                        EditButton(viewModel: viewModel, geometry: geometry)
+                            .padding(.top, geometry.size.height * 0.05) // 按钮与提示文案的间距
+                            .padding(.bottom, geometry.size.height * 0.035) // 30/852，按钮与弧形中间的间距
+                    }
+                    .background(
+                        // ===== 渐变背景直接作为内容背景，自动适应高度 =====
+                        GradientBackground(geometry: geometry)
                     )
-                    .frame(height: calculateGradientHeight(geometry: geometry))
-                    .clipShape(BottomCurveShape())
-
-                    Spacer()
-                }
-                .ignoresSafeArea()
-
-                VStack(spacing: 0) {
-                    // ===== 日期标题 =====
-                    Text(viewModel.displayDateText)
-                        .font(.system(size: geometry.size.height * 0.0188, weight: .medium)) // 16/852
-                        .foregroundColor(.black)
-                        .padding(.top, geometry.size.height * 0.088) // 75/852
-
-                    // ===== 周历 =====
-                    WeekCalendar(viewModel: viewModel, geometry: geometry)
-                        .padding(.top, geometry.size.height * 0.0235) // 20/852
-
-                    // ===== 经期状态 =====
-                    PeriodStatus(viewModel: viewModel, geometry: geometry)
-                        .padding(.top, geometry.size.height * 0.11) // 93.72/852, 向上移动
-
-                    // ===== 编辑按钮 =====
-                    EditButton(viewModel: viewModel, geometry: geometry)
-                        .padding(.top, geometry.size.height * 0.038) // 32.376/852, 向上移动
 
                     Spacer()
                 }
@@ -56,12 +47,31 @@ struct HomeView: View {
             .ignoresSafeArea()
         }
     }
+}
 
-    private func calculateGradientHeight(geometry: GeometryProxy) -> CGFloat {
-        // 中间底部距离顶部：434
-        // 需要确保渐变区域高度至少为434，以包含整个圆弧
-        // 增加一些额外空间以确保圆弧完整显示
-        return geometry.size.height * 0.528 // 450/852
+// ===== 渐变背景组件 =====
+struct GradientBackground: View {
+    let geometry: GeometryProxy
+
+    var body: some View {
+        GeometryReader { backgroundGeometry in
+            let contentHeight = backgroundGeometry.size.height
+            // 弧形两边在 0.924 位置，中间在 1.0 位置
+            // 为了让弧形中间在内容底部下方约30像素，需要额外的高度
+            let extraHeight = geometry.size.height * 0.035 // 30像素
+            let totalHeight = contentHeight + extraHeight
+
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(color: Color(red: 247/255.0, green: 240/255.0, blue: 238/255.0), location: 0.0),
+                    .init(color: Color(red: 254/255.0, green: 255/255.0, blue: 254/255.0), location: 1.0)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: totalHeight)
+            .clipShape(BottomCurveShape())
+        }
     }
 }
 
