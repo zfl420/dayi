@@ -38,9 +38,15 @@ extension Date {
     }
 
     func getWeekStart() -> Date {
-        let calendar = Calendar(identifier: .gregorian)
-        var components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: self)
-        components.weekday = 2 // 2 = 周一
-        return calendar.date(from: components) ?? self
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = Locale(identifier: "zh_CN")
+        calendar.firstWeekday = 2 // 周一为一周的开始
+
+        // 获取当前日期所在周的周一
+        let weekday = calendar.component(.weekday, from: self)
+        // weekday: 1=周日, 2=周一, ..., 7=周六
+        // 计算到周一需要减去的天数
+        let daysToSubtract = (weekday == 1) ? 6 : (weekday - 2)
+        return calendar.date(byAdding: .day, value: -daysToSubtract, to: self.startOfDay()) ?? self
     }
 }

@@ -111,6 +111,7 @@ struct WeekDatesRow: View {
                     geometry: geometry,
                     showBackground: showBackground
                 )
+                .environmentObject(viewModel)
                 .onTapGesture {
                     // 触发震动反馈
                     let generator = UIImpactFeedbackGenerator(style: .light)
@@ -128,6 +129,7 @@ struct DayCellContent: View {
     let state: DateState
     let geometry: GeometryProxy
     var showBackground: Bool = true
+    @EnvironmentObject var viewModel: PeriodViewModel
 
     private var isToday: Bool {
         date.isSameDay(as: Date())
@@ -141,23 +143,53 @@ struct DayCellContent: View {
         }
     }
 
-    var body: some View {
-        VStack(spacing: geometry.size.height * 0.0023) { // 2/852
-            Text(date.shortDateString)
-                .font(.system(size: geometry.size.height * 0.0229, weight: fontWeight)) // 19.5/852
-                .foregroundColor(.black)
+    private var cellSize: CGFloat {
+        return geometry.size.width * 0.1272  // 50/393
+    }
 
-            if isToday {
+    private var smallCircleSize: CGFloat {
+        return cellSize * 0.75  // 小圆为选中圆的 75%
+    }
+
+    var body: some View {
+        ZStack {
+            // 1. 底层：原有白色选中圆（保持不变）
+            if showBackground && state == .selected {
                 Circle()
-                    .fill(Color(red: 0.6, green: 0.6, blue: 0.6))
-                    .frame(width: geometry.size.height * 0.0047, height: geometry.size.height * 0.0047) // 4/852
+                    .fill(Color(red: 220/255.0, green: 213/255.0, blue: 210/255.0))
+                    .frame(width: cellSize, height: cellSize)
+            }
+
+            // 2. 中层：新增背景圈
+            if viewModel.shouldShowPeriodBackground(date) {
+                // 实心浅红小圆（记录日至今天）
+                Circle()
+                    .fill(Color(red: 1.0, green: 200/255.0, blue: 215/255.0))
+                    .frame(width: smallCircleSize, height: smallCircleSize)
+            } else if viewModel.shouldShowPredictionBorder(date) {
+                // 空心红色虚线小圆（今天至第七天）
+                Circle()
+                    .stroke(
+                        style: StrokeStyle(lineWidth: 1.5, dash: [3, 2])
+                    )
+                    .foregroundColor(Color(red: 1.0, green: 90/255.0, blue: 125/255.0))
+                    .frame(width: smallCircleSize, height: smallCircleSize)
+            }
+
+            // 3. 顶层：日期文字（保持不变）
+            VStack(spacing: geometry.size.height * 0.0023) { // 2/852
+                Text(date.shortDateString)
+                    .font(.system(size: geometry.size.height * 0.0229, weight: fontWeight)) // 19.5/852
+                    .foregroundColor(.black)
+
+                if isToday {
+                    Circle()
+                        .fill(Color(red: 0.6, green: 0.6, blue: 0.6))
+                        .frame(width: geometry.size.height * 0.0047, height: geometry.size.height * 0.0047) // 4/852
+                }
             }
         }
-        .frame(width: geometry.size.width * 0.1272, height: geometry.size.width * 0.1272)
-        .background(showBackground && state == .selected
-                    ? Color(red: 220/255.0, green: 213/255.0, blue: 210/255.0)
-                    : Color.clear)
-        .clipShape(Circle())
+        .frame(width: cellSize, height: cellSize)
     }
 }
 

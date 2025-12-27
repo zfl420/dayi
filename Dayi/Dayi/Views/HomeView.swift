@@ -43,6 +43,11 @@ struct HomeView: View {
 
                     Spacer()
                 }
+                .sheet(isPresented: $viewModel.showDatePicker) {
+                    GeometryReader { sheetGeometry in
+                        DatePickerSheetContent(viewModel: viewModel, geometry: sheetGeometry)
+                    }
+                }
             }
             .ignoresSafeArea()
         }
@@ -94,7 +99,7 @@ struct EditButton: View {
 
     var body: some View {
         Button(action: {
-            // 弹窗已删除
+            viewModel.openDatePicker()
         }) {
             Text("记录月经")
                 .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 16/852, 增大字号并加粗
