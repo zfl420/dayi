@@ -7,13 +7,13 @@ struct DayCell: View {
     var body: some View {
         VStack(spacing: 2) {
             Text(date.shortDateString)
-                .font(.system(size: 16, weight: fontWeight))
+                .font(.system(size: 14, weight: fontWeight))
                 .foregroundColor(textColor)
         }
-        .frame(height: 52)
+        .frame(height: 44)
         .frame(maxWidth: .infinity)
         .background(backgroundColor)
-        .cornerRadius(8)
+        .cornerRadius(6)
         .overlay(borderOverlay)
     }
 

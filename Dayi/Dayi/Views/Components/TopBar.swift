@@ -4,7 +4,7 @@ struct TopBar: View {
     @ObservedObject var viewModel: PeriodViewModel
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 16) {
             // 左侧: 紫色图标按钮
             Button(action: {
                 withAnimation(.easeInOut(duration: 0.3)) {
@@ -15,7 +15,7 @@ struct TopBar: View {
                     .foregroundColor(.appPurple)
                     .font(.system(size: 20, weight: .semibold))
             }
-            .frame(width: 44, height: 44)
+            .frame(width: 40, height: 40)
 
             Spacer()
 
@@ -27,9 +27,10 @@ struct TopBar: View {
             Spacer()
 
             // 右侧: 占位符保持平衡
-            Color.clear.frame(width: 44)
+            Color.clear.frame(width: 40)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
     }
 }

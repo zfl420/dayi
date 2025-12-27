@@ -14,11 +14,11 @@ struct MainView: View {
 
                 // 周日历
                 WeekCalendar(viewModel: viewModel)
-                    .padding(.top, 16)
+                    .padding(.top, 12)
 
                 // 状态展示区
                 StatusSection(viewModel: viewModel)
-                    .padding(.top, 32)
+                    .padding(.top, 28)
 
                 Spacer()
             }

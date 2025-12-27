@@ -6,20 +6,20 @@ struct WeekCalendar: View {
     let weekdayLabels = ["一", "二", "三", "四", "五", "六", "日"]
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             // 星期标签行
             HStack(spacing: 0) {
                 ForEach(weekdayLabels, id: \.self) { label in
                     Text(label)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.white.opacity(0.7))
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.white.opacity(0.6))
                         .frame(maxWidth: .infinity)
                 }
             }
             .padding(.horizontal, 16)
 
             // 日期格子行
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 ForEach(viewModel.currentWeekDates, id: \.self) { date in
                     let state = viewModel.getStateForDate(date)
 
@@ -29,7 +29,7 @@ struct WeekCalendar: View {
                         }
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 12)
         }
         .gesture(swipeGesture)
         .transition(.opacity)
