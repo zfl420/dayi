@@ -16,7 +16,7 @@ struct WeekCalendar: View {
                         .frame(maxWidth: .infinity)
                 }
             }
-            .padding(.horizontal, 18)
+            .padding(.horizontal, 16)
 
             // 日期格子行
             HStack(spacing: 5) {
@@ -29,7 +29,7 @@ struct WeekCalendar: View {
                         }
                 }
             }
-            .padding(.horizontal, 14)
+            .padding(.horizontal, 12)
         }
         .gesture(swipeGesture)
         .transition(.opacity)

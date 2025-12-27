@@ -47,7 +47,7 @@ struct StatusSection: View {
                     .cornerRadius(21)
             }
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 24)
         .padding(.vertical, 0)
     }
 }
