@@ -19,7 +19,7 @@ struct MainView: View {
                 .ignoresSafeArea()
 
                 // ===== 上半屏内容区(52% 高度) =====
-                VStack(spacing: 0, alignment: .center) {
+                VStack(alignment: .center, spacing: 0) {
                     // A. 顶部栏(日期 + 菜单)
                     TopBar(viewModel: viewModel)
                         .frame(height: geometry.size.height * 0.08)
