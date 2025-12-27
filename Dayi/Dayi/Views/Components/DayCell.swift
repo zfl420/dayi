@@ -22,7 +22,7 @@ struct DayCell: View {
         case .selected, .actualAndSelected, .predictedAndSelected:
             return .white
         case .actualPeriod:
-            return .appRed
+            return .periodRed
         default:
             return .clear
         }
@@ -53,11 +53,11 @@ struct DayCell: View {
         if case .predictedPeriod = state {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(style: StrokeStyle(lineWidth: 2, dash: [4, 4]))
-                .foregroundColor(.appRed)
+                .foregroundColor(.periodRed)
         } else if case .predictedAndSelected = state {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(style: StrokeStyle(lineWidth: 2, dash: [4, 4]))
-                .foregroundColor(.appRed)
+                .foregroundColor(.periodRed)
         }
     }
 }
