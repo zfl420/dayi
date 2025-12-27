@@ -4,41 +4,18 @@ import Foundation
 class PeriodViewModel: ObservableObject {
     @Published var selectedDate: Date = Date().startOfDay()
     @Published var currentWeekDates: [Date] = []
-    @Published var periodRecords: [PeriodRecord] = []
-    @Published var settings: AppSettings = AppSettings()
-    @Published var showSettingsDrawer: Bool = false
-    @Published var showRecordSheet: Bool = false
-    @Published var showEditSheet: Bool = false
 
-    private let dataManager: PeriodDataManager
-    private let calculator: PeriodCalculator
-
-    init(
-        dataManager: PeriodDataManager = PeriodDataManager(),
-        calculator: PeriodCalculator = PeriodCalculator()
-    ) {
-        self.dataManager = dataManager
-        self.calculator = calculator
-        loadData()
+    init() {
         updateWeekDates(for: selectedDate)
-    }
-
-    // MARK: - Data Loading
-
-    func loadData() {
-        periodRecords = dataManager.loadRecords()
-        settings = dataManager.loadSettings()
-    }
-
-    func saveData() {
-        dataManager.saveRecords(periodRecords)
-        dataManager.saveSettings(settings)
     }
 
     // MARK: - Week Navigation
 
     func updateWeekDates(for date: Date) {
-        currentWeekDates = calculator.getWeekDates(containing: date)
+        let weekStart = date.getWeekStart()
+        currentWeekDates = (0..<7).compactMap { offset in
+            Calendar.current.date(byAdding: .day, value: offset, to: weekStart)
+        }
     }
 
     func moveToNextWeek() {
@@ -57,34 +34,6 @@ class PeriodViewModel: ObservableObject {
         selectedDate = date.startOfDay()
     }
 
-    // MARK: - Period Management
-
-    func recordNewPeriod(startDate: Date) {
-        let newRecord = PeriodRecord(startDate: startDate.startOfDay())
-        periodRecords.append(newRecord)
-        periodRecords.sort { $0.startDate < $1.startDate }
-
-        // 更新平均周期
-        if let avgCycle = calculator.calculateAverageCycle(from: periodRecords) {
-            settings.averageCycleDays = avgCycle
-        }
-
-        saveData()
-    }
-
-    func updatePeriodEndDate(recordId: UUID, endDate: Date) {
-        if let index = periodRecords.firstIndex(where: { $0.id == recordId }) {
-            periodRecords[index].endDate = endDate.startOfDay()
-            periodRecords[index].updatedAt = Date()
-        }
-        saveData()
-    }
-
-    func deletePeriod(recordId: UUID) {
-        periodRecords.removeAll { $0.id == recordId }
-        saveData()
-    }
-
     // MARK: - Computed Properties
 
     var displayDateText: String {
@@ -94,39 +43,22 @@ class PeriodViewModel: ObservableObject {
         return formatter.string(from: selectedDate)
     }
 
-    var isInPeriod: Bool {
-        calculator.getCurrentPeriodInfo(on: selectedDate, records: periodRecords).isInPeriod
-    }
-
     var currentPeriodDay: Int? {
-        calculator.getCurrentPeriodInfo(on: selectedDate, records: periodRecords).dayNumber
-    }
-
-    var currentPeriodRecord: PeriodRecord? {
-        calculator.getCurrentPeriodInfo(on: selectedDate, records: periodRecords).record
-    }
-
-    var actionButtonTitle: String {
-        isInPeriod ? "编辑月经日期" : "记录月经"
-    }
-
-    var currentDateState: DateState {
-        calculator.getDateState(
-            for: selectedDate,
-            selectedDate: selectedDate,
-            records: periodRecords,
-            settings: settings
-        )
+        return nil
     }
 
     // MARK: - Date State Query
 
     func getStateForDate(_ date: Date) -> DateState {
-        calculator.getDateState(
-            for: date,
-            selectedDate: selectedDate,
-            records: periodRecords,
-            settings: settings
-        )
+        let calendar = Calendar.current
+        let dateToCheck = date.startOfDay()
+        let selectedToCheck = selectedDate.startOfDay()
+        let isSelected = calendar.isDate(dateToCheck, inSameDayAs: selectedToCheck)
+        
+        if isSelected {
+            return .selected
+        }
+        
+        return .normal
     }
 }
