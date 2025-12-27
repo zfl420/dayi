@@ -5,15 +5,15 @@ struct DayCell: View {
     let state: DateState
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 0) {
             Text(date.shortDateString)
-                .font(.system(size: 14, weight: fontWeight))
+                .font(.system(size: 13, weight: fontWeight))
                 .foregroundColor(textColor)
         }
-        .frame(height: 44)
+        .frame(height: 42)
         .frame(maxWidth: .infinity)
         .background(backgroundColor)
-        .cornerRadius(6)
+        .cornerRadius(8)
         .overlay(borderOverlay)
     }
 

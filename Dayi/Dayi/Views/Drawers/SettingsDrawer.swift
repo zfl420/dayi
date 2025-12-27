@@ -43,7 +43,7 @@ struct SettingsDrawer: View {
 
                     VStack(alignment: .leading, spacing: 12) {
                         Toggle("显示预测", isOn: $viewModel.settings.showPrediction)
-                            .onChange(of: viewModel.settings.showPrediction) { _ in
+                            .onChange(of: viewModel.settings.showPrediction) { oldValue, newValue in
                                 viewModel.saveData()
                             }
                     }

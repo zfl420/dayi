@@ -4,33 +4,33 @@ struct StatusSection: View {
     @ObservedObject var viewModel: PeriodViewModel
 
     var body: some View {
-        VStack(spacing: 16) {
-            // 经期天数显示
-            VStack(spacing: 4) {
+        VStack(spacing: 18) {
+            // 经期天数显示 - 精确按照设计稿
+            VStack(spacing: 6) {
                 Text("经期:")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.white.opacity(0.7))
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(.white.opacity(0.8))
 
-                HStack(spacing: 2) {
-                    Text("第")
-                        .font(.system(size: 28, weight: .semibold))
+                HStack(spacing: 0) {
+                    Text("第 ")
+                        .font(.system(size: 32, weight: .bold))
 
                     if let day = viewModel.currentPeriodDay {
                         Text("\(day)")
-                            .font(.system(size: 48, weight: .bold))
+                            .font(.system(size: 56, weight: .bold))
                     } else {
                         Text("--")
-                            .font(.system(size: 48, weight: .bold))
-                            .foregroundColor(.black.opacity(0.2))
+                            .font(.system(size: 56, weight: .bold))
+                            .foregroundColor(.black.opacity(0.15))
                     }
 
-                    Text("天")
-                        .font(.system(size: 28, weight: .semibold))
+                    Text(" 天")
+                        .font(.system(size: 32, weight: .bold))
                 }
                 .foregroundColor(.black)
             }
 
-            // 操作按钮
+            // 操作按钮 - 胶囊形白色按钮
             Button(action: {
                 if viewModel.isInPeriod {
                     viewModel.showEditSheet = true
@@ -41,13 +41,13 @@ struct StatusSection: View {
                 Text(viewModel.actionButtonTitle)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.appPurple)
-                    .frame(height: 40)
+                    .frame(height: 42)
                     .frame(maxWidth: .infinity)
                     .background(Color.white)
-                    .cornerRadius(20)
+                    .cornerRadius(21)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 20)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 0)
     }
 }

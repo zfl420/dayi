@@ -5,20 +5,21 @@ struct MainView: View {
 
     var body: some View {
         ZStack {
-            // 背景渐变
+            // 背景渐变 - 精确按照设计稿
             PinkGradientBackground()
 
             VStack(spacing: 0) {
-                // 顶部栏
+                // 顶部栏 - 紫色图标 + 日期
                 TopBar(viewModel: viewModel)
+                    .padding(.top, 4)
 
-                // 周日历
+                // 周日历区域
                 WeekCalendar(viewModel: viewModel)
-                    .padding(.top, 12)
+                    .padding(.top, 20)
 
-                // 状态展示区
+                // 经期状态区域 - 显示"第 X 天"
                 StatusSection(viewModel: viewModel)
-                    .padding(.top, 28)
+                    .padding(.top, 48)
 
                 Spacer()
             }
