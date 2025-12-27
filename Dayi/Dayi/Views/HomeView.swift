@@ -44,11 +44,11 @@ struct HomeView: View {
 
                     // ===== 经期状态 =====
                     PeriodStatus(viewModel: viewModel, geometry: geometry)
-                        .padding(.top, geometry.size.height * 0.129) // 110/852
+                        .padding(.top, geometry.size.height * 0.11) // 93.72/852, 向上移动
 
                     // ===== 编辑按钮 =====
                     EditButton(viewModel: viewModel, geometry: geometry)
-                        .padding(.top, geometry.size.height * 0.047) // 40/852
+                        .padding(.top, geometry.size.height * 0.038) // 32.376/852, 向上移动
 
                     Spacer()
                 }
@@ -72,7 +72,7 @@ struct PeriodStatus: View {
 
     var body: some View {
         Text("记录你上一次经期开始的日期")
-            .font(.system(size: geometry.size.height * 0.0164, weight: .bold)) // 14/852
+            .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 16/852, 增大字号
             .foregroundColor(.black)
     }
 }
@@ -87,12 +87,12 @@ struct EditButton: View {
             // 弹窗已删除
         }) {
             Text("记录月经")
-                .font(.system(size: geometry.size.height * 0.0153, weight: .medium)) // 13/852
+                .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 16/852, 增大字号并加粗
                 .foregroundColor(.white)
-                .padding(.horizontal, geometry.size.width * 0.0814) // 32/393
-                .frame(height: geometry.size.height * 0.0516) // 44/852
+                .padding(.horizontal, geometry.size.width * 0.0407) // 16/393, 左右边距减半
+                .frame(height: geometry.size.height * 0.0468) // 39.84/852, 介于44和35.78之间
                 .background(Color(red: 255.0/255.0, green: 90.0/255.0, blue: 125.0/255.0))
-                .cornerRadius(geometry.size.height * 0.0258) // 22/852
+                .cornerRadius(geometry.size.height * 0.0234) // 19.93/852, 圆角相应调整
                 .shadow(color: Color.black.opacity(0.1), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023) // 4/852, 2/852
         }
     }
