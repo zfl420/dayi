@@ -92,7 +92,11 @@ class PeriodViewModel: ObservableObject {
 
     func openDatePicker() {
         showDatePicker = true
-        // 加载所有历史记录的日期到选中集合
+        // 数据加载延迟到视图呈现后，避免阻塞弹窗动画
+    }
+
+    /// 加载日期选择器数据（在视图呈现后调用）
+    func loadDatePickerData() {
         tempSelectedDates = getAllRecordedDates()
     }
 
@@ -108,15 +112,11 @@ class PeriodViewModel: ObservableObject {
 
     // MARK: - 多选逻辑
 
-    /// 获取所有已记录的日期
+    /// 获取所有已记录的日期（优化版）
     private func getAllRecordedDates() -> Set<Date> {
-        var allDates: Set<Date> = []
-        for record in periodRecords {
-            for date in record.dates {
-                allDates.insert(date.startOfDay())
-            }
+        return periodRecords.reduce(into: Set<Date>()) { result, record in
+            record.dates.forEach { result.insert($0.startOfDay()) }
         }
-        return allDates
     }
 
     /// 处理日期点击

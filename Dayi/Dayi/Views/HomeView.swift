@@ -43,10 +43,13 @@ struct HomeView: View {
 
                     Spacer()
                 }
-                .sheet(isPresented: $viewModel.showDatePicker) {
+                .fullScreenCover(isPresented: $viewModel.showDatePicker) {
                     GeometryReader { sheetGeometry in
-                        DatePickerSheetContent(viewModel: viewModel, geometry: sheetGeometry)
+                        DatePickerFullScreenContent(viewModel: viewModel, geometry: sheetGeometry)
                     }
+                }
+                .transaction { transaction in
+                    transaction.disablesAnimations = true
                 }
             }
             .ignoresSafeArea()

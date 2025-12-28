@@ -86,25 +86,16 @@ struct DatePickerContent: View {
 
 
     var body: some View {
-        VStack(spacing: 0) {
-            // 周标题
-            HStack(spacing: geometry.size.width * 0.01) {
-                ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { label in
-                    Text(label)
-                        .font(.system(size: geometry.size.height * 0.018, weight: .semibold))
-                        .foregroundColor(Color(red: 90/255.0, green: 87/255.0, blue: 86/255.0))
-                        .frame(maxWidth: .infinity)
-                }
-            }
-            .padding(.horizontal, geometry.size.width * 0.03)
-            .padding(.top, geometry.size.height * 0.03)  // 顶部留较大间距（弹窗横条占用空间）
-            .padding(.bottom, geometry.size.height * 0.0075)  // 底部留小间距
-            .background(topBackgroundColor)
-
-            // 日期内容
+        ZStack(alignment: .top) {
+            // 日历滚动区域（全屏）
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: geometry.size.height * 0.01) {
+                        // 顶部占位空间（为星期标题留空）
+                        // 计算：上边距 + 星期标题高度 + 底部边距 + 缓冲
+                        Color.clear
+                            .frame(height: max(geometry.safeAreaInsets.top - 10, 10) + geometry.size.height * 0.0141 + geometry.size.height * 0.0075 + 10)
+
                         ForEach(0..<totalWeeks, id: \.self) { index in
                             VStack(spacing: geometry.size.height * 0.005) {
                                 // 月份标题
@@ -139,13 +130,13 @@ struct DatePickerContent: View {
                                 )
                             }
                             .id(index)
-                            // 检测今天所在周的可见性
+                            // 检测今天所在周的可见性（只监听±20周范围）
                             .background(
                                 GeometryReader { itemGeometry in
                                     Color.clear
                                         .preference(
                                             key: VisibleWeekPreferenceKey.self,
-                                            value: isWeekVisible(itemGeometry: itemGeometry, in: geometry, weekIndex: index) ? [index] : []
+                                            value: shouldMonitorWeek(index) && isWeekVisible(itemGeometry: itemGeometry, in: geometry, weekIndex: index) ? [index] : []
                                         )
                                 }
                             )
@@ -162,9 +153,24 @@ struct DatePickerContent: View {
                         viewModel.isTodayVisible = isTodayCurrentlyVisible
                     }
                 }
-                .onAppear {
-                    // 初始滚动：直接定位到最底部（最后一周）
-                    proxy.scrollTo(totalWeeks - 1, anchor: .bottom)
+                .task {
+                    // 步骤1：延迟加载数据（等待1帧让视图稳定）
+                    try? await Task.sleep(nanoseconds: 16_666_666) // ~16ms
+                    viewModel.loadDatePickerData()
+
+                    // 步骤2：等待数据渲染完成
+                    try? await Task.sleep(nanoseconds: 16_666_666)
+
+                    // 步骤3：分段滚动 - 先跳到接近位置
+                    let targetIndex = totalWeeks - 1
+                    let intermediateIndex = max(targetIndex - 5, 0)
+                    proxy.scrollTo(intermediateIndex, anchor: .top)
+
+                    // 步骤4：等待中间位置渲染
+                    try? await Task.sleep(nanoseconds: 33_333_333) // ~33ms
+
+                    // 步骤5：精确定位到底部
+                    proxy.scrollTo(targetIndex, anchor: .bottom)
                 }
                 .onChange(of: viewModel.scrollToTodayTrigger) {
                     // 点击"今天"按钮：滚动到今天所在周
@@ -172,6 +178,24 @@ struct DatePickerContent: View {
                         proxy.scrollTo(todayWeekIndex, anchor: .center)
                     }
                 }
+            }
+
+            // 星期标题（固定在顶部，覆盖在滚动区域上）
+            VStack(spacing: 0) {
+                HStack(spacing: geometry.size.width * 0.01) {
+                    ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { label in
+                        Text(label)
+                            .font(.system(size: geometry.size.height * 0.0141, weight: .medium))
+                            .foregroundColor(Color(red: 90/255.0, green: 87/255.0, blue: 86/255.0))
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .padding(.horizontal, geometry.size.width * 0.03)
+                .padding(.top, max(geometry.safeAreaInsets.top - 10, 10))  // 安全区域 - 10pt，最小10pt
+                .padding(.bottom, geometry.size.height * 0.0075)
+                .background(topBackgroundColor)
+
+                Spacer()
             }
         }
     }
@@ -183,5 +207,10 @@ struct DatePickerContent: View {
 
         // 检查 item 是否与容器有交集
         return itemFrame.maxY > containerFrame.minY && itemFrame.minY < containerFrame.maxY
+    }
+
+    // 检查是否需要监听该周（只监听今天所在周附近±20周）
+    private func shouldMonitorWeek(_ index: Int) -> Bool {
+        abs(index - todayWeekIndex) <= 20
     }
 }
