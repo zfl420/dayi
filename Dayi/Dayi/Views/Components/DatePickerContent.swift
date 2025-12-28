@@ -20,10 +20,12 @@ struct DatePickerContent: View {
         Date(timeIntervalSince1970: 0).getWeekStart()
     }
 
-    // 总周数（从1970年到今天+4周）
+    // 总周数（从1970年到今天的下两周）
     private var totalWeeks: Int {
         let today = Date().startOfDay()
-        let endDate = today.adding(days: 4 * 7)
+        // 今天的下两周的周日 = 今天所在周的周一 + 2周 + 6天
+        let todayWeekStart = today.getWeekStart()
+        let endDate = todayWeekStart.adding(days: 2 * 7 + 6)  // 下两周的周日
         let totalDays = Calendar.current.dateComponents([.day], from: startWeekDate, to: endDate).day ?? 0
         return (totalDays / 7) + 1
     }
@@ -82,19 +84,21 @@ struct DatePickerContent: View {
         return days / 7
     }
 
+
     var body: some View {
         VStack(spacing: 0) {
             // 周标题
             HStack(spacing: geometry.size.width * 0.01) {
                 ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { label in
                     Text(label)
-                        .font(.system(size: geometry.size.height * 0.0205, weight: .semibold))
+                        .font(.system(size: geometry.size.height * 0.018, weight: .semibold))
                         .foregroundColor(Color(red: 90/255.0, green: 87/255.0, blue: 86/255.0))
                         .frame(maxWidth: .infinity)
                 }
             }
             .padding(.horizontal, geometry.size.width * 0.03)
-            .padding(.vertical, geometry.size.height * 0.02)  // 增加上下间距
+            .padding(.top, geometry.size.height * 0.03)  // 顶部留较大间距（弹窗横条占用空间）
+            .padding(.bottom, geometry.size.height * 0.0075)  // 底部留小间距
             .background(topBackgroundColor)
 
             // 日期内容
@@ -159,13 +163,11 @@ struct DatePickerContent: View {
                     }
                 }
                 .onAppear {
-                    // 滚动到今天所在周
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                        proxy.scrollTo(todayWeekIndex, anchor: .center)
-                    }
+                    // 初始滚动：直接定位到最底部（最后一周）
+                    proxy.scrollTo(totalWeeks - 1, anchor: .bottom)
                 }
-                .onChange(of: viewModel.scrollToTodayTrigger) { _ in
-                    // 监听滚动到今天的触发器
+                .onChange(of: viewModel.scrollToTodayTrigger) {
+                    // 点击"今天"按钮：滚动到今天所在周
                     withAnimation {
                         proxy.scrollTo(todayWeekIndex, anchor: .center)
                     }
