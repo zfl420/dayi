@@ -164,14 +164,11 @@ struct DayCellContent: View {
             if viewModel.shouldShowPeriodBackground(date) {
                 // 实心浅红小圆（记录日至今天）
                 Circle()
-                    .fill(Color(red: 1.0, green: 200/255.0, blue: 215/255.0))
+                    .fill(Color(red: 255.0/255.0, green: 90.0/255.0, blue: 125.0/255.0))
                     .frame(width: smallCircleSize, height: smallCircleSize)
             } else if viewModel.shouldShowPredictionBorder(date) {
-                // 空心红色虚线小圆（今天至第七天）
-                Circle()
-                    .stroke(
-                        style: StrokeStyle(lineWidth: 1.5, dash: [3, 2])
-                    )
+                // 空心红色圆点虚线小圆（今天至第七天）
+                DottedCircle(dotCount: 18, dotRadius: 1.5)
                     .foregroundColor(Color(red: 1.0, green: 90/255.0, blue: 125/255.0))
                     .frame(width: smallCircleSize, height: smallCircleSize)
             }
@@ -180,11 +177,11 @@ struct DayCellContent: View {
             VStack(spacing: geometry.size.height * 0.0023) { // 2/852
                 Text(date.shortDateString)
                     .font(.system(size: geometry.size.height * 0.0229, weight: fontWeight)) // 19.5/852
-                    .foregroundColor(.black)
+                    .foregroundColor(viewModel.shouldShowPeriodBackground(date) ? .white : .black)
 
                 if isToday {
                     Circle()
-                        .fill(Color(red: 0.6, green: 0.6, blue: 0.6))
+                        .fill(viewModel.shouldShowPeriodBackground(date) ? .white : Color(red: 0.6, green: 0.6, blue: 0.6))
                         .frame(width: geometry.size.height * 0.0047, height: geometry.size.height * 0.0047) // 4/852
                 }
             }

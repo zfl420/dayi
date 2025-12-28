@@ -7,7 +7,7 @@
 **重要：所有UI尺寸必须使用屏幕比例，而非固定像素值**
 
 #### 设计基准
-- **基准设备**：iPhone 17
+- **基准设备**：iPhone 17 (393×852 pt)
 - **设计流程**：用户提供基于 iPhone 17 的固定像素值 → 开发时转换为屏幕比例
 
 #### 转换规则
@@ -15,40 +15,103 @@
 1. **间距/尺寸转换**
    - 用户提供固定值时，需转换为屏幕高度/宽度的比例
    - 使用 GeometryReader 获取实际屏幕尺寸
-   - 公式：`geometry.size.height * (固定值 / iPhone17屏幕高度)`
+   - 垂直方向公式：`geometry.size.height * (固定值 / 852.0)`
+   - 水平方向公式：`geometry.size.width * (固定值 / 393.0)`
 
    示例：
-   ```swift
+```swift
    // ❌ 错误：固定值
    .padding(.top, 110)
 
    // ✅ 正确：屏幕比例
    GeometryReader { geometry in
-       .padding(.top, geometry.size.height * 0.13)
+       .padding(.top, geometry.size.height * (110.0 / 852.0))
    }
-   ```
+```
 
 2. **字号转换**
    - 字号也应基于屏幕尺寸动态计算
-   - 公式：`UIScreen.main.bounds.height * (字号 / iPhone17屏幕高度)`
+   - 公式：`geometry.size.height * (字号 / 852.0)`
 
    示例：
-   ```swift
+```swift
    // ❌ 错误：固定字号
    .font(.system(size: 14, weight: .bold))
 
    // ✅ 正确：动态字号
-   .font(.system(size: UIScreen.main.bounds.height * 0.017, weight: .bold))
-   ```
+   GeometryReader { geometry in
+       .font(.system(size: geometry.size.height * (14.0 / 852.0), weight: .bold))
+   }
+```
 
-3. **iPhone 17 规格参考**
-   - 屏幕高度：852 pt (逻辑像素)
-   - 屏幕宽度：393 pt (逻辑像素)
+3. **注意事项**
+   - 统一使用 `geometry.size`，不要混用 `UIScreen.main.bounds`
+   - 建议添加最小值保护：`max(计算值, 最小值)`
 
 #### 实施要求
 - 所有新增的UI组件必须使用比例值
 - 现有固定值需逐步重构为比例值
 - 确保在不同设备上保持一致的视觉比例
+
+---
+
+## 代码修改原则
+
+### 严格区分优化类型
+
+#### 1. 性能优化（可直接执行）
+不改变业务逻辑和功能行为的优化：
+- 使用 LazyVStack/LazyHStack 替代普通 Stack
+- 优化计算复杂度（如算法优化）
+- 减少重复渲染和计算
+- 内存优化、缓存优化
+- 代码结构重构（不改变功能）
+
+**示例**：
+```swift
+// ✅ 性能优化：使用 LazyVStack
+LazyVStack { ... }  // 替代 VStack
+
+// ✅ 性能优化：缓存计算结果
+@State private var cachedValue = ...
+```
+
+#### 2. 逻辑修改（必须先询问确认）
+任何改变业务行为、数据范围、默认值的修改：
+- 修改日期范围、时间范围
+- 改变数据来源或数据处理逻辑
+- 调整默认值、初始状态
+- 修改 UI 行为（如滚动位置、显示内容）
+- 功能增删
+
+**示例**：
+```swift
+// ❌ 逻辑修改：必须先询问
+startDate = threeYearsAgo  // 改变日期范围
+defaultValue = 10  // 改变默认值
+```
+
+### 修改前确认流程
+
+当需要修改代码时：
+
+1. **明确修改类型**
+   - 判断是纯性能优化还是涉及逻辑修改
+
+2. **涉及逻辑修改时**
+   - 说明修改内容、影响范围和潜在风险
+   - 提供多个方案供用户选择
+   - 获得明确同意后再执行
+
+3. **复杂优化任务**
+   - 列出所有可能的优化方案
+   - 明确标注哪些会改变逻辑
+   - 让用户选择合适的方案
+
+### 重要原则
+- **永远不要擅自修改业务逻辑**
+- **不确定时，先询问用户**
+- **优化必须保持功能一致性**
 
 ---
 

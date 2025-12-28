@@ -317,18 +317,26 @@ class PeriodViewModel: ObservableObject {
 
     func shouldShowPeriodBackground(_ date: Date) -> Bool {
         guard let record = currentPeriodRecord else { return false }
-        return record.contains(date)
-    }
-
-    func shouldShowPredictionBorder(_ date: Date) -> Bool {
-        // 只有在有记录的情况下才显示预测虚线
-        guard currentPeriodRecord != nil else { return false }
 
         let dateToCheck = date.startOfDay()
         let today = Date().startOfDay()
-        // 今天至第七天：today ... today+6
-        let daysSinceToday = dateToCheck.daysSince(today)
-        return daysSinceToday >= 0 && daysSinceToday <= 6
+
+        // 只在今天及之前的日期显示实心圆（实际记录）
+        guard dateToCheck <= today else { return false }
+
+        return record.contains(dateToCheck)
+    }
+
+    func shouldShowPredictionBorder(_ date: Date) -> Bool {
+        guard let record = currentPeriodRecord else { return false }
+
+        let dateToCheck = date.startOfDay()
+        let today = Date().startOfDay()
+
+        // 只在今天之后的日期显示虚线框（预测日期）
+        guard dateToCheck > today else { return false }
+
+        return record.contains(dateToCheck)
     }
 
     // MARK: - Date State Query
