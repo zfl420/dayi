@@ -15,19 +15,25 @@ struct DatePickerContent: View {
     let geometry: GeometryProxy
     var topBackgroundColor: Color = Color(red: 250/255.0, green: 250/255.0, blue: 250/255.0)  // #FAFAFA
 
-    // 起始日期：1970年1月1日的周一（Unix Epoch）
+    // 起始日期：3年前的第一周的周一
     private var startWeekDate: Date {
-        Date(timeIntervalSince1970: 0).getWeekStart()
+        let calendar = Calendar.current
+        let today = Date()
+        // 3年前的同一天
+        guard let threeYearsAgo = calendar.date(byAdding: .year, value: -3, to: today) else {
+            return today.getWeekStart()
+        }
+        return threeYearsAgo.getWeekStart()
     }
 
-    // 总周数（从1970年到今天的下两周）
+    // 总周数（从3年前到今天的下两周）
     private var totalWeeks: Int {
         let today = Date().startOfDay()
         // 今天的下两周的周日 = 今天所在周的周一 + 2周 + 6天
         let todayWeekStart = today.getWeekStart()
         let endDate = todayWeekStart.adding(days: 2 * 7 + 6)  // 下两周的周日
         let totalDays = Calendar.current.dateComponents([.day], from: startWeekDate, to: endDate).day ?? 0
-        return (totalDays / 7) + 1
+        return max((totalDays / 7) + 1, 1)
     }
 
     // 根据索引获取该周的日期（懒加载，只在需要时计算）
