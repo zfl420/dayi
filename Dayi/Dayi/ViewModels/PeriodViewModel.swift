@@ -8,6 +8,7 @@ class PeriodViewModel: ObservableObject {
     // MARK: - 日期选择器状态
     @Published var showDatePicker: Bool = false
     @Published var tempSelectedDate: Date
+    @Published var extraExtendedDays: Int = 0  // 额外扩展的天数（超过默认6天的部分）
 
     // MARK: - 月经记录
     @Published var currentPeriodRecord: PeriodRecord? = nil  // 最新一次记录
@@ -126,30 +127,72 @@ class PeriodViewModel: ObservableObject {
 
     func updateTempDate(_ date: Date) {
         tempSelectedDate = date.startOfDay()
+        extraExtendedDays = 0  // 重置额外扩展天数
     }
 
     // MARK: - 日期选择器日期状态
 
+    /// 默认经期天数
+    private let defaultPeriodDays: Int = 6
+
+    /// 总经期天数（默认 + 额外扩展）
+    var totalPeriodDays: Int {
+        return defaultPeriodDays + extraExtendedDays
+    }
+
+    /// 预测期是否包含今天之后的日期
+    var predictionHasFutureDates: Bool {
+        let today = Date().startOfDay()
+        let lastPredictionDate = tempSelectedDate.adding(days: totalPeriodDays - 1)
+        return lastPredictionDate > today
+    }
+
     func getStateForDatePicker(_ date: Date) -> DateState {
         let dateToCheck = date.startOfDay()
+        let today = Date().startOfDay()
 
         // 当前选中
         if dateToCheck.isSameDay(as: tempSelectedDate) {
             return .selected
         }
 
-        // 选中后6天（虚线）- 优先于 disabled 判断
         let daysAfter = dateToCheck.daysSince(tempSelectedDate)
-        if daysAfter > 0 && daysAfter <= 6 {
+
+        // 在预测期范围内（选中日期后1到totalPeriodDays-1天）
+        if daysAfter > 0 && daysAfter < totalPeriodDays {
+            // 额外扩展的天数显示为 extended
+            if daysAfter >= defaultPeriodDays {
+                return .extended
+            }
             return .afterPeriodDashed
         }
 
-        // 不可选：未来日期 或 早于上次经期结束日
-        if dateToCheck > datePickerMaxDate || dateToCheck < datePickerMinDate {
+        // 可扩展日期：预测期最后一天的后一天
+        if daysAfter == totalPeriodDays {
+            // 根据日期是否在今天之后区分样式
+            if dateToCheck > today {
+                return .extendable       // 今天之后：灰色虚线框
+            } else {
+                return .extendablePast   // 今天及之前：灰色实线框
+            }
+        }
+
+        // 不可选：早于上次经期结束日
+        if dateToCheck < datePickerMinDate {
+            return .disabled
+        }
+
+        // 今天之后且不在预测范围内的日期不显示
+        if dateToCheck > today && daysAfter > totalPeriodDays {
             return .disabled
         }
 
         return .normal
+    }
+
+    /// 扩展一天经期
+    func extendPeriodByOneDay() {
+        extraExtendedDays += 1
     }
 
     // MARK: - 首页日期背景圈状态

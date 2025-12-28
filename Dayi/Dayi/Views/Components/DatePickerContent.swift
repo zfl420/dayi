@@ -4,6 +4,7 @@ import SwiftUI
 struct DatePickerContent: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
+    var topBackgroundColor: Color = Color(red: 250/255.0, green: 250/255.0, blue: 250/255.0)  // #FAFAFA
 
     // 生成从1年前到未来4周的日期数据（减少数据量以提升性能）
     private var weeks: [[Date]] {
@@ -101,6 +102,7 @@ struct DatePickerContent: View {
             }
             .padding(.horizontal, geometry.size.width * 0.03)
             .padding(.vertical, geometry.size.height * 0.01)
+            .background(topBackgroundColor)
 
             // 日期内容
             ScrollViewReader { proxy in
@@ -118,8 +120,9 @@ struct DatePickerContent: View {
 
                                         // 月份文字
                                         Text(getMonthHeaderText(for: weeks[index]))
-                                            .font(.system(size: geometry.size.height * 0.0188, weight: .medium))
-                                            .foregroundColor(Color(red: 100/255.0, green: 100/255.0, blue: 100/255.0))
+                                            .font(.system(size: geometry.size.height * 0.025, weight: .medium))
+                                            .foregroundColor(.black)
+                                            .fixedSize(horizontal: true, vertical: false)  // 自适应宽度，防止错位
 
                                         // 右边横线
                                         Rectangle()
@@ -142,9 +145,9 @@ struct DatePickerContent: View {
                         }
                     }
                     .padding(.vertical, geometry.size.height * 0.01)
-                    .background(Color(red: 248/255.0, green: 243/255.0, blue: 241/255.0))
+                    .background(Color.white)
                 }
-                .background(Color(red: 248/255.0, green: 243/255.0, blue: 241/255.0))
+                .background(Color.white)
                 .onAppear {
                     // 滚动到选中日期所在周
                     if let index = selectedWeekIndex {

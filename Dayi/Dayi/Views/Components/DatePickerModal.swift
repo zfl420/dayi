@@ -37,6 +37,10 @@ struct DatePickerSheetContent: View {
         return formatter.string(from: viewModel.tempSelectedDate)
     }
 
+    private var topBackgroundColor: Color {
+        Color(red: 250/255.0, green: 250/255.0, blue: 250/255.0)  // #FAFAFA
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // 顶部日期展示
@@ -45,9 +49,11 @@ struct DatePickerSheetContent: View {
                 .foregroundColor(.black)
                 .padding(.top, geometry.size.height * 0.025)
                 .padding(.bottom, geometry.size.height * 0.015)
+                .frame(maxWidth: .infinity)
+                .background(topBackgroundColor)
 
             // 日期选择内容
-            DatePickerContent(viewModel: viewModel, geometry: geometry)
+            DatePickerContent(viewModel: viewModel, geometry: geometry, topBackgroundColor: topBackgroundColor)
 
             // 工具栏（移到底部）
             DatePickerToolbar(viewModel: viewModel, geometry: geometry)
