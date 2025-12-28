@@ -30,7 +30,6 @@ struct DottedCircle: Shape {
 }
 
 /// 日期选择器中的单个日期单元格
-/// 新布局：上方日期数字，下方选择按钮
 struct DatePickerDayCell: View {
     @ObservedObject var viewModel: PeriodViewModel
     let date: Date
@@ -50,7 +49,7 @@ struct DatePickerDayCell: View {
         Date().startOfDay()
     }
 
-    /// 是否是今天或今天之前的日期（可选日期）
+    /// 是否是今天或今天之前的日期
     private var isPastOrToday: Bool {
         date.startOfDay() <= today
     }
@@ -60,51 +59,14 @@ struct DatePickerDayCell: View {
         date.startOfDay() > today
     }
 
-    /// 是否在预测范围内（选中日期后的天数）
-    private var isInPredictionRange: Bool {
-        switch state {
-        case .afterPeriodDashed, .extended:
-            return true
-        default:
-            return false
-        }
-    }
-
     /// 是否被选中
     private var isSelected: Bool {
-        if case .selected = state {
-            return true
-        }
-        return false
+        state == .selected
     }
 
-    /// 是否是可扩展日期（今天之后，灰色虚线框）
+    /// 是否是可扩展日期
     private var isExtendable: Bool {
-        if case .extendable = state {
-            return true
-        }
-        return false
-    }
-
-    /// 是否是可扩展日期（今天及之前，灰色实线框）
-    private var isExtendablePast: Bool {
-        if case .extendablePast = state {
-            return true
-        }
-        return false
-    }
-
-    /// 是否是任意可扩展日期
-    private var isAnyExtendable: Bool {
-        return isExtendable || isExtendablePast
-    }
-
-    /// 是否是已扩展日期
-    private var isExtended: Bool {
-        if case .extended = state {
-            return true
-        }
-        return false
+        state == .extendable
     }
 
     // MARK: - 尺寸
@@ -126,7 +88,7 @@ struct DatePickerDayCell: View {
     }
 
     private var checkmarkWeight: Font.Weight {
-        return .black  // 最粗的字重，约为原来的2倍
+        return .black  // 最粗的字重
     }
 
     // MARK: - 颜色
@@ -142,21 +104,17 @@ struct DatePickerDayCell: View {
 
     /// 日期数字颜色
     private var dateTextColor: Color {
-        if isSelected || isInPredictionRange || isExtended {
+        if isSelected {
             return primaryColor
-        } else if isExtendable {
-            // 今天之后的可扩展日期：灰色
-            return grayColor
-        } else if isFutureDate {
+        } else if isFutureDate && !isExtendable {
             return grayColor
         }
-        // 今天及之前的可扩展日期（isExtendablePast）和普通日期：黑色
         return .black
     }
 
     /// 日期字重
     private var dateFontWeight: Font.Weight {
-        if isSelected || isInPredictionRange || isExtended || isToday {
+        if isSelected || isToday {
             return .semibold
         }
         return .regular
@@ -171,7 +129,7 @@ struct DatePickerDayCell: View {
                 Text("今天")
                     .font(.system(size: geometry.size.height * 0.014 * 1.2, weight: .heavy))
                     .foregroundColor(isSelected ? primaryColor : Color(red: 100/255.0, green: 100/255.0, blue: 100/255.0))
-                    .padding(.bottom, geometry.size.height * 0.008 * 0.2)  // 缩小到1/5
+                    .padding(.bottom, geometry.size.height * 0.008 * 0.2)
             } else {
                 // 占位，保持布局一致
                 Text(" ")
@@ -183,7 +141,7 @@ struct DatePickerDayCell: View {
             Text(date.shortDateString)
                 .font(.system(size: geometry.size.height * 0.025, weight: dateFontWeight))
                 .foregroundColor(dateTextColor)
-                .padding(.bottom, geometry.size.height * 0.008 * 0.2)  // 日期与选择框间距缩小到1/5
+                .padding(.bottom, geometry.size.height * 0.008 * 0.2)
 
             // 选择按钮区域
             checkboxArea
@@ -199,32 +157,27 @@ struct DatePickerDayCell: View {
 
     @ViewBuilder
     private var checkboxArea: some View {
-        if isSelected || isInPredictionRange {
-            // 选中日期或预测期内的日期
-            if isPastOrToday {
-                // 今天及之前：红色实心圆 + 白色勾
-                selectedCheckbox
-            } else {
-                // 今天之后：红色虚线圆 + 红色勾
-                predictionCheckbox
-            }
-        } else if isExtendable {
-            // 可扩展日期（今天之后）：灰色虚线圆（无勾）
-            extendableDashedCheckbox
-        } else if isExtendablePast || isPastOrToday {
-            // 今天及之前的普通日期：灰色空心圆
-            unselectedCheckbox
-        } else {
-            // 更远的未来：不显示任何内容，但保留空间
+        switch state {
+        case .disabled:
+            // 远期未来日期：不显示选择框
             Color.clear
                 .frame(width: checkboxSize, height: checkboxSize)
+        case .selected:
+            // 选中状态：红色实心圆 + 白色勾
+            selectedCheckbox
+        case .extendable:
+            // 可扩展日期：灰色虚线圆
+            extendableCheckbox
+        case .normal:
+            // 未选中：灰色空心圆
+            unselectedCheckbox
         }
     }
 
     /// 未选中的选择按钮（灰色空心圆）
     private var unselectedCheckbox: some View {
         Circle()
-            .stroke(Color(red: 200/255.0, green: 200/255.0, blue: 200/255.0), lineWidth: 3)  // 边框粗度增加到1.5倍
+            .stroke(Color(red: 200/255.0, green: 200/255.0, blue: 200/255.0), lineWidth: 3)
             .frame(width: checkboxSize, height: checkboxSize)
     }
 
@@ -241,47 +194,35 @@ struct DatePickerDayCell: View {
         }
     }
 
-    /// 预测期状态（红色圆点虚线圆 + 红色勾）
-    private var predictionCheckbox: some View {
-        ZStack {
-            DottedCircle(dotCount: 12, dotRadius: 1.5)
-                .foregroundColor(primaryColor)
-                .frame(width: checkboxSize, height: checkboxSize)
-
-            Image(systemName: "checkmark")
-                .foregroundColor(primaryColor)
-                .font(.system(size: checkmarkSize, weight: checkmarkWeight))
-        }
-    }
-
-    /// 可扩展状态 - 今天之后（灰色圆点虚线圆，无勾）
-    private var extendableDashedCheckbox: some View {
-        DottedCircle(dotCount: 16, dotRadius: 1.5)
+    /// 可扩展日期（灰色圆点虚线圆）
+    private var extendableCheckbox: some View {
+        DottedCircle(dotCount: 12, dotRadius: 1.5)
             .foregroundColor(grayColor)
-            .frame(width: checkboxSize, height: checkboxSize)
-    }
-
-    /// 可扩展状态 - 今天及之前（灰色实线圆，无勾）
-    private var extendableSolidCheckbox: some View {
-        Circle()
-            .stroke(grayColor, lineWidth: 2)
             .frame(width: checkboxSize, height: checkboxSize)
     }
 
     // MARK: - 点击处理
 
     private func handleTap() {
-        // 可扩展日期被点击：扩展经期
-        if isAnyExtendable {
-            viewModel.extendPeriodByOneDay()
+        // 已选中的日期可以点击（反选），包括未来日期
+        if isSelected {
+            viewModel.handleDateTap(date)
             let generator = UIImpactFeedbackGenerator(style: .light)
             generator.impactOccurred()
             return
         }
 
-        // 只有今天及之前的日期可以点击选择
+        // 可扩展日期可以点击
+        if isExtendable {
+            viewModel.handleDateTap(date)
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+            return
+        }
+
+        // 今天及之前的日期可以点击选中
         if isPastOrToday {
-            viewModel.updateTempDate(date)
+            viewModel.handleDateTap(date)
             let generator = UIImpactFeedbackGenerator(style: .light)
             generator.impactOccurred()
         }

@@ -1,72 +1,68 @@
 import SwiftUI
 
+/// 用于检测视图可见性的 PreferenceKey
+struct VisibleWeekPreferenceKey: PreferenceKey {
+    static var defaultValue: Set<Int> = []
+
+    static func reduce(value: inout Set<Int>, nextValue: () -> Set<Int>) {
+        value.formUnion(nextValue())
+    }
+}
+
 /// 日期选择器内容区域
 struct DatePickerContent: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
     var topBackgroundColor: Color = Color(red: 250/255.0, green: 250/255.0, blue: 250/255.0)  // #FAFAFA
 
-    // 生成从1年前到未来4周的日期数据（减少数据量以提升性能）
-    private var weeks: [[Date]] {
-        var allWeeks: [[Date]] = []
-        let today = Date().startOfDay()
-        let calendar = Calendar.current
-
-        // 从1年前开始（而不是5年前，减少数据量）
-        let startDate = calendar.date(byAdding: .year, value: -1, to: today) ?? today.adding(days: -365)
-        let startWeekDate = startDate.getWeekStart()
-
-        // 计算需要多少周（1年 + 4周，约56周）
-        let endDate = today.adding(days: 4 * 7)
-        let totalDays = calendar.dateComponents([.day], from: startWeekDate, to: endDate).day ?? 0
-        let totalWeeks = (totalDays / 7) + 1
-
-        // 生成所有周的数据
-        for weekIndex in 0..<totalWeeks {
-            let weekStart = calendar.date(byAdding: .day, value: weekIndex * 7, to: startWeekDate)!
-            var week: [Date] = []
-
-            for dayIndex in 0..<7 {
-                if let date = calendar.date(byAdding: .day, value: dayIndex, to: weekStart) {
-                    week.append(date)
-                }
-            }
-
-            if !week.isEmpty {
-                allWeeks.append(week)
-            }
-        }
-
-        return allWeeks
+    // 起始日期：1970年1月1日的周一（Unix Epoch）
+    private var startWeekDate: Date {
+        Date(timeIntervalSince1970: 0).getWeekStart()
     }
 
-    // 判断某周是否需要显示月份标题
-    private func shouldShowMonthHeader(for week: [Date], atIndex index: Int) -> Bool {
-        guard let firstDate = week.first else { return false }
+    // 总周数（从1970年到今天+4周）
+    private var totalWeeks: Int {
+        let today = Date().startOfDay()
+        let endDate = today.adding(days: 4 * 7)
+        let totalDays = Calendar.current.dateComponents([.day], from: startWeekDate, to: endDate).day ?? 0
+        return (totalDays / 7) + 1
+    }
 
+    // 根据索引获取该周的日期（懒加载，只在需要时计算）
+    private func getWeekDates(for index: Int) -> [Date] {
+        let calendar = Calendar.current
+        guard let weekStart = calendar.date(byAdding: .day, value: index * 7, to: startWeekDate) else {
+            return []
+        }
+        return (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: weekStart) }
+    }
+
+    // 判断某周是否需要显示月份标题（基于索引）
+    private func shouldShowMonthHeader(for index: Int) -> Bool {
         // 第一周总是显示
         if index == 0 {
             return true
         }
 
-        // 如果这周的月份与上一周的月份不同，则显示
-        guard index > 0, let previousWeekFirstDate = weeks[index - 1].first else {
+        let currentWeek = getWeekDates(for: index)
+        let previousWeek = getWeekDates(for: index - 1)
+
+        guard let currentFirst = currentWeek.first, let previousFirst = previousWeek.first else {
             return false
         }
 
         let calendar = Calendar.current
-        let currentMonth = calendar.component(.month, from: firstDate)
-        let previousMonth = calendar.component(.month, from: previousWeekFirstDate)
+        let currentMonth = calendar.component(.month, from: currentFirst)
+        let previousMonth = calendar.component(.month, from: previousFirst)
 
         return currentMonth != previousMonth
     }
 
     // 获取月份标题文本
-    private func getMonthHeaderText(for week: [Date]) -> String {
+    private func getMonthHeaderText(for index: Int) -> String {
+        let week = getWeekDates(for: index)
         guard let firstDate = week.first else { return "" }
         let calendar = Calendar.current
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
 
         let month = calendar.component(.month, from: firstDate)
         let year = calendar.component(.year, from: firstDate)
@@ -79,14 +75,11 @@ struct DatePickerContent: View {
         }
     }
 
-    // 找到选中日期所在周的索引
-    private var selectedWeekIndex: Int? {
-        let selectedDate = viewModel.tempSelectedDate
-        return weeks.firstIndex { week in
-            week.contains { date in
-                date.isSameDay(as: selectedDate)
-            }
-        }
+    // 今天所在周的索引
+    private var todayWeekIndex: Int {
+        let today = Date().startOfDay()
+        let days = Calendar.current.dateComponents([.day], from: startWeekDate, to: today).day ?? 0
+        return days / 7
     }
 
     var body: some View {
@@ -101,17 +94,17 @@ struct DatePickerContent: View {
                 }
             }
             .padding(.horizontal, geometry.size.width * 0.03)
-            .padding(.vertical, geometry.size.height * 0.01)
+            .padding(.vertical, geometry.size.height * 0.02)  // 增加上下间距
             .background(topBackgroundColor)
 
             // 日期内容
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: geometry.size.height * 0.01) {
-                        ForEach(weeks.indices, id: \.self) { index in
+                        ForEach(0..<totalWeeks, id: \.self) { index in
                             VStack(spacing: geometry.size.height * 0.005) {
                                 // 月份标题
-                                if shouldShowMonthHeader(for: weeks[index], atIndex: index) {
+                                if shouldShowMonthHeader(for: index) {
                                     HStack(spacing: geometry.size.width * 0.02) {
                                         // 左边横线
                                         Rectangle()
@@ -119,10 +112,10 @@ struct DatePickerContent: View {
                                             .frame(height: 1)
 
                                         // 月份文字
-                                        Text(getMonthHeaderText(for: weeks[index]))
+                                        Text(getMonthHeaderText(for: index))
                                             .font(.system(size: geometry.size.height * 0.025, weight: .medium))
                                             .foregroundColor(.black)
-                                            .fixedSize(horizontal: true, vertical: false)  // 自适应宽度，防止错位
+                                            .fixedSize(horizontal: true, vertical: false)
 
                                         // 右边横线
                                         Rectangle()
@@ -136,27 +129,57 @@ struct DatePickerContent: View {
 
                                 // 周行
                                 DatePickerWeekRow(
-                                    dates: weeks[index],
+                                    dates: getWeekDates(for: index),
                                     viewModel: viewModel,
                                     geometry: geometry
                                 )
                             }
                             .id(index)
+                            // 检测今天所在周的可见性
+                            .background(
+                                GeometryReader { itemGeometry in
+                                    Color.clear
+                                        .preference(
+                                            key: VisibleWeekPreferenceKey.self,
+                                            value: isWeekVisible(itemGeometry: itemGeometry, in: geometry, weekIndex: index) ? [index] : []
+                                        )
+                                }
+                            )
                         }
                     }
                     .padding(.vertical, geometry.size.height * 0.01)
                     .background(Color.white)
                 }
                 .background(Color.white)
+                .onPreferenceChange(VisibleWeekPreferenceKey.self) { visibleWeeks in
+                    // 检查今天所在周是否可见
+                    let isTodayCurrentlyVisible = visibleWeeks.contains(todayWeekIndex)
+                    if viewModel.isTodayVisible != isTodayCurrentlyVisible {
+                        viewModel.isTodayVisible = isTodayCurrentlyVisible
+                    }
+                }
                 .onAppear {
-                    // 滚动到选中日期所在周
-                    if let index = selectedWeekIndex {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                            proxy.scrollTo(index, anchor: .center)
-                        }
+                    // 滚动到今天所在周
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        proxy.scrollTo(todayWeekIndex, anchor: .center)
+                    }
+                }
+                .onChange(of: viewModel.scrollToTodayTrigger) { _ in
+                    // 监听滚动到今天的触发器
+                    withAnimation {
+                        proxy.scrollTo(todayWeekIndex, anchor: .center)
                     }
                 }
             }
         }
+    }
+
+    // 检测周是否在可见范围内
+    private func isWeekVisible(itemGeometry: GeometryProxy, in containerGeometry: GeometryProxy, weekIndex: Int) -> Bool {
+        let itemFrame = itemGeometry.frame(in: .global)
+        let containerFrame = containerGeometry.frame(in: .global)
+
+        // 检查 item 是否与容器有交集
+        return itemFrame.maxY > containerFrame.minY && itemFrame.minY < containerFrame.maxY
     }
 }
