@@ -62,7 +62,6 @@ struct DatePickerFullScreenContent: View {
                 // 工具栏（保持在底部）
                 DatePickerToolbar(viewModel: viewModel, geometry: geometry)
                     .padding(.bottom, geometry.size.height * 0.02)
-                    .background(Color.white)
             }
         }
     }
