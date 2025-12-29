@@ -18,6 +18,9 @@ struct DatePickerContent: View {
     // 防止自动滚动重复触发
     @State private var didAutoScrollToBottom = false
 
+    // 控制日历内容可见性（防止打开时闪动）
+    @State private var hasScrolledToBottom = false
+
     // 今天是否可见（本地状态，不写回 ObservedObject 避免触发重绘）
     @State private var isTodayVisibleLocal: Bool = true
 
@@ -124,20 +127,29 @@ struct DatePickerContent: View {
                     .background(Color.white)
                 }
                 .background(Color.white)
+                .opacity(hasScrolledToBottom ? 1 : 0)  // ✅ 滚动完成前隐藏，防止闪动
                 // ✅ 完全移除 onPreferenceChange，避免滚动时触发任何状态变化
                 // "今天"按钮的显示逻辑改为始终显示，或在外层判断
                 .onAppear {
-                    // 防止重复触发自动滚动
-                    guard !didAutoScrollToBottom else { return }
-                    didAutoScrollToBottom = true
+                    // 每次打开都重置状态
+                    hasScrolledToBottom = false
+                    didAutoScrollToBottom = false
 
                     // 加载数据
                     viewModel.loadDatePickerData()
 
-                    // 短延迟后滚动到底部（确保布局完成）
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    // 滚动到底部并在完成后显示内容
+                    DispatchQueue.main.async {
+                        guard !didAutoScrollToBottom else { return }
+                        didAutoScrollToBottom = true
+
                         // 使用 BOTTOM marker 稳定定位到底部
                         proxy.scrollTo("BOTTOM", anchor: .bottom)
+
+                        // 下一帧再显示内容，避免闪动
+                        DispatchQueue.main.async {
+                            hasScrolledToBottom = true
+                        }
                     }
                 }
                 .onChange(of: viewModel.scrollToTodayTrigger) {
