@@ -6,13 +6,9 @@ struct MonthHeaderView: View {
     let geometry: GeometryProxy
     let isFirst: Bool // 是否是第一个月份（控制顶部间距和年份显示）
 
-    // 获取标题文本（第一个月显示年份）
+    // 获取标题文本（每年1月显示年份）
     private var headerText: String {
-        if isFirst {
-            return "\(monthSection.month)月, \(monthSection.year)"
-        } else {
-            return "\(monthSection.month)月"
-        }
+        return monthSection.getHeaderText()
     }
 
     var body: some View {
