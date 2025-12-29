@@ -129,10 +129,14 @@ class PeriodViewModel: ObservableObject {
             // 已选中 → 反选（取消）
             tempSelectedDates.remove(targetDate)
 
-            // 如果取消的是今天，则同时取消所有未来日期
             if targetDate.isSameDay(as: today) {
+                // 取消今天 → 删除所有未来日期
                 removeFutureDates()
+            } else if targetDate > today {
+                // 取消未来日期 → 删除该日期之后的所有日期
+                removeFutureDatesAfter(targetDate)
             }
+            // 取消过去日期 → 不做级联删除
         } else if extendableDates.contains(targetDate) {
             // 可扩展日期 → 直接选中（不触发预测）
             tempSelectedDates.insert(targetDate)
@@ -154,6 +158,11 @@ class PeriodViewModel: ObservableObject {
     private func removeFutureDates() {
         let today = Date().startOfDay()
         tempSelectedDates = tempSelectedDates.filter { $0 <= today }
+    }
+
+    /// 移除某个日期之后的所有已选日期
+    private func removeFutureDatesAfter(_ date: Date) {
+        tempSelectedDates = tempSelectedDates.filter { $0 <= date }
     }
 
     /// 检查是否满足自动预测条件

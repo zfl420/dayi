@@ -41,6 +41,11 @@ struct DatePickerDayCell: View {
         state == .extendable
     }
 
+    /// 是否是被选中的未来日期
+    private var isFutureSelected: Bool {
+        isSelected && isFutureDate
+    }
+
     // MARK: - 尺寸
 
     private var cellWidth: CGFloat {
@@ -135,8 +140,14 @@ struct DatePickerDayCell: View {
             Color.clear
                 .frame(width: checkboxSize, height: checkboxSize)
         case .selected:
-            // 选中状态：红色实心圆 + 白色勾
-            selectedCheckbox
+            // 选中状态：区分未来和历史日期
+            if isFutureSelected {
+                // 未来日期：红色虚线圆 + 红色勾
+                futureSelectedCheckbox
+            } else {
+                // 今天或过去日期：红色实心圆 + 白色勾
+                selectedCheckbox
+            }
         case .extendable:
             // 可扩展日期：灰色虚线圆
             extendableCheckbox
@@ -171,6 +182,21 @@ struct DatePickerDayCell: View {
         DottedCircle(dotCount: 12, dotRadius: 1.5)
             .foregroundColor(grayColor)
             .frame(width: checkboxSize, height: checkboxSize)
+    }
+
+    /// 未来日期选中样式（红色虚线圆 + 红色勾）
+    private var futureSelectedCheckbox: some View {
+        ZStack {
+            // 红色虚线圆（12个点）
+            DottedCircle(dotCount: 12, dotRadius: 1.5)
+                .foregroundColor(primaryColor)
+                .frame(width: checkboxSize, height: checkboxSize)
+
+            // 红色勾
+            Image(systemName: "checkmark")
+                .foregroundColor(primaryColor)
+                .font(.system(size: checkmarkSize, weight: checkmarkWeight))
+        }
     }
 
     // MARK: - 点击处理
