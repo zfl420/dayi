@@ -1,12 +1,14 @@
 import Foundation
 
 /// 月份区块数据模型（用于日期选择器按月分段展示）
-struct MonthSection: Identifiable {
-    let id = UUID()
+struct MonthSection: Identifiable, Equatable {
     let year: Int
-    let month: Int
+    let month: Int             // 1...12
     let days: [Date]           // 该月所有日期（从1号到月末）
     let leadingBlankCount: Int // 第一天之前需要的空白占位数（对齐星期列）
+
+    // ✅ 稳定 ID：同一年同一月永远相同，SwiftUI diff 才不会把整列表当新数据
+    var id: String { "\(year)-\(month)" }
 
     /// 获取月份标题文本
     func getHeaderText() -> String {
@@ -16,6 +18,11 @@ struct MonthSection: Identifiable {
         } else {
             return "\(month)月"
         }
+    }
+
+    // Equatable 实现（用于比较）
+    static func == (lhs: MonthSection, rhs: MonthSection) -> Bool {
+        return lhs.year == rhs.year && lhs.month == rhs.month
     }
 }
 
@@ -52,13 +59,30 @@ extension MonthSection {
                 continue
             }
 
-            // 生成该月所有日期
+            // 生成该月所有日期，并按 endDate 截断
             let daysInMonth = (1...range.count).compactMap { day -> Date? in
                 var components = DateComponents()
                 components.year = year
                 components.month = month
                 components.day = day
-                return calendar.date(from: components)
+                guard let date = calendar.date(from: components) else { return nil }
+
+                // ✅ 如果日期超过 endDate，不渲染
+                if date > endDate {
+                    return nil
+                }
+
+                return date
+            }
+
+            // ✅ 如果该月没有任何有效日期（所有日期都超过 endDate），跳过该月
+            guard !daysInMonth.isEmpty else {
+                // 移动到下个月
+                guard let nextMonth = calendar.date(byAdding: .month, value: 1, to: currentMonthStart) else {
+                    break
+                }
+                currentMonthStart = nextMonth
+                continue
             }
 
             // 计算该月1号是星期几（周一=1, 周日=7）

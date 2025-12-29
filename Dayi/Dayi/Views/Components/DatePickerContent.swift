@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// 用于检测视图可见性的 PreferenceKey（改为检测月份索引）
+/// 用于检测视图可见性的 PreferenceKey（使用 String ID 而非索引）
 struct VisibleMonthPreferenceKey: PreferenceKey {
-    static var defaultValue: Set<Int> = []
+    static var defaultValue: Set<String> = []
 
-    static func reduce(value: inout Set<Int>, nextValue: () -> Set<Int>) {
+    static func reduce(value: inout Set<String>, nextValue: () -> Set<String>) {
         value.formUnion(nextValue())
     }
 }
@@ -15,31 +15,62 @@ struct DatePickerContent: View {
     let geometry: GeometryProxy
     var topBackgroundColor: Color = Color(red: 250/255.0, green: 250/255.0, blue: 250/255.0)  // #FAFAFA
 
-    // 日期范围：从1970年1月1日到今天的下两周
+    // 防止自动滚动重复触发
+    @State private var didAutoScrollToBottom = false
+
+    // 今天是否可见（本地状态，不写回 ObservedObject 避免触发重绘）
+    @State private var isTodayVisibleLocal: Bool = true
+
+    // 日期范围：今天往前 60 个月（5 年历史）+ 往后 14 天（两周）
     private var startDate: Date {
-        Date(timeIntervalSince1970: 0).startOfDay()
-    }
-
-    private var endDate: Date {
-        let today = Date().startOfDay()
-        return Calendar.current.date(byAdding: .day, value: 14, to: today) ?? today
-    }
-
-    // 按月分段的数据（懒加载）
-    private var monthSections: [MonthSection] {
-        MonthSection.generateMonthSections(from: startDate, to: endDate)
-    }
-
-    // 今天所在月的索引
-    private var todayMonthIndex: Int {
         let today = Date().startOfDay()
         let calendar = Calendar.current
-        let todayYear = calendar.component(.year, from: today)
-        let todayMonth = calendar.component(.month, from: today)
+        // 往前 60 个月
+        return calendar.date(byAdding: .month, value: -60, to: today) ?? today
+    }
 
-        return monthSections.firstIndex { section in
-            section.year == todayYear && section.month == todayMonth
-        } ?? (monthSections.count - 1)
+    private var futureEndDate: Date {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        // weekday: 1=周日, 2=周一, ..., 7=周六
+        let weekday = calendar.component(.weekday, from: today)
+
+        // 距离"本周周日"的天数：周日->0，周一->6，周六->1
+        let daysUntilSunday = (8 - weekday) % 7
+
+        // 本周周日（当天若是周日则就是 today）
+        let endOfThisWeek = calendar.date(byAdding: .day, value: daysUntilSunday, to: today) ?? today
+
+        // 再往后 2 周（14 天），仍然是周日
+        let finalEndDate = calendar.date(byAdding: .day, value: 14, to: endOfThisWeek) ?? endOfThisWeek
+
+        // ✅ 调试打印：验证最后一天是周日
+        #if DEBUG
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd (E)"
+        let finalWeekday = calendar.component(.weekday, from: finalEndDate)
+        print("📅 [futureEndDate] today: \(formatter.string(from: today))")
+        print("📅 [futureEndDate] endOfThisWeek: \(formatter.string(from: endOfThisWeek))")
+        print("📅 [futureEndDate] futureEndDate: \(formatter.string(from: finalEndDate)), weekday=\(finalWeekday) (1=周日)")
+        assert(finalWeekday == 1, "❌ futureEndDate 必须是周日！")
+        #endif
+
+        return finalEndDate
+    }
+
+    // 按月分段的数据（懒加载，按 futureEndDate 截断）
+    private var monthSections: [MonthSection] {
+        MonthSection.generateMonthSections(from: startDate, to: futureEndDate)
+    }
+
+    // 今天所在月的 ID（稳定标识，不用 index）
+    private var todayMonthId: String {
+        let calendar = Calendar.current
+        let today = Date().startOfDay()
+        let year = calendar.component(.year, from: today)
+        let month = calendar.component(.month, from: today)
+        return "\(year)-\(month)"
     }
 
 
@@ -71,53 +102,48 @@ struct DatePickerContent: View {
                                     geometry: geometry
                                 )
                             }
-                            .id(index)
+                            .id(section.id)  // ✅ 使用 section.id 而非 index，防止滚动瞬移
                             // 检测今天所在月的可见性
                             .background(
                                 GeometryReader { itemGeometry in
                                     Color.clear
                                         .preference(
                                             key: VisibleMonthPreferenceKey.self,
-                                            value: isMonthVisible(itemGeometry: itemGeometry, in: geometry, monthIndex: index) ? [index] : []
+                                            value: isMonthVisible(itemGeometry: itemGeometry, in: geometry, sectionId: section.id) ? [section.id] : []
                                         )
                                 }
                             )
                         }
+
+                        // BOTTOM marker：用于稳定定位到底部
+                        Color.clear
+                            .frame(height: 1)
+                            .id("BOTTOM")
                     }
                     .padding(.vertical, geometry.size.height * 0.01)
                     .background(Color.white)
                 }
                 .background(Color.white)
-                .onPreferenceChange(VisibleMonthPreferenceKey.self) { visibleMonths in
-                    // 检查今天所在月是否可见
-                    let isTodayCurrentlyVisible = visibleMonths.contains(todayMonthIndex)
-                    if viewModel.isTodayVisible != isTodayCurrentlyVisible {
-                        viewModel.isTodayVisible = isTodayCurrentlyVisible
-                    }
-                }
-                .task {
-                    // 步骤1：延迟加载数据（等待1帧让视图稳定）
-                    try? await Task.sleep(nanoseconds: 16_666_666) // ~16ms
+                // ✅ 完全移除 onPreferenceChange，避免滚动时触发任何状态变化
+                // "今天"按钮的显示逻辑改为始终显示，或在外层判断
+                .onAppear {
+                    // 防止重复触发自动滚动
+                    guard !didAutoScrollToBottom else { return }
+                    didAutoScrollToBottom = true
+
+                    // 加载数据
                     viewModel.loadDatePickerData()
 
-                    // 步骤2：等待数据渲染完成
-                    try? await Task.sleep(nanoseconds: 16_666_666)
-
-                    // 步骤3：分段滚动 - 先跳到接近位置
-                    let targetIndex = monthSections.count - 1
-                    let intermediateIndex = max(targetIndex - 3, 0)
-                    proxy.scrollTo(intermediateIndex, anchor: .top)
-
-                    // 步骤4：等待中间位置渲染
-                    try? await Task.sleep(nanoseconds: 33_333_333) // ~33ms
-
-                    // 步骤5：精确定位到底部
-                    proxy.scrollTo(targetIndex, anchor: .bottom)
+                    // 短延迟后滚动到底部（确保布局完成）
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        // 使用 BOTTOM marker 稳定定位到底部
+                        proxy.scrollTo("BOTTOM", anchor: .bottom)
+                    }
                 }
                 .onChange(of: viewModel.scrollToTodayTrigger) {
-                    // 点击"今天"按钮：滚动到今天所在月
+                    // 点击"今天"按钮：滚动到底部（BOTTOM marker）
                     withAnimation {
-                        proxy.scrollTo(todayMonthIndex, anchor: .center)
+                        proxy.scrollTo("BOTTOM", anchor: .bottom)
                     }
                 }
             }
@@ -142,8 +168,8 @@ struct DatePickerContent: View {
         }
     }
 
-    // 检测月份是否在可见范围内
-    private func isMonthVisible(itemGeometry: GeometryProxy, in containerGeometry: GeometryProxy, monthIndex: Int) -> Bool {
+    // 检测月份是否在可见范围内（改为接收 sectionId）
+    private func isMonthVisible(itemGeometry: GeometryProxy, in containerGeometry: GeometryProxy, sectionId: String) -> Bool {
         let itemFrame = itemGeometry.frame(in: .global)
         let containerFrame = containerGeometry.frame(in: .global)
 
