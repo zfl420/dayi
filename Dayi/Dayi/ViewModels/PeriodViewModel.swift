@@ -15,6 +15,9 @@ class PeriodViewModel: ObservableObject {
     @Published var currentPeriodRecord: PeriodRecord? = nil  // 最新一次记录
     @Published var periodRecords: [PeriodRecord] = []        // 历史记录
 
+    // MARK: - 性能优化缓存
+    private var cachedRecordedDates: Set<TimeInterval> = []  // 缓存所有记录日期的时间戳
+
     // MARK: - 配置参数
     private let defaultPredictionDays: Int = 6
     private let minGapToNextPeriod: Int = 10
@@ -314,6 +317,9 @@ class PeriodViewModel: ObservableObject {
         // 更新当前记录（最新的一条）
         currentPeriodRecord = periodRecords.last
 
+        // 更新缓存
+        updateCachedDates()
+
         // 持久化
         saveRecords()
 
@@ -324,28 +330,34 @@ class PeriodViewModel: ObservableObject {
 
     // MARK: - 首页日期背景圈状态
 
-    func shouldShowPeriodBackground(_ date: Date) -> Bool {
-        guard let record = currentPeriodRecord else { return false }
+    /// 更新缓存：将所有记录的日期提取为时间戳集合
+    private func updateCachedDates() {
+        cachedRecordedDates = periodRecords.reduce(into: Set<TimeInterval>()) { result, record in
+            // 直接使用 dateIntervals，避免调用 dates 计算属性
+            result.formUnion(record.dateIntervals)
+        }
+    }
 
+    func shouldShowPeriodBackground(_ date: Date) -> Bool {
         let dateToCheck = date.startOfDay()
         let today = Date().startOfDay()
 
         // 只在今天及之前的日期显示实心圆（实际记录）
         guard dateToCheck <= today else { return false }
 
-        return record.contains(dateToCheck)
+        // 使用缓存进行 O(1) 查询
+        return cachedRecordedDates.contains(dateToCheck.timeIntervalSince1970)
     }
 
     func shouldShowPredictionBorder(_ date: Date) -> Bool {
-        guard let record = currentPeriodRecord else { return false }
-
         let dateToCheck = date.startOfDay()
         let today = Date().startOfDay()
 
         // 只在今天之后的日期显示虚线框（预测日期）
         guard dateToCheck > today else { return false }
 
-        return record.contains(dateToCheck)
+        // 使用缓存进行 O(1) 查询
+        return cachedRecordedDates.contains(dateToCheck.timeIntervalSince1970)
     }
 
     // MARK: - Date State Query
@@ -377,6 +389,8 @@ class PeriodViewModel: ObservableObject {
            let records = try? JSONDecoder().decode([PeriodRecord].self, from: data) {
             self.periodRecords = records
             self.currentPeriodRecord = records.last
+            // 更新缓存
+            updateCachedDates()
         }
     }
 

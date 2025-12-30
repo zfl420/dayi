@@ -16,7 +16,7 @@ struct PeriodRecord: Codable, Equatable, Identifiable {
     let id: UUID
 
     /// 经期包含的所有日期（存储为 TimeInterval 便于 Codable）
-    private var dateIntervals: [TimeInterval]
+    private(set) var dateIntervals: [TimeInterval]
 
     /// 经期包含的所有日期（计算属性，已排序）
     var dates: [Date] {
@@ -45,8 +45,8 @@ struct PeriodRecord: Codable, Equatable, Identifiable {
 
     /// 判断是否包含某个日期
     func contains(_ date: Date) -> Bool {
-        let targetDay = date.startOfDay()
-        return dates.contains { $0.isSameDay(as: targetDay) }
+        let targetInterval = date.startOfDay().timeIntervalSince1970
+        return dateIntervals.contains(targetInterval)
     }
 
     /// 初始化 - 从日期集合创建
