@@ -24,7 +24,7 @@ struct HomeView: View {
                             .padding(.top, geometry.size.height * 0.105) // 增加顶部间距，整体下移
 
                         // ===== 周历 =====
-                        WeekCalendar(viewModel: viewModel, geometry: geometry, isTodayInPeriod: viewModel.isTodayInPeriod)
+                        WeekCalendar(viewModel: viewModel, geometry: geometry, isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground)
                             .padding(.top, geometry.size.height * 0.0235) // 20/852
 
                         // ===== 经期状态 =====
@@ -32,13 +32,13 @@ struct HomeView: View {
                             .padding(.top, geometry.size.height * 0.14) // 增加间距，让提示文案和按钮下移
 
                         // ===== 编辑按钮 =====
-                        EditButton(viewModel: viewModel, geometry: geometry, isTodayInPeriod: viewModel.isTodayInPeriod)
+                        EditButton(viewModel: viewModel, geometry: geometry, isSelectedDateInPeriod: viewModel.isSelectedDateInPeriod)
                             .padding(.top, geometry.size.height * 0.05) // 按钮与提示文案的间距
                             .padding(.bottom, geometry.size.height * 0.035) // 30/852，按钮与弧形中间的间距
                     }
                     .background(
                         // ===== 渐变背景直接作为内容背景，自动适应高度 =====
-                        GradientBackground(geometry: geometry, isTodayInPeriod: viewModel.isTodayInPeriod)
+                        GradientBackground(geometry: geometry, isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground)
                     )
 
                     Spacer()
@@ -99,9 +99,35 @@ struct PeriodStatus: View {
     let geometry: GeometryProxy
 
     var body: some View {
-        Text("记录你上一次经期开始的日期")
-            .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 16/852, 增大字号
-            .foregroundColor(.black)
+        VStack(spacing: geometry.size.height * 0.0047) { // 4/852 行间距
+            switch viewModel.selectedDateStatus {
+            case .beforeAllPeriods:
+                // 情况1：单行文本
+                Text("记录你上一次经期开始的日期")
+                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 16/852
+                    .foregroundColor(.black)
+
+            case .inPeriod(let dayNumber):
+                // 情况2：经期内 - 双行布局
+                Text("经期")
+                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 16/852
+                    .foregroundColor(.black)
+
+                Text("第\(dayNumber)天")
+                    .font(.system(size: geometry.size.height * 0.047, weight: .bold)) // 40/852 (16*2.5)
+                    .foregroundColor(.black)
+
+            case .afterPeriod(let daysSince):
+                // 情况3：经期后 - 双行布局
+                Text("过去的月经周期")
+                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 16/852
+                    .foregroundColor(.black)
+
+                Text("第\(daysSince)天")
+                    .font(.system(size: geometry.size.height * 0.047, weight: .bold)) // 40/852 (16*2.5)
+                    .foregroundColor(.black)
+            }
+        }
     }
 }
 
@@ -109,20 +135,20 @@ struct PeriodStatus: View {
 struct EditButton: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
-    let isTodayInPeriod: Bool
+    let isSelectedDateInPeriod: Bool
 
     var body: some View {
         Button(action: {
             viewModel.openDatePicker()
         }) {
-            // 根据是否在月经期选择不同的文本和颜色
-            let buttonText = isTodayInPeriod ? "编辑月经日期" : "记录月经"
+            // 根据选中日期是否在经期选择不同的文本和颜色
+            let buttonText = isSelectedDateInPeriod ? "编辑月经日期" : "记录月经"
 
-            let textColor = isTodayInPeriod
+            let textColor = isSelectedDateInPeriod
                 ? Color(red: 255/255, green: 90/255, blue: 125/255)  // #FF5A7D
                 : Color.white
 
-            let backgroundColor = isTodayInPeriod
+            let backgroundColor = isSelectedDateInPeriod
                 ? Color.white
                 : Color(red: 255/255, green: 90/255, blue: 125/255)  // #FF5A7D
 

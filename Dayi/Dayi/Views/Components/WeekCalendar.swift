@@ -27,7 +27,7 @@ struct WeekCalendar: View {
                     ForEach(0..<7, id: \.self) { index in
                         let date = viewModel.currentWeekDates[safe: index]
 
-                        // 根据是否在月经期选择不同的选中圆颜色
+                        // 根据选中日期是否在月经期选择不同的选中圆颜色
                         let selectedColor = isTodayInPeriod
                             ? Color.white
                             : Color(red: 220/255, green: 213/255, blue: 210/255)  // #DCD5D2

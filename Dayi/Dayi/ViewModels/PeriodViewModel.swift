@@ -91,10 +91,67 @@ class PeriodViewModel: ObservableObject {
         return nil
     }
 
-    // 判断今天是否在月经期内
+    // 判断今天是否在月经期内（用于首页周历日期显示）
     var isTodayInPeriod: Bool {
         let today = Date().startOfDay()
         return shouldShowPeriodBackground(today)
+    }
+
+    // 判断选中日期是否在月经期内（用于背景色显示，包括未来预测日期）
+    var isSelectedDateInPeriodForBackground: Bool {
+        let targetDate = selectedDate.startOfDay()
+        // 使用缓存进行 O(1) 查询，包括未来的预测日期
+        return cachedRecordedDates.contains(targetDate.timeIntervalSince1970)
+    }
+
+    // 判断选中日期是否在月经期内（含预测的未来经期）
+    var isSelectedDateInPeriod: Bool {
+        let targetDate = selectedDate.startOfDay()
+        return cachedRecordedDates.contains(targetDate.timeIntervalSince1970)
+    }
+
+    // MARK: - 选中日期状态
+
+    /// 获取选中日期的状态
+    var selectedDateStatus: SelectedDateStatus {
+        let targetDate = selectedDate.startOfDay()
+
+        // 边界情况：无任何记录
+        guard !periodRecords.isEmpty else {
+            return .beforeAllPeriods
+        }
+
+        // 检查是否在任何经期内（使用缓存 O(1) 查询）
+        if cachedRecordedDates.contains(targetDate.timeIntervalSince1970) {
+            // 找到包含该日期的经期记录
+            if let record = periodRecords.first(where: { $0.contains(targetDate) }),
+               let startDate = record.startDate {
+                // 计算是第几天（从1开始）
+                let dayNumber = targetDate.daysSince(startDate) + 1
+                return .inPeriod(dayNumber: dayNumber)
+            }
+        }
+
+        // 不在经期内，判断是否在所有经期之前
+        if let firstPeriodStart = periodRecords.first?.startDate,
+           targetDate < firstPeriodStart {
+            return .beforeAllPeriods
+        }
+
+        // 在经期之后，找到最近的上一个经期
+        let previousPeriods = periodRecords.filter {
+            guard let endDate = $0.endDate else { return false }
+            return endDate < targetDate
+        }
+
+        if let lastPreviousPeriod = previousPeriods.last,
+           let lastPeriodStart = lastPreviousPeriod.startDate {
+            let daysSince = targetDate.daysSince(lastPeriodStart) + 1
+            return .afterPeriod(daysSinceLastPeriodStart: daysSince)
+        }
+
+        // 兜底：在第一个经期之前
+        return .beforeAllPeriods
     }
 
     // MARK: - 日期选择器控制
