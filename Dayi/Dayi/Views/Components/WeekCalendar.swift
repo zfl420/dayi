@@ -3,6 +3,7 @@ import SwiftUI
 struct WeekCalendar: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
+    let isTodayInPeriod: Bool
 
     let weekdayLabels = ["一", "二", "三", "四", "五", "六", "日"]
     @State private var currentPage = 1 // 从中间页开始
@@ -25,9 +26,15 @@ struct WeekCalendar: View {
                 HStack(spacing: geometry.size.width * 0.0056) {
                     ForEach(0..<7, id: \.self) { index in
                         let date = viewModel.currentWeekDates[safe: index]
+
+                        // 根据是否在月经期选择不同的选中圆颜色
+                        let selectedColor = isTodayInPeriod
+                            ? Color.white
+                            : Color(red: 220/255, green: 213/255, blue: 210/255)  // #DCD5D2
+
                         Circle()
                             .fill(date != nil && viewModel.getStateForDate(date!) == .selected
-                                  ? Color(red: 220/255.0, green: 213/255.0, blue: 210/255.0)
+                                  ? selectedColor
                                   : Color.clear)
                             .frame(width: geometry.size.width * 0.1272, height: geometry.size.width * 0.1272)
                     }

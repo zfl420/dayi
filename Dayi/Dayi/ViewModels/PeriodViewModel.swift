@@ -91,6 +91,12 @@ class PeriodViewModel: ObservableObject {
         return nil
     }
 
+    // 判断今天是否在月经期内
+    var isTodayInPeriod: Bool {
+        let today = Date().startOfDay()
+        return shouldShowPeriodBackground(today)
+    }
+
     // MARK: - 日期选择器控制
 
     func openDatePicker() {

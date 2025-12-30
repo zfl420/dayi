@@ -24,7 +24,7 @@ struct HomeView: View {
                             .padding(.top, geometry.size.height * 0.105) // 增加顶部间距，整体下移
 
                         // ===== 周历 =====
-                        WeekCalendar(viewModel: viewModel, geometry: geometry)
+                        WeekCalendar(viewModel: viewModel, geometry: geometry, isTodayInPeriod: viewModel.isTodayInPeriod)
                             .padding(.top, geometry.size.height * 0.0235) // 20/852
 
                         // ===== 经期状态 =====
@@ -32,13 +32,13 @@ struct HomeView: View {
                             .padding(.top, geometry.size.height * 0.14) // 增加间距，让提示文案和按钮下移
 
                         // ===== 编辑按钮 =====
-                        EditButton(viewModel: viewModel, geometry: geometry)
+                        EditButton(viewModel: viewModel, geometry: geometry, isTodayInPeriod: viewModel.isTodayInPeriod)
                             .padding(.top, geometry.size.height * 0.05) // 按钮与提示文案的间距
                             .padding(.bottom, geometry.size.height * 0.035) // 30/852，按钮与弧形中间的间距
                     }
                     .background(
                         // ===== 渐变背景直接作为内容背景，自动适应高度 =====
-                        GradientBackground(geometry: geometry)
+                        GradientBackground(geometry: geometry, isTodayInPeriod: viewModel.isTodayInPeriod)
                     )
 
                     Spacer()
@@ -60,6 +60,7 @@ struct HomeView: View {
 // ===== 渐变背景组件 =====
 struct GradientBackground: View {
     let geometry: GeometryProxy
+    let isTodayInPeriod: Bool
 
     var body: some View {
         GeometryReader { backgroundGeometry in
@@ -69,10 +70,19 @@ struct GradientBackground: View {
             let extraHeight = geometry.size.height * 0.035 // 30像素
             let totalHeight = contentHeight + extraHeight
 
+            // 根据是否在月经期选择不同的渐变色
+            let topColor = isTodayInPeriod
+                ? Color(red: 254/255, green: 229/255, blue: 234/255)  // #FEE5EA
+                : Color(red: 243/255, green: 233/255, blue: 230/255)  // #F3E9E6
+
+            let bottomColor = isTodayInPeriod
+                ? Color(red: 255/255, green: 90/255, blue: 125/255)   // #FF5A7D
+                : Color(red: 254/255, green: 255/255, blue: 254/255)  // #FEFDFD
+
             LinearGradient(
                 gradient: Gradient(stops: [
-                    .init(color: Color(red: 247/255.0, green: 240/255.0, blue: 238/255.0), location: 0.0),
-                    .init(color: Color(red: 254/255.0, green: 255/255.0, blue: 254/255.0), location: 1.0)
+                    .init(color: topColor, location: 0.0),
+                    .init(color: bottomColor, location: 1.0)
                 ]),
                 startPoint: .top,
                 endPoint: .bottom
@@ -99,17 +109,29 @@ struct PeriodStatus: View {
 struct EditButton: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
+    let isTodayInPeriod: Bool
 
     var body: some View {
         Button(action: {
             viewModel.openDatePicker()
         }) {
-            Text("记录月经")
+            // 根据是否在月经期选择不同的文本和颜色
+            let buttonText = isTodayInPeriod ? "编辑月经日期" : "记录月经"
+
+            let textColor = isTodayInPeriod
+                ? Color(red: 255/255, green: 90/255, blue: 125/255)  // #FF5A7D
+                : Color.white
+
+            let backgroundColor = isTodayInPeriod
+                ? Color.white
+                : Color(red: 255/255, green: 90/255, blue: 125/255)  // #FF5A7D
+
+            Text(buttonText)
                 .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 16/852, 增大字号并加粗
-                .foregroundColor(.white)
+                .foregroundColor(textColor)
                 .padding(.horizontal, geometry.size.width * 0.0407) // 16/393, 左右边距减半
                 .frame(height: geometry.size.height * 0.0468) // 39.84/852, 介于44和35.78之间
-                .background(Color(red: 255.0/255.0, green: 90.0/255.0, blue: 125.0/255.0))
+                .background(backgroundColor)
                 .cornerRadius(geometry.size.height * 0.0234) // 19.93/852, 圆角相应调整
                 .shadow(color: Color.black.opacity(0.1), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023) // 4/852, 2/852
         }
