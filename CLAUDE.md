@@ -5,7 +5,7 @@
 ### 响应式设计
 所有 UI 尺寸必须使用屏幕比例，而非固定像素值。
 
-**基准设备**：iPhone 17 (393×852 pt)
+**基准设备**：iPhone 15 (393×852 pt)
 
 **转换公式**：
 - 垂直：`geometry.size.height * (固定值 / 852.0)`
@@ -17,8 +17,45 @@
 .padding(.top, 110)
 
 // ✅ 正确
-.padding(.top, geometry.size.height * (110.0 / 852.0))
+.padding(.top, geometry.size.height * (110.0 / 852.0)) // 日期标题顶部间距
 ```
+
+---
+
+## 代码注释规范
+
+### 注释原则
+注释应解释**语义和用途**，而非重复代码中已有的信息。
+
+### ❌ 错误示例
+```swift
+// 4/852
+.padding(.top, geometry.size.height * 0.0047)
+
+// #FF5A7D
+let color = Color(red: 255/255, green: 90/255, blue: 125/255)
+
+// 39.84/852, 介于44和35.78之间
+.frame(height: geometry.size.height * 0.0468)
+```
+
+### ✅ 正确示例
+```swift
+// 文案行间距
+.padding(.top, geometry.size.height * 0.0047)
+
+// 经期中状态的主题色（深粉红）
+let color = Color(red: 255/255, green: 90/255, blue: 125/255)
+
+// 按钮高度
+.frame(height: geometry.size.height * 0.0468)
+```
+
+### 注释内容要求
+- **组件/区域**：说明这是什么UI元素（如：日期标题、周历区域、编辑按钮）
+- **颜色**：说明颜色的用途（如：选中状态背景色、经期中按钮文字颜色）
+- **间距/尺寸**：说明间距的作用（如：按钮与文案间距、区域顶部留白）
+- **状态/逻辑**：说明判断条件的业务含义（如：判断是否在经期内、检查是否有历史记录）
 
 ---
 
