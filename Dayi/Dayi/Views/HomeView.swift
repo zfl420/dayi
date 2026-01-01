@@ -27,15 +27,22 @@ struct HomeView: View {
                         WeekCalendar(viewModel: viewModel, geometry: geometry, isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground)
                             .padding(.top, geometry.size.height * 0.0235) // 20/852
 
-                        // ===== 经期状态区域 =====
-                        PeriodStatus(viewModel: viewModel, geometry: geometry)
-                            .frame(height: geometry.size.height * 0.27) // 经期状态区域高度
-                            .padding(.top, geometry.size.height * 0.01) // 经期状态区域顶部间距
-                            .padding(.bottom, geometry.size.height * 0.01) // 经期状态区域底部间距
+                        // ===== 经期状态区域和按钮层叠区域 =====
+                        ZStack(alignment: .center) {
+                            // ===== 经期状态区域 =====
+                            PeriodStatus(viewModel: viewModel, geometry: geometry)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center) // 内容在区域内垂直居中
+                                .padding(.top, geometry.size.height * 0.005) // 经期状态区域顶部间距（减小）
+                                .padding(.bottom, geometry.size.height * 0.08) // 经期状态区域下间距（避免和按钮重叠）
 
-                        // ===== 按钮区域 =====
-                        EditButton(viewModel: viewModel, geometry: geometry, isSelectedDateInPeriod: viewModel.isSelectedDateInPeriod)
-                            .padding(.bottom, geometry.size.height * 0.036) // 按钮与弧形中间的间距
+                            // ===== 按钮区域 =====
+                            VStack {
+                                Spacer()
+                                EditButton(viewModel: viewModel, geometry: geometry, isSelectedDateInPeriod: viewModel.isSelectedDateInPeriod)
+                                    .padding(.bottom, geometry.size.height * 0.036) // 按钮与弧形中间的间距
+                            }
+                        }
+                        .frame(height: geometry.size.height * 0.3628) // ZStack固定高度
                     }
                     .background(
                         // ===== 渐变背景直接作为内容背景，自动适应高度 =====
@@ -121,7 +128,6 @@ struct PeriodStatus: View {
                 dayText("第 \(daysSince) 天")
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center) // 经期状态文本在区域内垂直居中
     }
 
     // 标题文字样式
