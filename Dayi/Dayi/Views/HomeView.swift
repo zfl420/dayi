@@ -32,8 +32,8 @@ struct HomeView: View {
                             // ===== 经期状态区域 =====
                             PeriodStatus(viewModel: viewModel, geometry: geometry)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center) // 内容在区域内垂直居中
-                                .padding(.top, geometry.size.height * 0.005) // 经期状态区域顶部间距（减小）
-                                .padding(.bottom, geometry.size.height * 0.08) // 经期状态区域下间距（避免和按钮重叠）
+                                .padding(.top, geometry.size.height * 0.018) // 经期状态区域顶部间距
+                                .padding(.bottom, geometry.size.height * 0.1) // 经期状态区域下间距
 
                             // ===== 按钮区域 =====
                             VStack {
