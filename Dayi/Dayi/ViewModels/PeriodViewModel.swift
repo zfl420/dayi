@@ -438,6 +438,29 @@ class PeriodViewModel: ObservableObject {
         return .normal
     }
 
+    /// 获取指定日期在其所属经期中是第几天
+    /// - Parameter date: 要查询的日期
+    /// - Returns: 如果日期在经期内，返回天数（1-based）；否则返回nil
+    func getDayNumberInPeriod(_ date: Date) -> Int? {
+        let dateToCheck = date.startOfDay()
+
+        // 从所有经期记录中查找包含此日期的记录
+        for record in periodRecords {
+            if record.contains(dateToCheck) {
+                // 找到所属经期，获取已排序的日期列表
+                let sortedDates = record.dates  // dates 已经是排序好的
+                // 计算是第几天（从1开始）
+                if let index = sortedDates.firstIndex(where: {
+                    Calendar.current.isDate($0, inSameDayAs: dateToCheck)
+                }) {
+                    return index + 1  // 返回1-based的天数
+                }
+            }
+        }
+
+        return nil
+    }
+
     // MARK: - 数据持久化
 
     private let legacyRecordsKey = "periodRecords"

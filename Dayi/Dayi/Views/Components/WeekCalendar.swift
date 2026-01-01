@@ -180,17 +180,48 @@ struct DayCellContent: View {
                     .frame(width: smallCircleSize, height: smallCircleSize)
             }
 
-            // 3. 顶层：日期文字（保持不变）
-            VStack(spacing: geometry.size.height * 0.0023) { // 2/852
+            // 3. 顶层：日期文字（居中显示）
+            VStack(spacing: geometry.size.height * 0.0023) { // 文案行间距
                 Text(date.shortDateString)
-                    .font(.system(size: geometry.size.height * 0.0229, weight: fontWeight)) // 19.5/852
+                    .font(.system(size: geometry.size.height * 0.0229, weight: fontWeight)) // 日期文字字号
                     .foregroundColor(viewModel.shouldShowPeriodBackground(date) ? .white : .black)
 
                 if isToday {
                     Circle()
                         .fill(viewModel.shouldShowPeriodBackground(date) ? .white : Color(red: 0.6, green: 0.6, blue: 0.6))
-                        .frame(width: geometry.size.height * 0.0047, height: geometry.size.height * 0.0047) // 4/852
+                        .frame(width: geometry.size.height * 0.0047, height: geometry.size.height * 0.0047) // 今天标记圆点
                 }
+            }
+
+            // 4. 经期天数角标（左上角）
+            if viewModel.shouldShowPeriodBackground(date),
+               let dayNumber = viewModel.getDayNumberInPeriod(date) {
+                VStack {
+                    HStack {
+                        // 左上角角标
+                        ZStack {
+                            // 角标背景圆
+                            Circle()
+                                .fill(Color(red: 255.0/255.0, green: 90.0/255.0, blue: 125.0/255.0))  // 经期主题色 #FF5A7D
+                                .frame(
+                                    width: geometry.size.width * 0.038,   // 角标直径 16/393
+                                    height: geometry.size.width * 0.038
+                                )
+
+                            // 角标天数文字
+                            Text("\(dayNumber)")
+                                .font(.system(
+                                    size: geometry.size.height * 0.011,  // 角标字号 10/852
+                                    weight: .bold
+                                ))
+                                .foregroundColor(.white)
+                        }
+                        Spacer()
+                    }
+                    Spacer()
+                }
+                .padding(.leading, geometry.size.width * 0.011)  // 角标左边距
+                .padding(.top, geometry.size.width * 0.01)      // 角标顶部边距
             }
         }
         .frame(width: cellSize, height: cellSize)
