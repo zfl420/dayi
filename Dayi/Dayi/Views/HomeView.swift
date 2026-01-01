@@ -29,17 +29,45 @@ struct HomeView: View {
 
                         // ===== 经期状态区域和按钮层叠区域 =====
                         ZStack(alignment: .center) {
-                            // ===== 经期状态区域 =====
-                            PeriodStatus(viewModel: viewModel, geometry: geometry)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center) // 内容在区域内垂直居中
-                                .padding(.top, geometry.size.height * 0.018) // 经期状态区域顶部间距
-                                .padding(.bottom, geometry.size.height * 0.1) // 经期状态区域下间距
+                            // ===== 经期状态区域（包含整个可滑动区域）=====
+                            VStack(spacing: 0) {
+                                Spacer() // 上方填充
+
+                                PeriodStatus(viewModel: viewModel, geometry: geometry)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+
+                                Spacer() // 下方填充
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .padding(.top, geometry.size.height * 0.018) // 经期状态区域顶部间距
+                            .padding(.bottom, geometry.size.height * 0.1) // 经期状态区域下间距
+                            .contentShape(Rectangle()) // 让整个区域可响应手势
+                            .gesture(
+                                DragGesture(minimumDistance: 20) // 最小滑动距离
+                                    .onEnded { value in
+                                        // 判断滑动方向
+                                        let horizontalAmount = value.translation.width
+
+                                        if horizontalAmount > 0 {
+                                            // 向右滑动 - 切换到前一天
+                                            let previousDate = viewModel.selectedDate.adding(days: -1)
+                                            viewModel.selectDate(previousDate)
+                                            viewModel.updateWeekDates(for: previousDate)
+                                        } else if horizontalAmount < 0 {
+                                            // 向左滑动 - 切换到后一天
+                                            let nextDate = viewModel.selectedDate.adding(days: 1)
+                                            viewModel.selectDate(nextDate)
+                                            viewModel.updateWeekDates(for: nextDate)
+                                        }
+                                    }
+                            )
 
                             // ===== 按钮区域 =====
                             VStack {
                                 Spacer()
                                 EditButton(viewModel: viewModel, geometry: geometry, isSelectedDateInPeriod: viewModel.isSelectedDateInPeriod)
                                     .padding(.bottom, geometry.size.height * 0.036) // 按钮与弧形中间的间距
+                                    .allowsHitTesting(true) // 确保按钮可点击
                             }
                         }
                         .frame(height: geometry.size.height * 0.3628) // ZStack固定高度
@@ -133,7 +161,7 @@ struct PeriodStatus: View {
     // 标题文字样式
     private func titleText(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: geometry.size.height * 0.02, weight: .bold)) // 标题字号
+            .font(.system(size: geometry.size.height * 0.022, weight: .bold)) // 标题字号
             .foregroundColor(.black)
     }
 
