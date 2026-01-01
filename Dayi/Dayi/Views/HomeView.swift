@@ -29,13 +29,13 @@ struct HomeView: View {
 
                         // ===== 经期状态区域 =====
                         PeriodStatus(viewModel: viewModel, geometry: geometry)
-                            .frame(height: geometry.size.height * 0.15) // 经期状态区域高度
-                            .padding(.top, geometry.size.height * 0.04) // 经期状态区域顶部间距
+                            .frame(height: geometry.size.height * 0.27) // 经期状态区域高度
+                            .padding(.top, geometry.size.height * 0.01) // 经期状态区域顶部间距
+                            .padding(.bottom, geometry.size.height * 0.01) // 经期状态区域底部间距
 
                         // ===== 按钮区域 =====
                         EditButton(viewModel: viewModel, geometry: geometry, isSelectedDateInPeriod: viewModel.isSelectedDateInPeriod)
-                            .padding(.top, geometry.size.height * 0.02) // 按钮顶部间距
-                            .padding(.bottom, geometry.size.height * 0.02) // 按钮与弧形中间的间距
+                            .padding(.bottom, geometry.size.height * 0.036) // 按钮与弧形中间的间距
                     }
                     .background(
                         // ===== 渐变背景直接作为内容背景，自动适应高度 =====
@@ -108,32 +108,34 @@ struct PeriodStatus: View {
             switch viewModel.selectedDateStatus {
             case .beforeAllPeriods:
                 // 情况1：单行文本
-                Text("记录你上一次经期开始的日期")
-                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 16/852
-                    .foregroundColor(.black)
+                titleText("记录你上一次经期开始的日期")
 
             case .inPeriod(let dayNumber):
                 // 情况2：经期内 - 双行布局
-                Text("经期")
-                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 16/852
-                    .foregroundColor(.black)
-
-                Text("第\(dayNumber)天")
-                    .font(.system(size: geometry.size.height * 0.047, weight: .bold)) // 40/852 (16*2.5)
-                    .foregroundColor(.black)
+                titleText("经期")
+                dayText("第 \(dayNumber) 天")
 
             case .afterPeriod(let daysSince):
                 // 情况3：经期后 - 双行布局
-                Text("过去的月经周期")
-                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 16/852
-                    .foregroundColor(.black)
-
-                Text("第\(daysSince)天")
-                    .font(.system(size: geometry.size.height * 0.047, weight: .bold)) // 40/852 (16*2.5)
-                    .foregroundColor(.black)
+                titleText("过去的月经周期")
+                dayText("第 \(daysSince) 天")
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity) // 经期状态文本在区域内居中
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center) // 经期状态文本在区域内垂直居中
+    }
+
+    // 标题文字样式
+    private func titleText(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: geometry.size.height * 0.02, weight: .bold)) // 标题字号
+            .foregroundColor(.black)
+    }
+
+    // 天数文字样式
+    private func dayText(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: geometry.size.height * 0.054, weight: .bold)) // 天数字号
+            .foregroundColor(.black)
     }
 }
 
