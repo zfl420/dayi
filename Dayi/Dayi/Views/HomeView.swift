@@ -42,6 +42,10 @@ struct HomeView: View {
                         GradientBackground(geometry: geometry, isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground)
                     )
 
+                    // 我的月经周期区域
+                    MenstrualCycleInfo(geometry: geometry)
+                        .padding(.top, geometry.size.height * 0.042) //我的月经周期上边距
+
                     Spacer()
                 }
                 .fullScreenCover(isPresented: $viewModel.showDatePicker) {

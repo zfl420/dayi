@@ -9,14 +9,14 @@ struct WeekCalendar: View {
     @State private var currentPage = 1 // 从中间页开始
 
     var body: some View {
-        VStack(spacing: geometry.size.height * 0.0094) { // 8/852
+        VStack(spacing: geometry.size.height * 0.0094) {
             // 星期标签行
-            HStack(spacing: geometry.size.width * 0.0056) { // 2.2/393 (考虑左右内边距后的间距)
+            HStack(spacing: geometry.size.width * 0.0056) {
                 ForEach(Array(viewModel.currentWeekDates.enumerated()), id: \.element) { index, date in
                     Text(getLabelForDate(date, index: index))
-                        .font(.system(size: geometry.size.height * 0.0141, weight: date.isSameDay(as: Date()) ? .bold : .medium)) // 12/852，今天加粗
+                        .font(.system(size: geometry.size.height * 0.0141, weight: date.isSameDay(as: Date()) ? .bold : .medium)) // 今天标签字号
                         .foregroundColor(date.isSameDay(as: Date()) ? .black : Color(red: 90/255.0, green: 87/255.0, blue: 86/255.0))
-                        .frame(width: geometry.size.width * 0.1272) // 50/393 (与日期圆形大小一致)
+                        .frame(width: geometry.size.width * 0.1272) // 星期标签宽度
                 }
             }
 
@@ -30,13 +30,13 @@ struct WeekCalendar: View {
                         // 根据选中日期是否在月经期选择不同的选中圆颜色
                         let selectedColor = isTodayInPeriod
                             ? Color.white
-                            : Color(red: 220/255, green: 213/255, blue: 210/255)  // #DCD5D2
+                            : Color(red: 220/255, green: 213/255, blue: 210/255) // 非经期选中背景色
 
                         Circle()
                             .fill(date != nil && viewModel.getStateForDate(date!) == .selected
                                   ? selectedColor
                                   : Color.clear)
-                            .frame(width: geometry.size.width * 0.1272, height: geometry.size.width * 0.1272)
+                            .frame(width: geometry.size.width * 0.1272, height: geometry.size.width * 0.1272) // 选中圆尺寸
                     }
                 }
 
@@ -55,13 +55,13 @@ struct WeekCalendar: View {
                         .tag(2)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                .frame(height: geometry.size.width * 0.1272) // 50/393 圆形高度
+                .frame(height: geometry.size.width * 0.1272) // 日期行高度
                 .onChange(of: currentPage) { _, newPage in
                     handlePageChange(newPage)
                 }
             }
         }
-        .padding(.horizontal, geometry.size.width * 0.0381) // 15/393 左右各留15像素边距
+        .padding(.horizontal, geometry.size.width * 0.0381) // 周历左右边距
         .frame(maxWidth: .infinity)
     }
 
@@ -110,7 +110,7 @@ struct WeekDatesRow: View {
     var showBackground: Bool = true
 
     var body: some View {
-        HStack(spacing: geometry.size.width * 0.0056) { // 2.2/393 (考虑左右内边距后的间距)
+        HStack(spacing: geometry.size.width * 0.0056) {
             ForEach(dates, id: \.self) { date in
                 DayCellContent(
                     date: date,
@@ -151,11 +151,11 @@ struct DayCellContent: View {
     }
 
     private var cellSize: CGFloat {
-        return geometry.size.width * 0.1272  // 50/393
+        return geometry.size.width * 0.1272 // 日期圆形尺寸
     }
 
     private var smallCircleSize: CGFloat {
-        return cellSize * 0.75  // 小圆为选中圆的 75%
+        return cellSize * 0.75 // 经期标记圆尺寸
     }
 
     var body: some View {
@@ -163,7 +163,7 @@ struct DayCellContent: View {
             // 1. 底层：原有白色选中圆（保持不变）
             if showBackground && state == .selected {
                 Circle()
-                    .fill(Color(red: 220/255.0, green: 213/255.0, blue: 210/255.0))
+                    .fill(Color(red: 220/255.0, green: 213/255.0, blue: 210/255.0)) // 选中日期背景色
                     .frame(width: cellSize, height: cellSize)
             }
 
@@ -171,25 +171,25 @@ struct DayCellContent: View {
             if viewModel.shouldShowPeriodBackground(date) {
                 // 实心浅红小圆（记录日至今天）
                 Circle()
-                    .fill(Color(red: 255.0/255.0, green: 90.0/255.0, blue: 125.0/255.0))
+                    .fill(Color(red: 255.0/255.0, green: 90.0/255.0, blue: 125.0/255.0)) // 经期实心圆颜色
                     .frame(width: smallCircleSize, height: smallCircleSize)
             } else if viewModel.shouldShowPredictionBorder(date) {
                 // 空心红色圆点虚线小圆（今天至第七天）
                 DottedCircle(dotCount: 18, dotRadius: 1.5)
-                    .foregroundColor(Color(red: 1.0, green: 90/255.0, blue: 125/255.0))
+                    .foregroundColor(Color(red: 1.0, green: 90/255.0, blue: 125/255.0)) // 经期预测虚线圆颜色
                     .frame(width: smallCircleSize, height: smallCircleSize)
             }
 
             // 3. 顶层：日期文字（居中显示）
-            VStack(spacing: geometry.size.height * 0.0023) { // 文案行间距
+            VStack(spacing: geometry.size.height * 0.0023) {
                 Text(date.shortDateString)
-                    .font(.system(size: geometry.size.height * 0.0229, weight: fontWeight)) // 日期文字字号
+                    .font(.system(size: geometry.size.height * 0.0229, weight: fontWeight)) // 日期数字字号
                     .foregroundColor(viewModel.shouldShowPeriodBackground(date) ? .white : .black)
 
                 if isToday {
                     Circle()
-                        .fill(viewModel.shouldShowPeriodBackground(date) ? .white : Color(red: 0.6, green: 0.6, blue: 0.6))
-                        .frame(width: geometry.size.height * 0.0047, height: geometry.size.height * 0.0047) // 今天标记圆点
+                        .fill(viewModel.shouldShowPeriodBackground(date) ? .white : Color(red: 0.6, green: 0.6, blue: 0.6)) // 今天标记圆点颜色
+                        .frame(width: geometry.size.height * 0.0047, height: geometry.size.height * 0.0047) // 今天标记圆点尺寸
                 }
             }
 
@@ -202,16 +202,16 @@ struct DayCellContent: View {
                         ZStack {
                             // 角标背景圆
                             Circle()
-                                .fill(Color(red: 255.0/255.0, green: 90.0/255.0, blue: 125.0/255.0))  // 经期主题色 #FF5A7D
+                                .fill(Color(red: 255.0/255.0, green: 90.0/255.0, blue: 125.0/255.0)) // 角标背景色
                                 .frame(
-                                    width: geometry.size.width * 0.038,   // 角标直径 16/393
+                                    width: geometry.size.width * 0.038, // 角标直径
                                     height: geometry.size.width * 0.038
                                 )
 
                             // 角标天数文字
                             Text("\(dayNumber)")
                                 .font(.system(
-                                    size: geometry.size.height * 0.011,  // 角标字号 10/852
+                                    size: geometry.size.height * 0.0117, // 角标字号
                                     weight: .bold
                                 ))
                                 .foregroundColor(.white)
@@ -220,8 +220,8 @@ struct DayCellContent: View {
                     }
                     Spacer()
                 }
-                .padding(.leading, geometry.size.width * 0.011)  // 角标左边距
-                .padding(.top, geometry.size.width * 0.01)      // 角标顶部边距
+                .padding(.leading, geometry.size.width * 0.01) // 角标左边距
+                .padding(.top, geometry.size.width * 0.01) // 角标顶部边距
             }
         }
         .frame(width: cellSize, height: cellSize)
