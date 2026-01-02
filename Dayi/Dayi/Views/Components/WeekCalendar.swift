@@ -144,12 +144,12 @@ struct WeekCalendar: View {
         let targetOffset = CGFloat(daysDiff) * totalWidth
 
         // 先移动到目标位置，然后在动画完成后重置
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
             selectedCircleOffset = -targetOffset
         }
 
         // 动画完成后重置偏移
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
             selectedCircleOffset = 0
         }
     }

@@ -230,8 +230,12 @@ struct PeriodStatusCarousel: View {
         }
         .onChange(of: viewModel.selectedDate) { oldValue, newValue in
             // 外部改变日期时更新 baseDate（比如点击周历）
-            if baseDate != newValue {
-                baseDate = newValue
+            // 只有在启用动画时才更新，避免冲突
+            if baseDate != newValue && shouldAnimateWeekCalendar {
+                // 延迟更新，等待周历动画完成
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    baseDate = newValue
+                }
             }
         }
     }
