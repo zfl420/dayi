@@ -99,7 +99,6 @@ struct MenstrualCycleInfo: View {
             .padding(.vertical, geometry.size.height * 0.0235) // 白色卡片上下内边距
             .background(Color.white) // 卡片白色背景
             .cornerRadius(geometry.size.width * 0.0305) // 卡片圆角
-            .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2) // 卡片阴影
         }
     }
 }

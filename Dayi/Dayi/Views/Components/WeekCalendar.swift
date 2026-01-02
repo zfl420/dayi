@@ -130,9 +130,6 @@ struct WeekCalendar: View {
     }
 
     private func handlePageChange(_ page: Int) {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
-
         if page == 0 {
             // 滑到前一周
             isSwipingWeek = true // 标记正在滑动周历
