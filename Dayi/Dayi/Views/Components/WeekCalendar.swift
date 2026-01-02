@@ -8,6 +8,8 @@ struct WeekCalendar: View {
     let weekdayLabels = ["一", "二", "三", "四", "五", "六", "日"]
     @State private var currentPage = 1 // 从中间页开始
     @State private var selectedIndex: Int = 0 // 当前选中日期在周中的索引
+    @State private var isSwipingWeek: Bool = false // 是否正在滑动周历
+    @State private var circleColor: Color = Color.clear // 背景圆颜色
 
     // 计算单个格子的宽度（包括间距）
     private var cellWidth: CGFloat {
@@ -39,13 +41,9 @@ struct WeekCalendar: View {
 
             // 日期格子行 - 背景和内容分离
             ZStack(alignment: .leading) {
-                // 单个选中圆 - 通过位置动画移动
-                let selectedColor = isTodayInPeriod
-                    ? Color.white
-                    : Color(red: 220/255, green: 213/255, blue: 210/255) // 非经期选中背景色
-
+                // 单个选中圆 - 滑动周历时固定位置,其他情况跟随移动
                 Circle()
-                    .fill(selectedColor)
+                    .fill(circleColor)
                     .frame(width: cellWidth, height: cellWidth)
                     .position(x: selectedCircleX, y: cellWidth / 2)
 
@@ -75,12 +73,31 @@ struct WeekCalendar: View {
         .frame(maxWidth: .infinity)
         .onAppear {
             updateSelectedIndex(animated: false)
+            updateCircleColor(animated: false)
         }
         .onChange(of: viewModel.selectedDate) { _, _ in
-            updateSelectedIndex(animated: true)
+            // 根据是否滑动周历决定圆是否移动
+            updateSelectedIndex(animated: !isSwipingWeek)
+
+            // 滑动周历时延迟颜色过渡,其他情况立即更新颜色
+            if isSwipingWeek {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    updateCircleColor(animated: true)
+                    isSwipingWeek = false
+                }
+            } else {
+                updateCircleColor(animated: false)
+            }
         }
         .onChange(of: viewModel.currentWeekDates) { _, _ in
             updateSelectedIndex(animated: false)
+            updateCircleColor(animated: false)
+        }
+        .onChange(of: isTodayInPeriod) { _, _ in
+            // 背景状态变化时过渡颜色
+            if !isSwipingWeek {
+                updateCircleColor(animated: true)
+            }
         }
     }
 
@@ -97,16 +114,33 @@ struct WeekCalendar: View {
         }
     }
 
+    // 更新背景圆颜色
+    private func updateCircleColor(animated: Bool = true) {
+        let targetColor = isTodayInPeriod
+            ? Color.white
+            : Color(red: 220/255, green: 213/255, blue: 210/255) // 非经期选中背景色
+
+        if animated {
+            withAnimation(.easeOut(duration: 0.3)) {
+                circleColor = targetColor
+            }
+        } else {
+            circleColor = targetColor
+        }
+    }
+
     private func handlePageChange(_ page: Int) {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
 
         if page == 0 {
             // 滑到前一周
+            isSwipingWeek = true // 标记正在滑动周历
             viewModel.moveToPreviousWeek()
             currentPage = 1
         } else if page == 2 {
             // 滑到下一周
+            isSwipingWeek = true // 标记正在滑动周历
             viewModel.moveToNextWeek()
             currentPage = 1
         }
