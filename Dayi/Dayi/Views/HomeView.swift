@@ -5,13 +5,14 @@ struct HomeView: View {
     @State private var dragProgress: CGFloat = 0 // 滑动进度 -1 到 1
     @State private var isDragging: Bool = false // 是否正在滑动
     @State private var carouselBaseDate: Date = Date() // 轮播组件的基准日期
+    @State private var periodRatio: CGFloat = 0 // 背景色的经期比例（0 = 非经期，1 = 经期）
 
     init(viewModel: PeriodViewModel = PeriodViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 
-    // 计算背景色的经期比例（0 = 非经期，1 = 经期）
-    private var periodRatio: CGFloat {
+    // 计算目标的经期比例
+    private func calculatePeriodRatio() -> CGFloat {
         // 使用轮播组件的基准日期来判断当前状态
         let currentInPeriod = viewModel.getDateStatus(for: carouselBaseDate).isInPeriod
 
@@ -108,6 +109,29 @@ struct HomeView: View {
                 }
             }
             .ignoresSafeArea()
+            .onAppear {
+                // 初始化 periodRatio
+                periodRatio = calculatePeriodRatio()
+            }
+            .onChange(of: carouselBaseDate) { oldValue, newValue in
+                // carouselBaseDate 变化时，使用动画更新 periodRatio
+                withAnimation(.easeOut(duration: 0.3)) {
+                    periodRatio = calculatePeriodRatio()
+                }
+            }
+            .onChange(of: dragProgress) { oldValue, newValue in
+                // dragProgress 变化时，实时更新 periodRatio（滑动时不需要动画）
+                periodRatio = calculatePeriodRatio()
+            }
+            .onChange(of: isDragging) { oldValue, newValue in
+                // isDragging 状态变化时，更新 periodRatio
+                if !newValue {
+                    // 滑动结束，使用动画过渡到最终状态
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        periodRatio = calculatePeriodRatio()
+                    }
+                }
+            }
         }
     }
 }
