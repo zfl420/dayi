@@ -2,9 +2,41 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var viewModel: PeriodViewModel
+    @State private var dragProgress: CGFloat = 0 // 滑动进度 -1 到 1
+    @State private var isDragging: Bool = false // 是否正在滑动
 
     init(viewModel: PeriodViewModel = PeriodViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
+    }
+
+    // 计算背景色的经期比例（0 = 非经期，1 = 经期）
+    private var periodRatio: CGFloat {
+        let currentInPeriod = viewModel.isSelectedDateInPeriodForBackground
+
+        if !isDragging {
+            return currentInPeriod ? 1 : 0
+        }
+
+        // 计算目标日期是否在经期
+        let targetDate: Date
+        if dragProgress > 0 {
+            // 向右滑，目标是前一天
+            targetDate = viewModel.selectedDate.adding(days: -1)
+        } else if dragProgress < 0 {
+            // 向左滑，目标是后一天
+            targetDate = viewModel.selectedDate.adding(days: 1)
+        } else {
+            return currentInPeriod ? 1 : 0
+        }
+
+        let targetInPeriod = viewModel.getDateStatus(for: targetDate).isInPeriod
+
+        // 根据滑动进度插值
+        let progress = min(abs(dragProgress), 1.0)
+        let currentValue: CGFloat = currentInPeriod ? 1 : 0
+        let targetValue: CGFloat = targetInPeriod ? 1 : 0
+
+        return currentValue + (targetValue - currentValue) * progress
     }
 
     var body: some View {
@@ -19,9 +51,9 @@ struct HomeView: View {
                     VStack(spacing: 0) {
                         // ===== 日期标题 =====
                         Text(viewModel.displayDateText)
-                            .font(.system(size: geometry.size.height * 0.0188, weight: .medium)) // 16/852
+                            .font(.system(size: geometry.size.height * 0.0188, weight: .medium))
                             .foregroundColor(.black)
-                            .padding(.top, geometry.size.height * 0.105) // 增加顶部间距，整体下移
+                            .padding(.top, geometry.size.height * 0.105)
 
                         // ===== 周历 =====
                         WeekCalendar(
@@ -29,32 +61,34 @@ struct HomeView: View {
                             geometry: geometry,
                             isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground
                         )
-                        .padding(.top, geometry.size.height * 0.0235) // 20/852
+                        .padding(.top, geometry.size.height * 0.0235)
 
                         // ===== 经期状态区域和按钮层叠区域 =====
                         ZStack(alignment: .center) {
                             // ===== 经期状态区域（包含整个可滑动区域）=====
                             PeriodStatusCarousel(
                                 viewModel: viewModel,
-                                geometry: geometry
+                                geometry: geometry,
+                                dragProgress: $dragProgress,
+                                isDragging: $isDragging
                             )
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .padding(.top, geometry.size.height * 0.018) // 经期状态区域顶部间距
-                            .padding(.bottom, geometry.size.height * 0.1) // 经期状态区域下间距
+                            .padding(.top, geometry.size.height * 0.018)
+                            .padding(.bottom, geometry.size.height * 0.1)
 
                             // ===== 按钮区域 =====
                             VStack {
                                 Spacer()
                                 EditButton(viewModel: viewModel, geometry: geometry, isSelectedDateInPeriod: viewModel.isSelectedDateInPeriod)
-                                    .padding(.bottom, geometry.size.height * 0.036) // 按钮与弧形中间的间距
-                                    .allowsHitTesting(true) // 确保按钮可点击
+                                    .padding(.bottom, geometry.size.height * 0.036)
+                                    .allowsHitTesting(true)
                             }
                         }
-                        .frame(height: geometry.size.height * 0.3628) // ZStack固定高度
+                        .frame(height: geometry.size.height * 0.3628)
                     }
                     .background(
                         // ===== 渐变背景直接作为内容背景，自动适应高度 =====
-                        GradientBackground(geometry: geometry, isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground)
+                        GradientBackground(geometry: geometry, periodRatio: periodRatio)
                     )
 
                     // 我的月经周期区域
@@ -80,59 +114,49 @@ struct HomeView: View {
 // ===== 渐变背景组件 =====
 struct GradientBackground: View {
     let geometry: GeometryProxy
-    let isTodayInPeriod: Bool
+    let periodRatio: CGFloat // 0 = 非经期，1 = 经期，中间值为过渡状态
 
     // 经期渐变色
-    private var periodTopColor: Color {
-        Color(red: 254/255, green: 229/255, blue: 234/255)  // #FEE5EA
-    }
-    private var periodBottomColor: Color {
-        Color(red: 255/255, green: 90/255, blue: 125/255)   // #FF5A7D
-    }
+    private let periodTopColor = (r: 254.0/255, g: 229.0/255, b: 234.0/255)  // #FEE5EA
+    private let periodBottomColor = (r: 255.0/255, g: 90.0/255, b: 125.0/255)   // #FF5A7D
 
     // 非经期渐变色
-    private var normalTopColor: Color {
-        Color(red: 243/255, green: 233/255, blue: 230/255)  // #F3E9E6
+    private let normalTopColor = (r: 243.0/255, g: 233.0/255, b: 230.0/255)  // #F3E9E6
+    private let normalBottomColor = (r: 254.0/255, g: 255.0/255, b: 254.0/255)  // #FEFDFD
+
+    // 根据 periodRatio 插值计算当前颜色
+    private var currentTopColor: Color {
+        Color(
+            red: normalTopColor.r + (periodTopColor.r - normalTopColor.r) * periodRatio,
+            green: normalTopColor.g + (periodTopColor.g - normalTopColor.g) * periodRatio,
+            blue: normalTopColor.b + (periodTopColor.b - normalTopColor.b) * periodRatio
+        )
     }
-    private var normalBottomColor: Color {
-        Color(red: 254/255, green: 255/255, blue: 254/255)  // #FEFDFD
+
+    private var currentBottomColor: Color {
+        Color(
+            red: normalBottomColor.r + (periodBottomColor.r - normalBottomColor.r) * periodRatio,
+            green: normalBottomColor.g + (periodBottomColor.g - normalBottomColor.g) * periodRatio,
+            blue: normalBottomColor.b + (periodBottomColor.b - normalBottomColor.b) * periodRatio
+        )
     }
 
     var body: some View {
         GeometryReader { backgroundGeometry in
             let contentHeight = backgroundGeometry.size.height
-            // 弧形两边在 0.924 位置，中间在 1.0 位置
-            // 为了让弧形中间在内容底部下方约30像素，需要额外的高度
             let extraHeight = geometry.size.height * 0.035
             let totalHeight = contentHeight + extraHeight
 
-            ZStack {
-                // 非经期渐变背景
-                LinearGradient(
-                    gradient: Gradient(stops: [
-                        .init(color: normalTopColor, location: 0.0),
-                        .init(color: normalBottomColor, location: 1.0)
-                    ]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .frame(height: totalHeight)
-                .clipShape(BottomCurveShape())
-
-                // 经期渐变背景（通过透明度控制显示）
-                LinearGradient(
-                    gradient: Gradient(stops: [
-                        .init(color: periodTopColor, location: 0.0),
-                        .init(color: periodBottomColor, location: 1.0)
-                    ]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .frame(height: totalHeight)
-                .clipShape(BottomCurveShape())
-                .opacity(isTodayInPeriod ? 1 : 0)
-                .animation(.easeInOut(duration: 0.35), value: isTodayInPeriod)
-            }
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(color: currentTopColor, location: 0.0),
+                    .init(color: currentBottomColor, location: 1.0)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: totalHeight)
+            .clipShape(BottomCurveShape())
         }
     }
 }
@@ -141,6 +165,8 @@ struct GradientBackground: View {
 struct PeriodStatusCarousel: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
+    @Binding var dragProgress: CGFloat // 滑动进度，传递给父视图
+    @Binding var isDragging: Bool // 是否正在滑动
     @State private var offset: CGFloat = 0
     @State private var dragOffset: CGFloat = 0
     @State private var baseDate: Date = Date()
@@ -184,6 +210,9 @@ struct PeriodStatusCarousel: View {
                 DragGesture()
                     .onChanged { value in
                         dragOffset = value.translation.width
+                        isDragging = true
+                        // 更新滑动进度（归一化到 -1 到 1）
+                        dragProgress = dragOffset / width
                     }
                     .onEnded { value in
                         let threshold = width * 0.15 // 滑动阈值：15%
@@ -192,6 +221,7 @@ struct PeriodStatusCarousel: View {
                             // 向右滑动，切换到前一天
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 offset = width
+                                dragProgress = 1.0
                             }
 
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -200,6 +230,8 @@ struct PeriodStatusCarousel: View {
                                 baseDate = previousDate
                                 offset = 0
                                 dragOffset = 0
+                                isDragging = false
+                                dragProgress = 0
 
                                 // 更新选中日期，触发周历动画
                                 viewModel.selectDate(previousDate)
@@ -209,6 +241,7 @@ struct PeriodStatusCarousel: View {
                             // 向左滑动，切换到后一天
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 offset = -width
+                                dragProgress = -1.0
                             }
 
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -217,6 +250,8 @@ struct PeriodStatusCarousel: View {
                                 baseDate = nextDate
                                 offset = 0
                                 dragOffset = 0
+                                isDragging = false
+                                dragProgress = 0
 
                                 // 更新选中日期，触发周历动画
                                 viewModel.selectDate(nextDate)
@@ -226,7 +261,9 @@ struct PeriodStatusCarousel: View {
                             // 未达到阈值，回弹到当前页
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 dragOffset = 0
+                                dragProgress = 0
                             }
+                            isDragging = false
                         }
                     }
             )
