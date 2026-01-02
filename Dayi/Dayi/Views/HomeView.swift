@@ -6,6 +6,7 @@ struct HomeView: View {
     @State private var isDragging: Bool = false // 是否正在滑动
     @State private var carouselBaseDate: Date = Date() // 轮播组件的基准日期
     @State private var periodRatio: CGFloat = 0 // 背景色的经期比例（0 = 非经期，1 = 经期）
+    @State private var showCycleStats: Bool = false // 显示周期统计页面
 
     init(viewModel: PeriodViewModel = PeriodViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -108,10 +109,15 @@ struct HomeView: View {
                     )
 
                     // 我的月经周期区域
-                    MenstrualCycleInfo(geometry: geometry)
+                    MenstrualCycleInfo(geometry: geometry, showCycleStats: $showCycleStats)
                         .padding(.top, geometry.size.height * 0.042) //我的月经周期上边距
 
                     Spacer()
+                }
+                .fullScreenCover(isPresented: $showCycleStats) {
+                    GeometryReader { sheetGeometry in
+                        CycleStatsView(viewModel: viewModel, geometry: sheetGeometry)
+                    }
                 }
                 .fullScreenCover(isPresented: $viewModel.showDatePicker) {
                     GeometryReader { sheetGeometry in

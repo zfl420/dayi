@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MenstrualCycleInfo: View {
     let geometry: GeometryProxy
+    @Binding var showCycleStats: Bool
 
     // 月经周期数据
     let cycleItems = [
@@ -86,6 +87,11 @@ struct MenstrualCycleInfo: View {
                     .frame(height: geometry.size.height * 0.0657) // 单项行高
                     .contentShape(Rectangle()) // 扩大可点击区域
                     .padding(.horizontal, geometry.size.width * 0.0407) // 单项左右内边距
+                    .onTapGesture {
+                        if index == 1 {
+                            showCycleStats = true
+                        }
+                    }
 
                     // 分割线
                     if index < items.count - 1 {
@@ -109,7 +115,7 @@ struct MenstrualCycleInfo: View {
             Color(red: 248/255, green: 243/255, blue: 241/255)
                 .ignoresSafeArea()
 
-            MenstrualCycleInfo(geometry: geometry)
+            MenstrualCycleInfo(geometry: geometry, showCycleStats: .constant(false))
         }
     }
 }

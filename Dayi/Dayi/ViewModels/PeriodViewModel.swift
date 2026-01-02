@@ -507,4 +507,77 @@ class PeriodViewModel: ObservableObject {
             }
         }
     }
+
+    // MARK: - 周期统计计算
+
+    /// 获取所有已完成的周期
+    var completedCycles: [CycleData] {
+        guard periodRecords.count >= 2 else { return [] }
+
+        var cycles: [CycleData] = []
+
+        for i in 0..<(periodRecords.count - 1) {
+            let currentPeriod = periodRecords[i]
+            let nextPeriod = periodRecords[i + 1]
+
+            guard let currentStart = currentPeriod.startDate,
+                  let currentEnd = currentPeriod.endDate,
+                  let nextStart = nextPeriod.startDate else { continue }
+
+            let cycleDays = nextStart.daysSince(currentStart)
+
+            cycles.append(CycleData(
+                periodStartDate: currentStart,
+                periodEndDate: currentEnd,
+                nextPeriodStartDate: nextStart,
+                cycleDays: cycleDays,
+                periodDays: currentPeriod.duration
+            ))
+        }
+
+        return cycles
+    }
+
+    /// 当前进行中的周期
+    var currentCycle: CurrentCycleData? {
+        guard let latestPeriod = periodRecords.last,
+              let periodStart = latestPeriod.startDate,
+              let periodEnd = latestPeriod.endDate else { return nil }
+
+        let today = Date().startOfDay()
+        let cycleStartDate = periodStart
+        let elapsedDays = today.daysSince(cycleStartDate) + 1
+        let predictedTotalDays = averageCycleDays ?? 28
+        let predictedEndDate = cycleStartDate.adding(days: predictedTotalDays - 1)
+
+        return CurrentCycleData(
+            cycleStartDate: cycleStartDate,
+            periodStartDate: periodStart,
+            periodEndDate: periodEnd,
+            elapsedDays: elapsedDays,
+            predictedTotalDays: predictedTotalDays,
+            predictedEndDate: predictedEndDate,
+            periodDays: latestPeriod.duration
+        )
+    }
+
+    /// 平均周期天数
+    var averageCycleDays: Int? {
+        let cycles = completedCycles
+        guard !cycles.isEmpty else { return nil }
+
+        let total = cycles.reduce(0) { $0 + $1.cycleDays }
+        return total / cycles.count
+    }
+
+    /// 最长周期天数
+    var maxCycleDays: Int {
+        var allCycleDays: [Int] = completedCycles.map { $0.cycleDays }
+
+        if let current = currentCycle {
+            allCycleDays.append(current.predictedTotalDays)
+        }
+
+        return allCycleDays.max() ?? 28
+    }
 }
