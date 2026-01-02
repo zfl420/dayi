@@ -157,6 +157,7 @@ struct GradientBackground: View {
             )
             .frame(height: totalHeight)
             .clipShape(BottomCurveShape())
+            .animation(.easeOut(duration: 0.2), value: periodRatio)
         }
     }
 }
@@ -230,12 +231,16 @@ struct PeriodStatusCarousel: View {
                                 baseDate = previousDate
                                 offset = 0
                                 dragOffset = 0
-                                isDragging = false
-                                dragProgress = 0
 
                                 // 更新选中日期，触发周历动画
                                 viewModel.selectDate(previousDate)
                                 viewModel.updateWeekDates(for: previousDate)
+
+                                // 延迟重置滑动状态，让背景色有时间适应新的日期
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                    isDragging = false
+                                    dragProgress = 0
+                                }
                             }
                         } else if dragOffset < -threshold {
                             // 向左滑动，切换到后一天
@@ -250,12 +255,16 @@ struct PeriodStatusCarousel: View {
                                 baseDate = nextDate
                                 offset = 0
                                 dragOffset = 0
-                                isDragging = false
-                                dragProgress = 0
 
                                 // 更新选中日期，触发周历动画
                                 viewModel.selectDate(nextDate)
                                 viewModel.updateWeekDates(for: nextDate)
+
+                                // 延迟重置滑动状态，让背景色有时间适应新的日期
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                    isDragging = false
+                                    dragProgress = 0
+                                }
                             }
                         } else {
                             // 未达到阈值，回弹到当前页
@@ -263,7 +272,9 @@ struct PeriodStatusCarousel: View {
                                 dragOffset = 0
                                 dragProgress = 0
                             }
-                            isDragging = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                isDragging = false
+                            }
                         }
                     }
             )
