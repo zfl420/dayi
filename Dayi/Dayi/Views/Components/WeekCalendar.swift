@@ -48,7 +48,6 @@ struct WeekCalendar: View {
                     .fill(selectedColor)
                     .frame(width: cellWidth, height: cellWidth)
                     .position(x: selectedCircleX, y: cellWidth / 2)
-                    .animation(.spring(response: 0.35, dampingFraction: 0.75), value: selectedIndex)
 
                 // 可滚动的日期内容层
                 TabView(selection: $currentPage) {
@@ -75,20 +74,26 @@ struct WeekCalendar: View {
         .padding(.horizontal, geometry.size.width * 0.0381) // 周历左右边距
         .frame(maxWidth: .infinity)
         .onAppear {
-            updateSelectedIndex()
+            updateSelectedIndex(animated: false)
         }
         .onChange(of: viewModel.selectedDate) { _, _ in
-            updateSelectedIndex()
+            updateSelectedIndex(animated: true)
         }
         .onChange(of: viewModel.currentWeekDates) { _, _ in
-            updateSelectedIndex()
+            updateSelectedIndex(animated: false)
         }
     }
 
-    // 更新选中日期的索引
-    private func updateSelectedIndex() {
+    // 更新选中日期的索引（带动画）
+    private func updateSelectedIndex(animated: Bool = true) {
         if let index = viewModel.currentWeekDates.firstIndex(where: { $0.isSameDay(as: viewModel.selectedDate) }) {
-            selectedIndex = index
+            if animated && index != selectedIndex {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                    selectedIndex = index
+                }
+            } else {
+                selectedIndex = index
+            }
         }
     }
 
