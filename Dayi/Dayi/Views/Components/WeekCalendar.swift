@@ -7,6 +7,7 @@ struct WeekCalendar: View {
 
     let weekdayLabels = ["一", "二", "三", "四", "五", "六", "日"]
     @State private var currentPage = 1 // 从中间页开始
+    @State private var selectedCircleOffset: CGFloat = 0 // 选中圆的偏移量
 
     var body: some View {
         VStack(spacing: geometry.size.height * 0.0094) {
@@ -22,7 +23,7 @@ struct WeekCalendar: View {
 
             // 日期格子行 - 背景和内容分离
             ZStack {
-                // 固定的背景圆形层（只显示选中日期的背景）
+                // 可滑动的背景圆形层
                 HStack(spacing: geometry.size.width * 0.0056) {
                     ForEach(0..<7, id: \.self) { index in
                         let date = viewModel.currentWeekDates[safe: index]
@@ -39,6 +40,7 @@ struct WeekCalendar: View {
                             .frame(width: geometry.size.width * 0.1272, height: geometry.size.width * 0.1272) // 选中圆尺寸
                     }
                 }
+                .offset(x: selectedCircleOffset) // 添加偏移动画
 
                 // 可滚动的日期内容层
                 TabView(selection: $currentPage) {
@@ -63,6 +65,10 @@ struct WeekCalendar: View {
         }
         .padding(.horizontal, geometry.size.width * 0.0381) // 周历左右边距
         .frame(maxWidth: .infinity)
+        .onChange(of: viewModel.selectedDate) { oldValue, newValue in
+            // 当选中日期改变时，计算需要移动的距离并添加动画
+            animateSelectedCircle(from: oldValue, to: newValue)
+        }
     }
 
     private func handlePageChange(_ page: Int) {
@@ -99,6 +105,36 @@ struct WeekCalendar: View {
             return "今天"
         }
         return weekdayLabels[index]
+    }
+
+    // 计算选中圆的滑动动画
+    private func animateSelectedCircle(from oldDate: Date, to newDate: Date) {
+        // 计算日期差
+        let daysDiff = newDate.daysSince(oldDate)
+
+        // 如果日期差为0，不需要动画
+        guard daysDiff != 0 else {
+            selectedCircleOffset = 0
+            return
+        }
+
+        // 计算每个日期格子的宽度（包括间距）
+        let cellWidth = geometry.size.width * 0.1272 // 日期圆形尺寸
+        let spacing = geometry.size.width * 0.0056 // 日期间距
+        let totalWidth = cellWidth + spacing
+
+        // 计算目标偏移量
+        let targetOffset = CGFloat(daysDiff) * totalWidth
+
+        // 先移动到目标位置，然后在动画完成后重置
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            selectedCircleOffset = -targetOffset
+        }
+
+        // 动画完成后重置偏移
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            selectedCircleOffset = 0
+        }
     }
 }
 
