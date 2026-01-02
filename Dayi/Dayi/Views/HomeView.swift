@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var viewModel: PeriodViewModel
+    @State private var shouldAnimateWeekCalendar: Bool = true
 
     init(viewModel: PeriodViewModel = PeriodViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -24,16 +25,25 @@ struct HomeView: View {
                             .padding(.top, geometry.size.height * 0.105) // 增加顶部间距，整体下移
 
                         // ===== 周历 =====
-                        WeekCalendar(viewModel: viewModel, geometry: geometry, isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground)
-                            .padding(.top, geometry.size.height * 0.0235) // 20/852
+                        WeekCalendar(
+                            viewModel: viewModel,
+                            geometry: geometry,
+                            isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground,
+                            shouldAnimateSelection: $shouldAnimateWeekCalendar
+                        )
+                        .padding(.top, geometry.size.height * 0.0235) // 20/852
 
                         // ===== 经期状态区域和按钮层叠区域 =====
                         ZStack(alignment: .center) {
                             // ===== 经期状态区域（包含整个可滑动区域）=====
-                            PeriodStatusCarousel(viewModel: viewModel, geometry: geometry)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .padding(.top, geometry.size.height * 0.018) // 经期状态区域顶部间距
-                                .padding(.bottom, geometry.size.height * 0.1) // 经期状态区域下间距
+                            PeriodStatusCarousel(
+                                viewModel: viewModel,
+                                geometry: geometry,
+                                shouldAnimateWeekCalendar: $shouldAnimateWeekCalendar
+                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .padding(.top, geometry.size.height * 0.018) // 经期状态区域顶部间距
+                            .padding(.bottom, geometry.size.height * 0.1) // 经期状态区域下间距
 
                             // ===== 按钮区域 =====
                             VStack {
@@ -110,6 +120,7 @@ struct GradientBackground: View {
 struct PeriodStatusCarousel: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
+    @Binding var shouldAnimateWeekCalendar: Bool
     @State private var offset: CGFloat = 0
     @State private var dragOffset: CGFloat = 0
     @State private var baseDate: Date = Date()
@@ -163,15 +174,23 @@ struct PeriodStatusCarousel: View {
                                 offset = width
                             }
 
+                            // 先禁用周历动画
+                            shouldAnimateWeekCalendar = false
+
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 let previousDate = baseDate.adding(days: -1)
-                                // 先重置状态，避免触发额外的动画
+                                // 先重置状态
                                 baseDate = previousDate
                                 offset = 0
                                 dragOffset = 0
-                                // 最后更新选中日期
+                                // 更新选中日期（此时不会触发周历动画）
                                 viewModel.selectDate(previousDate)
                                 viewModel.updateWeekDates(for: previousDate)
+
+                                // 延迟重新启用周历动画
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                    shouldAnimateWeekCalendar = true
+                                }
                             }
                         } else if dragOffset < -threshold {
                             // 向左滑动，切换到后一天
@@ -179,15 +198,23 @@ struct PeriodStatusCarousel: View {
                                 offset = -width
                             }
 
+                            // 先禁用周历动画
+                            shouldAnimateWeekCalendar = false
+
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 let nextDate = baseDate.adding(days: 1)
-                                // 先重置状态，避免触发额外的动画
+                                // 先重置状态
                                 baseDate = nextDate
                                 offset = 0
                                 dragOffset = 0
-                                // 最后更新选中日期
+                                // 更新选中日期（此时不会触发周历动画）
                                 viewModel.selectDate(nextDate)
                                 viewModel.updateWeekDates(for: nextDate)
+
+                                // 延迟重新启用周历动画
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                    shouldAnimateWeekCalendar = true
+                                }
                             }
                         } else {
                             // 未达到阈值，回弹到当前页

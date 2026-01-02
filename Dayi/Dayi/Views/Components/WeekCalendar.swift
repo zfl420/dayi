@@ -4,6 +4,7 @@ struct WeekCalendar: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
     let isTodayInPeriod: Bool
+    @Binding var shouldAnimateSelection: Bool
 
     let weekdayLabels = ["一", "二", "三", "四", "五", "六", "日"]
     @State private var currentPage = 1 // 从中间页开始
@@ -109,6 +110,12 @@ struct WeekCalendar: View {
 
     // 计算选中圆的滑动动画
     private func animateSelectedCircle(from oldDate: Date, to newDate: Date) {
+        // 如果禁用了动画，直接返回
+        guard shouldAnimateSelection else {
+            selectedCircleOffset = 0
+            return
+        }
+
         // 检查新旧日期是否在同一周内
         let oldWeekStart = oldDate.getWeekStart()
         let newWeekStart = newDate.getWeekStart()
