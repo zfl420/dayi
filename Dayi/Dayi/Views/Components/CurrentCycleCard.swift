@@ -15,18 +15,19 @@ struct CurrentCycleCard: View {
 
             HStack(alignment: .center, spacing: geometry.size.width * 0.0204) {
                 ZStack(alignment: .leading) {
-                    HStack(spacing: 0) {
-                        Rectangle()
-                            .fill(Color(red: 205/255, green: 205/255, blue: 205/255))
-                            .frame(width: scaledBarWidth * elapsedRatio)
+                    // 底层：未过日期（浅灰色）- 最长
+                    Rectangle()
+                        .fill(Color(red: 228/255, green: 228/255, blue: 228/255))
+                        .frame(width: scaledBarWidth, height: geometry.size.height * 0.0236)
+                        .cornerRadius(geometry.size.height * 0.0118)
 
-                        Rectangle()
-                            .fill(Color(red: 228/255, green: 228/255, blue: 228/255))
-                            .frame(width: scaledBarWidth * (1 - elapsedRatio))
-                    }
-                    .frame(height: geometry.size.height * 0.0236)
-                    .cornerRadius(geometry.size.height * 0.0118)
+                    // 中层：已过日期（中灰色）
+                    Rectangle()
+                        .fill(Color(red: 205/255, green: 205/255, blue: 205/255))
+                        .frame(width: scaledBarWidth * elapsedRatio, height: geometry.size.height * 0.0236)
+                        .cornerRadius(geometry.size.height * 0.0118)
 
+                    // 顶层：经期日期（红色）- 最短
                     Rectangle()
                         .fill(Color(red: 250/255, green: 100/255, blue: 100/255))
                         .frame(width: scaledBarWidth * periodRatio, height: geometry.size.height * 0.0325)
@@ -45,12 +46,16 @@ struct CurrentCycleCard: View {
         .padding(.vertical, geometry.size.height * 0.0235)
     }
 
+    private var actualCycleDays: Int {
+        max(cycleData.elapsedDays, cycleData.predictedTotalDays)
+    }
+
     private var elapsedRatio: CGFloat {
-        CGFloat(cycleData.elapsedDays) / CGFloat(cycleData.predictedTotalDays)
+        CGFloat(cycleData.elapsedDays) / CGFloat(actualCycleDays)
     }
 
     private var periodRatio: CGFloat {
-        CGFloat(cycleData.periodDays) / CGFloat(cycleData.predictedTotalDays)
+        CGFloat(cycleData.periodDays) / CGFloat(actualCycleDays)
     }
 
     private var maxBarWidth: CGFloat {
@@ -59,7 +64,7 @@ struct CurrentCycleCard: View {
     }
 
     private var scaledBarWidth: CGFloat {
-        let ratio = CGFloat(cycleData.predictedTotalDays) / CGFloat(maxCycleDays)
+        let ratio = CGFloat(actualCycleDays) / CGFloat(maxCycleDays)
         return maxBarWidth * ratio
     }
 }

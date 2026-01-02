@@ -575,7 +575,7 @@ class PeriodViewModel: ObservableObject {
         var allCycleDays: [Int] = completedCycles.map { $0.cycleDays }
 
         if let current = currentCycle {
-            allCycleDays.append(current.predictedTotalDays)
+            allCycleDays.append(current.elapsedDays)
         }
 
         return allCycleDays.max() ?? 28
