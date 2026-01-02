@@ -10,13 +10,39 @@ import SwiftUI
 struct MenstrualCycleInfo: View {
     let geometry: GeometryProxy
     @Binding var showCycleStats: Bool
+    @ObservedObject var viewModel: PeriodViewModel
+
+    // 上一个周期天数
+    private var lastCycleDaysText: String {
+        let cycles = viewModel.completedCycles
+        guard let lastCycle = cycles.last else { return "-" }
+        return "\(lastCycle.cycleDays)天"
+    }
+
+    // 计算周期天数范围
+    private var cycleRangeText: String {
+        let cycles = viewModel.completedCycles
+        guard !cycles.isEmpty else { return "-" }
+
+        let cycleDays = cycles.map { $0.cycleDays }
+        let minDays = cycleDays.min() ?? 0
+        let maxDays = cycleDays.max() ?? 0
+
+        if minDays == maxDays {
+            return "\(minDays)天"
+        } else {
+            return "\(minDays)-\(maxDays)天"
+        }
+    }
 
     // 月经周期数据
-    let cycleItems = [
-        ("上一个月经周期天数", "29天"),
-        ("月经周期天数变化", "29-36天"),
-        ("经期长度变化", "4-7天")
-    ]
+    private var cycleItems: [(String, String)] {
+        [
+            ("上一个月经周期天数", lastCycleDaysText),
+            ("月经周期天数变化", cycleRangeText),
+            ("经期长度变化", "4-7天")
+        ]
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.02) {
@@ -115,7 +141,11 @@ struct MenstrualCycleInfo: View {
             Color(red: 248/255, green: 243/255, blue: 241/255)
                 .ignoresSafeArea()
 
-            MenstrualCycleInfo(geometry: geometry, showCycleStats: .constant(false))
+            MenstrualCycleInfo(
+                geometry: geometry,
+                showCycleStats: .constant(false),
+                viewModel: PeriodViewModel()
+            )
         }
     }
 }

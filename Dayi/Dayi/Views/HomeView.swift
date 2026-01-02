@@ -109,8 +109,12 @@ struct HomeView: View {
                     )
 
                     // 我的月经周期区域
-                    MenstrualCycleInfo(geometry: geometry, showCycleStats: $showCycleStats)
-                        .padding(.top, geometry.size.height * 0.042) //我的月经周期上边距
+                    MenstrualCycleInfo(
+                        geometry: geometry,
+                        showCycleStats: $showCycleStats,
+                        viewModel: viewModel
+                    )
+                    .padding(.top, geometry.size.height * 0.042) //我的月经周期上边距
 
                     Spacer()
                 }
