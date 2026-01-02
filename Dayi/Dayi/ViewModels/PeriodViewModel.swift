@@ -114,7 +114,12 @@ class PeriodViewModel: ObservableObject {
 
     /// 获取选中日期的状态
     var selectedDateStatus: SelectedDateStatus {
-        let targetDate = selectedDate.startOfDay()
+        return getDateStatus(for: selectedDate)
+    }
+
+    /// 获取指定日期的状态
+    func getDateStatus(for date: Date) -> SelectedDateStatus {
+        let targetDate = date.startOfDay()
 
         // 边界情况：无任何记录
         guard !periodRecords.isEmpty else {

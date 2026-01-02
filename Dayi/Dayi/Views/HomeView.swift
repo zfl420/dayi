@@ -30,37 +30,10 @@ struct HomeView: View {
                         // ===== 经期状态区域和按钮层叠区域 =====
                         ZStack(alignment: .center) {
                             // ===== 经期状态区域（包含整个可滑动区域）=====
-                            VStack(spacing: 0) {
-                                Spacer() // 上方填充
-
-                                PeriodStatus(viewModel: viewModel, geometry: geometry)
-                                    .frame(maxWidth: .infinity, alignment: .center)
-
-                                Spacer() // 下方填充
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .padding(.top, geometry.size.height * 0.018) // 经期状态区域顶部间距
-                            .padding(.bottom, geometry.size.height * 0.1) // 经期状态区域下间距
-                            .contentShape(Rectangle()) // 让整个区域可响应手势
-                            .gesture(
-                                DragGesture(minimumDistance: 20) // 最小滑动距离
-                                    .onEnded { value in
-                                        // 判断滑动方向
-                                        let horizontalAmount = value.translation.width
-
-                                        if horizontalAmount > 0 {
-                                            // 向右滑动 - 切换到前一天
-                                            let previousDate = viewModel.selectedDate.adding(days: -1)
-                                            viewModel.selectDate(previousDate)
-                                            viewModel.updateWeekDates(for: previousDate)
-                                        } else if horizontalAmount < 0 {
-                                            // 向左滑动 - 切换到后一天
-                                            let nextDate = viewModel.selectedDate.adding(days: 1)
-                                            viewModel.selectDate(nextDate)
-                                            viewModel.updateWeekDates(for: nextDate)
-                                        }
-                                    }
-                            )
+                            PeriodStatusCarousel(viewModel: viewModel, geometry: geometry)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .padding(.top, geometry.size.height * 0.018) // 经期状态区域顶部间距
+                                .padding(.bottom, geometry.size.height * 0.1) // 经期状态区域下间距
 
                             // ===== 按钮区域 =====
                             VStack {
@@ -133,14 +106,136 @@ struct GradientBackground: View {
     }
 }
 
+// ===== 经期状态轮播组件 =====
+struct PeriodStatusCarousel: View {
+    @ObservedObject var viewModel: PeriodViewModel
+    let geometry: GeometryProxy
+    @State private var offset: CGFloat = 0
+    @State private var dragOffset: CGFloat = 0
+    @State private var baseDate: Date = Date()
+
+    var body: some View {
+        GeometryReader { scrollGeometry in
+            let width = scrollGeometry.size.width
+
+            ZStack {
+                // 滑动内容
+                HStack(spacing: 0) {
+                    // 前一天
+                    PeriodStatusPage(
+                        date: baseDate.adding(days: -1),
+                        viewModel: viewModel,
+                        geometry: geometry
+                    )
+                    .frame(width: width)
+
+                    // 当前日期
+                    PeriodStatusPage(
+                        date: baseDate,
+                        viewModel: viewModel,
+                        geometry: geometry
+                    )
+                    .frame(width: width)
+
+                    // 后一天
+                    PeriodStatusPage(
+                        date: baseDate.adding(days: 1),
+                        viewModel: viewModel,
+                        geometry: geometry
+                    )
+                    .frame(width: width)
+                }
+                .offset(x: -width + offset + dragOffset) // 默认显示中间页
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity) // 填充整个区域
+            .contentShape(Rectangle()) // 让整个区域可响应手势
+            .gesture(
+                DragGesture()
+                    .onChanged { value in
+                        dragOffset = value.translation.width
+                    }
+                    .onEnded { value in
+                        let threshold = width * 0.3 // 滑动阈值：30%
+
+                        if dragOffset > threshold {
+                            // 向右滑动，切换到前一天
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                offset = width
+                            }
+
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                let previousDate = baseDate.adding(days: -1)
+                                viewModel.selectDate(previousDate)
+                                viewModel.updateWeekDates(for: previousDate)
+                                baseDate = previousDate
+                                offset = 0
+                                dragOffset = 0
+                            }
+                        } else if dragOffset < -threshold {
+                            // 向左滑动，切换到后一天
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                offset = -width
+                            }
+
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                let nextDate = baseDate.adding(days: 1)
+                                viewModel.selectDate(nextDate)
+                                viewModel.updateWeekDates(for: nextDate)
+                                baseDate = nextDate
+                                offset = 0
+                                dragOffset = 0
+                            }
+                        } else {
+                            // 未达到阈值，回弹到当前页
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                dragOffset = 0
+                            }
+                        }
+                    }
+            )
+        }
+        .onAppear {
+            baseDate = viewModel.selectedDate
+        }
+        .onChange(of: viewModel.selectedDate) { oldValue, newValue in
+            // 外部改变日期时更新 baseDate（比如点击周历）
+            if baseDate != newValue {
+                baseDate = newValue
+            }
+        }
+    }
+}
+
+// ===== 经期状态单页组件 =====
+struct PeriodStatusPage: View {
+    let date: Date
+    @ObservedObject var viewModel: PeriodViewModel
+    let geometry: GeometryProxy
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer() // 上方填充
+
+            PeriodStatus(date: date, viewModel: viewModel, geometry: geometry)
+                .frame(maxWidth: .infinity, alignment: .center)
+
+            Spacer() // 下方填充
+        }
+    }
+}
+
 // ===== 经期状态组件 =====
 struct PeriodStatus: View {
+    let date: Date
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
 
     var body: some View {
         VStack(spacing: geometry.size.height * 0.0047) { // 文案行间距
-            switch viewModel.selectedDateStatus {
+            // 根据传入的日期计算状态
+            let status = viewModel.getDateStatus(for: date)
+
+            switch status {
             case .beforeAllPeriods:
                 // 情况1：单行文本
                 titleText("记录你上一次经期开始的日期")
