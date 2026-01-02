@@ -7,40 +7,48 @@ struct WeekCalendar: View {
 
     let weekdayLabels = ["一", "二", "三", "四", "五", "六", "日"]
     @State private var currentPage = 1 // 从中间页开始
-    @State private var selectedCircleOffset: CGFloat = 0 // 选中圆的偏移量
+    @State private var selectedIndex: Int = 0 // 当前选中日期在周中的索引
+
+    // 计算单个格子的宽度（包括间距）
+    private var cellWidth: CGFloat {
+        geometry.size.width * 0.1272
+    }
+
+    private var spacing: CGFloat {
+        geometry.size.width * 0.0056
+    }
+
+    // 计算选中圆的 X 位置
+    private var selectedCircleX: CGFloat {
+        let totalWidth = cellWidth + spacing
+        let startX = cellWidth / 2 // 第一个格子的中心
+        return startX + CGFloat(selectedIndex) * totalWidth
+    }
 
     var body: some View {
         VStack(spacing: geometry.size.height * 0.0094) {
             // 星期标签行
-            HStack(spacing: geometry.size.width * 0.0056) {
+            HStack(spacing: spacing) {
                 ForEach(Array(viewModel.currentWeekDates.enumerated()), id: \.element) { index, date in
                     Text(getLabelForDate(date, index: index))
                         .font(.system(size: geometry.size.height * 0.0141, weight: date.isSameDay(as: Date()) ? .bold : .medium)) // 今天标签字号
                         .foregroundColor(date.isSameDay(as: Date()) ? .black : Color(red: 90/255.0, green: 87/255.0, blue: 86/255.0))
-                        .frame(width: geometry.size.width * 0.1272) // 星期标签宽度
+                        .frame(width: cellWidth) // 星期标签宽度
                 }
             }
 
             // 日期格子行 - 背景和内容分离
-            ZStack {
-                // 可滑动的背景圆形层
-                HStack(spacing: geometry.size.width * 0.0056) {
-                    ForEach(0..<7, id: \.self) { index in
-                        let date = viewModel.currentWeekDates[safe: index]
+            ZStack(alignment: .leading) {
+                // 单个选中圆 - 通过位置动画移动
+                let selectedColor = isTodayInPeriod
+                    ? Color.white
+                    : Color(red: 220/255, green: 213/255, blue: 210/255) // 非经期选中背景色
 
-                        // 根据选中日期是否在月经期选择不同的选中圆颜色
-                        let selectedColor = isTodayInPeriod
-                            ? Color.white
-                            : Color(red: 220/255, green: 213/255, blue: 210/255) // 非经期选中背景色
-
-                        Circle()
-                            .fill(date != nil && viewModel.getStateForDate(date!) == .selected
-                                  ? selectedColor
-                                  : Color.clear)
-                            .frame(width: geometry.size.width * 0.1272, height: geometry.size.width * 0.1272) // 选中圆尺寸
-                    }
-                }
-                .offset(x: selectedCircleOffset) // 添加偏移动画
+                Circle()
+                    .fill(selectedColor)
+                    .frame(width: cellWidth, height: cellWidth)
+                    .position(x: selectedCircleX, y: cellWidth / 2)
+                    .animation(.spring(response: 0.35, dampingFraction: 0.75), value: selectedIndex)
 
                 // 可滚动的日期内容层
                 TabView(selection: $currentPage) {
@@ -57,17 +65,30 @@ struct WeekCalendar: View {
                         .tag(2)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                .frame(height: geometry.size.width * 0.1272) // 日期行高度
+                .frame(height: cellWidth) // 日期行高度
                 .onChange(of: currentPage) { _, newPage in
                     handlePageChange(newPage)
                 }
             }
+            .frame(height: cellWidth)
         }
         .padding(.horizontal, geometry.size.width * 0.0381) // 周历左右边距
         .frame(maxWidth: .infinity)
-        .onChange(of: viewModel.selectedDate) { oldValue, newValue in
-            // 当选中日期改变时，计算需要移动的距离并添加动画
-            animateSelectedCircle(from: oldValue, to: newValue)
+        .onAppear {
+            updateSelectedIndex()
+        }
+        .onChange(of: viewModel.selectedDate) { _, _ in
+            updateSelectedIndex()
+        }
+        .onChange(of: viewModel.currentWeekDates) { _, _ in
+            updateSelectedIndex()
+        }
+    }
+
+    // 更新选中日期的索引
+    private func updateSelectedIndex() {
+        if let index = viewModel.currentWeekDates.firstIndex(where: { $0.isSameDay(as: viewModel.selectedDate) }) {
+            selectedIndex = index
         }
     }
 
@@ -105,46 +126,6 @@ struct WeekCalendar: View {
             return "今天"
         }
         return weekdayLabels[index]
-    }
-
-    // 计算选中圆的滑动动画
-    private func animateSelectedCircle(from oldDate: Date, to newDate: Date) {
-        // 检查新旧日期是否在同一周内
-        let oldWeekStart = oldDate.getWeekStart()
-        let newWeekStart = newDate.getWeekStart()
-
-        // 如果不在同一周，不执行动画（周历会自动切换周）
-        guard oldWeekStart == newWeekStart else {
-            selectedCircleOffset = 0
-            return
-        }
-
-        // 计算日期差
-        let daysDiff = newDate.daysSince(oldDate)
-
-        // 如果日期差为0，不需要动画
-        guard daysDiff != 0 else {
-            selectedCircleOffset = 0
-            return
-        }
-
-        // 计算每个日期格子的宽度（包括间距）
-        let cellWidth = geometry.size.width * 0.1272 // 日期圆形尺寸
-        let spacing = geometry.size.width * 0.0056 // 日期间距
-        let totalWidth = cellWidth + spacing
-
-        // 计算目标偏移量
-        let targetOffset = CGFloat(daysDiff) * totalWidth
-
-        // 先移动到目标位置，然后在动画完成后重置
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-            selectedCircleOffset = -targetOffset
-        }
-
-        // 动画完成后重置偏移
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-            selectedCircleOffset = 0
-        }
     }
 }
 
