@@ -4,6 +4,7 @@ struct HomeView: View {
     @StateObject private var viewModel: PeriodViewModel
     @State private var dragProgress: CGFloat = 0 // 滑动进度 -1 到 1
     @State private var isDragging: Bool = false // 是否正在滑动
+    @State private var carouselBaseDate: Date = Date() // 轮播组件的基准日期
 
     init(viewModel: PeriodViewModel = PeriodViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -11,9 +12,10 @@ struct HomeView: View {
 
     // 计算背景色的经期比例（0 = 非经期，1 = 经期）
     private var periodRatio: CGFloat {
-        let currentInPeriod = viewModel.isSelectedDateInPeriodForBackground
+        // 使用轮播组件的基准日期来判断当前状态
+        let currentInPeriod = viewModel.getDateStatus(for: carouselBaseDate).isInPeriod
 
-        if !isDragging {
+        if !isDragging || dragProgress == 0 {
             return currentInPeriod ? 1 : 0
         }
 
@@ -21,12 +23,10 @@ struct HomeView: View {
         let targetDate: Date
         if dragProgress > 0 {
             // 向右滑，目标是前一天
-            targetDate = viewModel.selectedDate.adding(days: -1)
-        } else if dragProgress < 0 {
-            // 向左滑，目标是后一天
-            targetDate = viewModel.selectedDate.adding(days: 1)
+            targetDate = carouselBaseDate.adding(days: -1)
         } else {
-            return currentInPeriod ? 1 : 0
+            // 向左滑，目标是后一天
+            targetDate = carouselBaseDate.adding(days: 1)
         }
 
         let targetInPeriod = viewModel.getDateStatus(for: targetDate).isInPeriod
@@ -70,7 +70,8 @@ struct HomeView: View {
                                 viewModel: viewModel,
                                 geometry: geometry,
                                 dragProgress: $dragProgress,
-                                isDragging: $isDragging
+                                isDragging: $isDragging,
+                                baseDate: $carouselBaseDate
                             )
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .padding(.top, geometry.size.height * 0.018)
@@ -157,7 +158,6 @@ struct GradientBackground: View {
             )
             .frame(height: totalHeight)
             .clipShape(BottomCurveShape())
-            .animation(.easeOut(duration: 0.2), value: periodRatio)
         }
     }
 }
@@ -168,9 +168,9 @@ struct PeriodStatusCarousel: View {
     let geometry: GeometryProxy
     @Binding var dragProgress: CGFloat // 滑动进度，传递给父视图
     @Binding var isDragging: Bool // 是否正在滑动
+    @Binding var baseDate: Date // 基准日期，传递给父视图用于计算背景色
     @State private var offset: CGFloat = 0
     @State private var dragOffset: CGFloat = 0
-    @State private var baseDate: Date = Date()
 
     var body: some View {
         GeometryReader { scrollGeometry in
@@ -220,51 +220,61 @@ struct PeriodStatusCarousel: View {
 
                         if dragOffset > threshold {
                             // 向右滑动，切换到前一天
+                            let previousDate = baseDate.adding(days: -1)
+
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 offset = width
                                 dragProgress = 1.0
                             }
 
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                let previousDate = baseDate.adding(days: -1)
-                                // 先重置经期状态区域
-                                baseDate = previousDate
-                                offset = 0
-                                dragOffset = 0
+                                // 使用 transaction 禁用隐式动画，避免时间戳冲突
+                                var transaction = Transaction()
+                                transaction.disablesAnimations = true
+
+                                withTransaction(transaction) {
+                                    // 先更新基准日期，这样 periodRatio 计算时使用的是新日期
+                                    baseDate = previousDate
+
+                                    // 然后重置滑动状态
+                                    isDragging = false
+                                    dragProgress = 0
+                                    offset = 0
+                                    dragOffset = 0
+                                }
 
                                 // 更新选中日期，触发周历动画
                                 viewModel.selectDate(previousDate)
                                 viewModel.updateWeekDates(for: previousDate)
-
-                                // 延迟重置滑动状态，让背景色有时间适应新的日期
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                                    isDragging = false
-                                    dragProgress = 0
-                                }
                             }
                         } else if dragOffset < -threshold {
                             // 向左滑动，切换到后一天
+                            let nextDate = baseDate.adding(days: 1)
+
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 offset = -width
                                 dragProgress = -1.0
                             }
 
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                let nextDate = baseDate.adding(days: 1)
-                                // 先重置经期状态区域
-                                baseDate = nextDate
-                                offset = 0
-                                dragOffset = 0
+                                // 使用 transaction 禁用隐式动画，避免时间戳冲突
+                                var transaction = Transaction()
+                                transaction.disablesAnimations = true
+
+                                withTransaction(transaction) {
+                                    // 先更新基准日期，这样 periodRatio 计算时使用的是新日期
+                                    baseDate = nextDate
+
+                                    // 然后重置滑动状态
+                                    isDragging = false
+                                    dragProgress = 0
+                                    offset = 0
+                                    dragOffset = 0
+                                }
 
                                 // 更新选中日期，触发周历动画
                                 viewModel.selectDate(nextDate)
                                 viewModel.updateWeekDates(for: nextDate)
-
-                                // 延迟重置滑动状态，让背景色有时间适应新的日期
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                                    isDragging = false
-                                    dragProgress = 0
-                                }
                             }
                         } else {
                             // 未达到阈值，回弹到当前页
