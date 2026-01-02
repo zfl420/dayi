@@ -44,6 +44,7 @@ struct WeekCalendar: View {
                 // 单个选中圆 - 滑动周历时固定位置,其他情况跟随移动
                 Circle()
                     .fill(circleColor)
+                    .blur(radius: geometry.size.height * 0.0003) // 选中圆模糊效果
                     .frame(width: cellWidth, height: cellWidth)
                     .position(x: selectedCircleX, y: cellWidth / 2)
 
@@ -235,6 +236,7 @@ struct DayCellContent: View {
                 // 实心浅红小圆（记录日至今天）
                 Circle()
                     .fill(Color(red: 255.0/255.0, green: 90.0/255.0, blue: 125.0/255.0)) // 经期实心圆颜色
+                    .blur(radius: geometry.size.height * 0.0003) // 经期圆模糊效果
                     .frame(width: smallCircleSize, height: smallCircleSize)
             } else if viewModel.shouldShowPredictionBorder(date) {
                 // 空心红色圆点虚线小圆（今天至第七天）
@@ -266,6 +268,7 @@ struct DayCellContent: View {
                             // 角标背景圆
                             Circle()
                                 .fill(Color(red: 255.0/255.0, green: 90.0/255.0, blue: 125.0/255.0)) // 角标背景色
+                                .blur(radius: geometry.size.height * 0.0003) // 角标边缘模糊效果
                                 .frame(
                                     width: geometry.size.width * 0.038, // 角标直径
                                     height: geometry.size.width * 0.038

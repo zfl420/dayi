@@ -11,6 +11,20 @@ struct HomeView: View {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 
+    // 计算整体背景色
+    private var overallBackgroundColor: Color {
+        // 非经期背景色
+        let normalColor = Color(red: 248/255.0, green: 243/255.0, blue: 241/255.0)
+
+        // 经期背景色（与渐变顶部色系相同但更淡）
+        let periodColor = Color(red: 254/255.0, green: 235/255.0, blue: 240/255.0)
+
+        // 使用轮播组件的基准日期判断是否在经期
+        let isInPeriod = viewModel.getDateStatus(for: carouselBaseDate).isInPeriod
+
+        return isInPeriod ? periodColor : normalColor
+    }
+
     // 计算目标的经期比例
     private func calculatePeriodRatio() -> CGFloat {
         // 使用轮播组件的基准日期来判断当前状态
@@ -44,7 +58,7 @@ struct HomeView: View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
                 // ===== 整体背景色 =====
-                Color(red: 248/255.0, green: 243/255.0, blue: 241/255.0)
+                overallBackgroundColor
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
@@ -182,6 +196,7 @@ struct GradientBackground: View {
             )
             .frame(height: totalHeight)
             .clipShape(BottomCurveShape())
+            .blur(radius: geometry.size.height * 0.0003) // 弧形边缘模糊效果
         }
     }
 }
@@ -417,8 +432,9 @@ struct EditButton: View {
                 .padding(.horizontal, geometry.size.width * 0.0407) // 16/393, 左右边距减半
                 .frame(height: geometry.size.height * 0.0468) // 39.84/852, 介于44和35.78之间
                 .background(backgroundColor)
-                .cornerRadius(geometry.size.height * 0.0234) // 19.93/852, 圆角相应调整
-                .shadow(color: Color.black.opacity(0.1), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023) // 4/852, 2/852
+                .cornerRadius(geometry.size.height * 0.0234) // 按钮圆角
+                .blur(radius: geometry.size.height * 0.0003) // 按钮边缘模糊效果
+                .shadow(color: Color.black.opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023) // 按钮阴影
         }
     }
 }
