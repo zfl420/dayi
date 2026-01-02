@@ -165,11 +165,13 @@ struct PeriodStatusCarousel: View {
 
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 let previousDate = baseDate.adding(days: -1)
-                                viewModel.selectDate(previousDate)
-                                viewModel.updateWeekDates(for: previousDate)
+                                // 先重置状态，避免触发额外的动画
                                 baseDate = previousDate
                                 offset = 0
                                 dragOffset = 0
+                                // 最后更新选中日期
+                                viewModel.selectDate(previousDate)
+                                viewModel.updateWeekDates(for: previousDate)
                             }
                         } else if dragOffset < -threshold {
                             // 向左滑动，切换到后一天
@@ -179,11 +181,13 @@ struct PeriodStatusCarousel: View {
 
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 let nextDate = baseDate.adding(days: 1)
-                                viewModel.selectDate(nextDate)
-                                viewModel.updateWeekDates(for: nextDate)
+                                // 先重置状态，避免触发额外的动画
                                 baseDate = nextDate
                                 offset = 0
                                 dragOffset = 0
+                                // 最后更新选中日期
+                                viewModel.selectDate(nextDate)
+                                viewModel.updateWeekDates(for: nextDate)
                             }
                         } else {
                             // 未达到阈值，回弹到当前页

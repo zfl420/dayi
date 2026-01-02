@@ -109,6 +109,16 @@ struct WeekCalendar: View {
 
     // 计算选中圆的滑动动画
     private func animateSelectedCircle(from oldDate: Date, to newDate: Date) {
+        // 检查新旧日期是否在同一周内
+        let oldWeekStart = oldDate.getWeekStart()
+        let newWeekStart = newDate.getWeekStart()
+
+        // 如果不在同一周，不执行动画（周历会自动切换周）
+        guard oldWeekStart == newWeekStart else {
+            selectedCircleOffset = 0
+            return
+        }
+
         // 计算日期差
         let daysDiff = newDate.daysSince(oldDate)
 
