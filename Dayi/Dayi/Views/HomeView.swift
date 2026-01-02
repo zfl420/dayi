@@ -82,33 +82,57 @@ struct GradientBackground: View {
     let geometry: GeometryProxy
     let isTodayInPeriod: Bool
 
+    // 经期渐变色
+    private var periodTopColor: Color {
+        Color(red: 254/255, green: 229/255, blue: 234/255)  // #FEE5EA
+    }
+    private var periodBottomColor: Color {
+        Color(red: 255/255, green: 90/255, blue: 125/255)   // #FF5A7D
+    }
+
+    // 非经期渐变色
+    private var normalTopColor: Color {
+        Color(red: 243/255, green: 233/255, blue: 230/255)  // #F3E9E6
+    }
+    private var normalBottomColor: Color {
+        Color(red: 254/255, green: 255/255, blue: 254/255)  // #FEFDFD
+    }
+
     var body: some View {
         GeometryReader { backgroundGeometry in
             let contentHeight = backgroundGeometry.size.height
             // 弧形两边在 0.924 位置，中间在 1.0 位置
             // 为了让弧形中间在内容底部下方约30像素，需要额外的高度
-            let extraHeight = geometry.size.height * 0.035 // 30像素
+            let extraHeight = geometry.size.height * 0.035
             let totalHeight = contentHeight + extraHeight
 
-            // 根据是否在月经期选择不同的渐变色
-            let topColor = isTodayInPeriod
-                ? Color(red: 254/255, green: 229/255, blue: 234/255)  // #FEE5EA
-                : Color(red: 243/255, green: 233/255, blue: 230/255)  // #F3E9E6
+            ZStack {
+                // 非经期渐变背景
+                LinearGradient(
+                    gradient: Gradient(stops: [
+                        .init(color: normalTopColor, location: 0.0),
+                        .init(color: normalBottomColor, location: 1.0)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: totalHeight)
+                .clipShape(BottomCurveShape())
 
-            let bottomColor = isTodayInPeriod
-                ? Color(red: 255/255, green: 90/255, blue: 125/255)   // #FF5A7D
-                : Color(red: 254/255, green: 255/255, blue: 254/255)  // #FEFDFD
-
-            LinearGradient(
-                gradient: Gradient(stops: [
-                    .init(color: topColor, location: 0.0),
-                    .init(color: bottomColor, location: 1.0)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: totalHeight)
-            .clipShape(BottomCurveShape())
+                // 经期渐变背景（通过透明度控制显示）
+                LinearGradient(
+                    gradient: Gradient(stops: [
+                        .init(color: periodTopColor, location: 0.0),
+                        .init(color: periodBottomColor, location: 1.0)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: totalHeight)
+                .clipShape(BottomCurveShape())
+                .opacity(isTodayInPeriod ? 1 : 0)
+                .animation(.easeInOut(duration: 0.35), value: isTodayInPeriod)
+            }
         }
     }
 }
