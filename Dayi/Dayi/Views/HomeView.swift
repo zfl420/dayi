@@ -162,7 +162,7 @@ struct PeriodStatusCarousel: View {
                         dragOffset = value.translation.width
                     }
                     .onEnded { value in
-                        let threshold = width * 0.3 // 滑动阈值：30%
+                        let threshold = width * 0.15 // 滑动阈值：15%
 
                         if dragOffset > threshold {
                             // 向右滑动，切换到前一天
