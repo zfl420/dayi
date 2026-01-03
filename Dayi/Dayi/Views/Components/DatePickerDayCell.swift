@@ -61,7 +61,7 @@ struct DatePickerDayCell: View {
     }
 
     private var checkmarkSize: CGFloat {
-        return checkboxSize * 0.5
+        return max(checkboxSize * 0.5, 1) // 确保最小为1，避免SF Symbol报错
     }
 
     private var checkmarkWeight: Font.Weight {

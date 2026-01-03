@@ -9,8 +9,6 @@ import SwiftUI
 
 struct MenstrualCycleInfo: View {
     let geometry: GeometryProxy
-    @Binding var showCycleStats: Bool
-    @Binding var showPeriodStats: Bool
     @ObservedObject var viewModel: PeriodViewModel
 
     // 上一个周期天数
@@ -81,60 +79,23 @@ struct MenstrualCycleInfo: View {
             // 白色卡片内容区
             VStack(spacing: geometry.size.height * 0.02) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    // 单项内容行
-                    HStack(spacing: 0) {
-                        // 左侧文字区域
-                        VStack(alignment: .leading, spacing: geometry.size.height * 0.0047) {
-                            // 灰色小标题
-                            Text(item.0)
-                                .font(.system(size: geometry.size.height * 0.018)) // 小标题字号
-                                .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 灰色文字颜色
-
-                            // 黑色粗体数据
-                            Text(item.1)
-                                .font(.system(size: geometry.size.height * 0.023, weight: .medium)) // 数据字号
-                                .foregroundColor(.black)
-                        }
-
-                        Spacer()
-
-                        // 右侧内容区域
-                        if index == 0 {
-                            // 上一个周期长度:显示绿色对勾和"正常"文本
-                            HStack(spacing: geometry.size.width * 0.0153) {
-                                // 绿色圆形对勾
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(red: 52/255, green: 199/255, blue: 89/255)) // 绿色背景
-                                        .frame(width: geometry.size.width * 0.0458, height: geometry.size.width * 0.0458) // 圆形尺寸
-
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: geometry.size.width * 0.0255, weight: .semibold)) // 对勾尺寸
-                                        .foregroundColor(.white) // 白色对勾
-                                }
-
-                                // "正常"文本
-                                Text("正常")
-                                    .font(.system(size: geometry.size.height * 0.0164)) // 正常文本字号
-                                    .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 灰色文字
-                            }
-                            .padding(.trailing, geometry.size.width * 0.0204) // 右侧边距
-                        } else {
-                            // 周期变化和经期长度变化:显示箭头
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: geometry.size.width * 0.04)) // 箭头尺寸
-                                .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 箭头颜色
-                                .padding(.trailing, geometry.size.width * 0.0204) // 箭头右侧边距
-                        }
-                    }
-                    .frame(height: geometry.size.height * 0.0657) // 单项行高
-                    .contentShape(Rectangle()) // 扩大可点击区域
-                    .padding(.horizontal, geometry.size.width * 0.0407) // 单项左右内边距
-                    .onTapGesture {
+                    // 根据 index 决定是否使用 NavigationLink
+                    Group {
                         if index == 1 {
-                            showCycleStats = true
+                            // 月经周期天数变化 - 使用 NavigationLink
+                            NavigationLink(destination: CycleStatsView(viewModel: viewModel)) {
+                                itemRow(index: index, item: item)
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         } else if index == 2 {
-                            showPeriodStats = true
+                            // 经期长度变化 - 使用 NavigationLink
+                            NavigationLink(destination: PeriodLengthStatsView(viewModel: viewModel)) {
+                                itemRow(index: index, item: item)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        } else {
+                            // 上一个周期长度 - 不可点击
+                            itemRow(index: index, item: item)
                         }
                     }
 
@@ -152,6 +113,59 @@ struct MenstrualCycleInfo: View {
             .cornerRadius(geometry.size.width * 0.0305) // 卡片圆角
         }
     }
+
+    // 单项行视图
+    @ViewBuilder
+    private func itemRow(index: Int, item: (String, String)) -> some View {
+        HStack(spacing: 0) {
+            // 左侧文字区域
+            VStack(alignment: .leading, spacing: geometry.size.height * 0.0047) {
+                // 灰色小标题
+                Text(item.0)
+                    .font(.system(size: geometry.size.height * 0.018)) // 小标题字号
+                    .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 灰色文字颜色
+
+                // 黑色粗体数据
+                Text(item.1)
+                    .font(.system(size: geometry.size.height * 0.023, weight: .medium)) // 数据字号
+                    .foregroundColor(.black)
+            }
+
+            Spacer()
+
+            // 右侧内容区域
+            if index == 0 {
+                // 上一个周期长度:显示绿色对勾和"正常"文本
+                HStack(spacing: geometry.size.width * 0.0153) {
+                    // 绿色圆形对勾
+                    ZStack {
+                        Circle()
+                            .fill(Color(red: 52/255, green: 199/255, blue: 89/255)) // 绿色背景
+                            .frame(width: 18, height: 18) // 圆形尺寸
+
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 10, weight: .semibold)) // 对勾尺寸
+                            .foregroundColor(.white) // 白色对勾
+                    }
+
+                    // "正常"文本
+                    Text("正常")
+                        .font(.system(size: geometry.size.height * 0.0164)) // 正常文本字号
+                        .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 灰色文字
+                }
+                .padding(.trailing, geometry.size.width * 0.0204) // 右侧边距
+            } else {
+                // 周期变化和经期长度变化:显示箭头
+                Text("›")
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 箭头颜色
+                    .padding(.trailing, geometry.size.width * 0.0204) // 箭头右侧边距
+            }
+        }
+        .frame(height: geometry.size.height * 0.0657) // 单项行高
+        .contentShape(Rectangle()) // 扩大可点击区域
+        .padding(.horizontal, geometry.size.width * 0.0407) // 单项左右内边距
+    }
 }
 
 #Preview {
@@ -162,8 +176,6 @@ struct MenstrualCycleInfo: View {
 
             MenstrualCycleInfo(
                 geometry: geometry,
-                showCycleStats: .constant(false),
-                showPeriodStats: .constant(false),
                 viewModel: PeriodViewModel()
             )
         }

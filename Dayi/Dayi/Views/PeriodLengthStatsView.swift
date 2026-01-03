@@ -3,110 +3,71 @@ import SwiftUI
 /// 经期天数统计页面
 struct PeriodLengthStatsView: View {
     @ObservedObject var viewModel: PeriodViewModel
-    let geometry: GeometryProxy
     @Environment(\.dismiss) private var dismiss
-    @State private var dragOffset: CGFloat = 0
 
     var body: some View {
-        ZStack(alignment: .top) {
-            Color(red: 242/255, green: 242/255, blue: 242/255)
-                .ignoresSafeArea()
+        GeometryReader { geometry in
+            ZStack(alignment: .top) {
+                Color(red: 242/255, green: 242/255, blue: 242/255)
+                    .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                navigationBar
+                VStack(spacing: 0) {
+                    ScrollView(.vertical, showsIndicators: true) {
+                        VStack(spacing: geometry.size.height * 0.0235) {
+                            PeriodLengthStatsHeader(
+                                averageDays: viewModel.averagePeriodDays,
+                                geometry: geometry
+                            )
+                            .padding(.top, geometry.size.height * 0.0235)
 
-                ScrollView(.vertical, showsIndicators: true) {
-                    VStack(spacing: geometry.size.height * 0.0235) {
-                        PeriodLengthStatsHeader(
-                            averageDays: viewModel.averagePeriodDays,
-                            geometry: geometry
-                        )
-                        .padding(.top, geometry.size.height * 0.0235)
-
-                        ZStack(alignment: .topLeading) {
-                            VStack(spacing: geometry.size.height * 0.01504) {
-                                if let currentPeriod = viewModel.currentPeriod {
-                                    CurrentPeriodCard(
-                                        periodData: currentPeriod,
-                                        averageDays: viewModel.averagePeriodDays,
-                                        maxPeriodDays: viewModel.maxPeriodDays,
-                                        geometry: geometry
-                                    )
-                                }
-
-                                if !viewModel.historicalPeriods.isEmpty {
-                                    ForEach(viewModel.historicalPeriods.reversed()) { period in
-                                        HistoryPeriodRow(
-                                            period: period,
+                            ZStack(alignment: .topLeading) {
+                                VStack(spacing: geometry.size.height * 0.01504) {
+                                    if let currentPeriod = viewModel.currentPeriod {
+                                        CurrentPeriodCard(
+                                            periodData: currentPeriod,
                                             averageDays: viewModel.averagePeriodDays,
                                             maxPeriodDays: viewModel.maxPeriodDays,
                                             geometry: geometry
                                         )
                                     }
+
+                                    if !viewModel.historicalPeriods.isEmpty {
+                                        ForEach(viewModel.historicalPeriods.reversed()) { period in
+                                            HistoryPeriodRow(
+                                                period: period,
+                                                averageDays: viewModel.averagePeriodDays,
+                                                maxPeriodDays: viewModel.maxPeriodDays,
+                                                geometry: geometry
+                                            )
+                                        }
+                                    }
                                 }
+
+                                PeriodAverageReferenceLine(
+                                    averageDays: viewModel.averagePeriodDays,
+                                    maxPeriodDays: viewModel.maxPeriodDays,
+                                    geometry: geometry
+                                )
                             }
 
-                            PeriodAverageReferenceLine(
-                                averageDays: viewModel.averagePeriodDays,
-                                maxPeriodDays: viewModel.maxPeriodDays,
-                                geometry: geometry
-                            )
+                            Spacer()
+                                .frame(height: geometry.size.height * 0.0588)
                         }
-
-                        Spacer()
-                            .frame(height: geometry.size.height * 0.0588)
+                        .padding(.horizontal, geometry.size.width * 0.0509)
                     }
-                    .padding(.horizontal, geometry.size.width * 0.0509)
                 }
             }
         }
-        .offset(x: dragOffset)
-        .gesture(
-            DragGesture()
-                .onChanged { gesture in
-                    if gesture.translation.width > 0 {
-                        dragOffset = gesture.translation.width
-                    }
-                }
-                .onEnded { gesture in
-                    if gesture.translation.width > geometry.size.width * 0.3 {
-                        withAnimation(.spring(response: 0.15, dampingFraction: 0.8)) {
-                            dragOffset = geometry.size.width
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
-                            dismiss()
-                        }
-                    } else {
-                        withAnimation(.spring(response: 0.15, dampingFraction: 0.8)) {
-                            dragOffset = 0
-                        }
-                    }
-                }
-        )
-    }
-
-    private var navigationBar: some View {
-        HStack {
-            Button(action: { dismiss() }) {
-                Image(systemName: "chevron.left")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: geometry.size.width * 0.0458, height: geometry.size.width * 0.0458)
-                    .foregroundColor(.black)
-            }
-            .padding(.leading, geometry.size.width * 0.0509)
-
-            Spacer()
-
-            Text("经期天数")
-                .font(.system(size: geometry.size.height * 0.0254, weight: .semibold))
-                .foregroundColor(.black)
-
-            Spacer()
-
-            Color.clear
-                .frame(width: geometry.size.width * 0.0509 + geometry.size.height * 0.0282)
+        .navigationTitle("经期天数")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            // 隐藏返回按钮文字
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.shadowColor = .clear
+            appearance.backButtonAppearance.normal.titlePositionAdjustment = UIOffset(horizontal: -1000, vertical: 0)
+            UINavigationBar.appearance().standardAppearance = appearance
+            UINavigationBar.appearance().scrollEdgeAppearance = appearance
         }
-        .frame(height: geometry.size.height * 0.0517)
     }
 }

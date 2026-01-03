@@ -6,8 +6,6 @@ struct HomeView: View {
     @State private var isDragging: Bool = false // 是否正在滑动
     @State private var carouselBaseDate: Date = Date() // 轮播组件的基准日期
     @State private var periodRatio: CGFloat = 0 // 背景色的经期比例（0 = 非经期，1 = 经期）
-    @State private var showCycleStats: Bool = false // 显示周期统计页面
-    @State private var showPeriodStats: Bool = false // 显示经期统计页面
 
     init(viewModel: PeriodViewModel = PeriodViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -57,13 +55,14 @@ struct HomeView: View {
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .top) {
-                // ===== 整体背景色 =====
-                overallBackgroundColor
-                    .ignoresSafeArea()
+        NavigationStack {
+            GeometryReader { geometry in
+                ZStack(alignment: .top) {
+                    // ===== 整体背景色 =====
+                    overallBackgroundColor
+                        .ignoresSafeArea()
 
-                VStack(spacing: 0) {
+                    VStack(spacing: 0) {
                     // ===== 渐变背景区域的内容 =====
                     VStack(spacing: 0) {
                         // ===== 日期标题 =====
@@ -112,59 +111,40 @@ struct HomeView: View {
                     // 我的月经周期区域
                     MenstrualCycleInfo(
                         geometry: geometry,
-                        showCycleStats: $showCycleStats,
-                        showPeriodStats: $showPeriodStats,
                         viewModel: viewModel
                     )
                     .padding(.top, geometry.size.height * 0.042) //我的月经周期上边距
 
                     Spacer()
                 }
-                .fullScreenCover(isPresented: $showCycleStats) {
-                    GeometryReader { sheetGeometry in
-                        CycleStatsView(viewModel: viewModel, geometry: sheetGeometry)
-                    }
-                    .background(BackgroundClearView())
                 }
-                .fullScreenCover(isPresented: $showPeriodStats) {
-                    GeometryReader { sheetGeometry in
-                        PeriodLengthStatsView(viewModel: viewModel, geometry: sheetGeometry)
-                    }
-                    .background(BackgroundClearView())
-                }
-                .fullScreenCover(isPresented: $viewModel.showDatePicker) {
-                    GeometryReader { sheetGeometry in
-                        DatePickerFullScreenContent(viewModel: viewModel, geometry: sheetGeometry)
-                    }
-                }
-                .transaction { transaction in
-                    transaction.disablesAnimations = true
-                }
-            }
-            .ignoresSafeArea()
-            .onAppear {
-                // 初始化 periodRatio
-                periodRatio = calculatePeriodRatio()
-            }
-            .onChange(of: carouselBaseDate) { oldValue, newValue in
-                // carouselBaseDate 变化时，使用动画更新 periodRatio
-                withAnimation(.easeOut(duration: 0.3)) {
+                .ignoresSafeArea()
+                .onAppear {
+                    // 初始化 periodRatio
                     periodRatio = calculatePeriodRatio()
                 }
-            }
-            .onChange(of: dragProgress) { oldValue, newValue in
-                // dragProgress 变化时，实时更新 periodRatio（滑动时不需要动画）
-                periodRatio = calculatePeriodRatio()
-            }
-            .onChange(of: isDragging) { oldValue, newValue in
-                // isDragging 状态变化时，更新 periodRatio
-                if !newValue {
-                    // 滑动结束，使用动画过渡到最终状态
-                    withAnimation(.easeOut(duration: 0.2)) {
+                .onChange(of: carouselBaseDate) { oldValue, newValue in
+                    // carouselBaseDate 变化时，使用动画更新 periodRatio
+                    withAnimation(.easeOut(duration: 0.3)) {
                         periodRatio = calculatePeriodRatio()
                     }
                 }
+                .onChange(of: dragProgress) { oldValue, newValue in
+                    // dragProgress 变化时，实时更新 periodRatio（滑动时不需要动画）
+                    periodRatio = calculatePeriodRatio()
+                }
+                .onChange(of: isDragging) { oldValue, newValue in
+                    // isDragging 状态变化时，更新 periodRatio
+                    if !newValue {
+                        // 滑动结束，使用动画过渡到最终状态
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            periodRatio = calculatePeriodRatio()
+                        }
+                    }
+                }
             }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.hidden, for: .navigationBar)
         }
     }
 }
@@ -431,9 +411,7 @@ struct EditButton: View {
     let isSelectedDateInPeriod: Bool
 
     var body: some View {
-        Button(action: {
-            viewModel.openDatePicker()
-        }) {
+        NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
             // 根据选中日期是否在经期选择不同的文本和颜色
             let buttonText = isSelectedDateInPeriod ? "编辑月经日期" : "记录月经"
 
@@ -446,15 +424,18 @@ struct EditButton: View {
                 : Color(red: 255/255, green: 90/255, blue: 125/255)  // #FF5A7D
 
             Text(buttonText)
-                .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 16/852, 增大字号并加粗
+                .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 按钮字号
                 .foregroundColor(textColor)
-                .padding(.horizontal, geometry.size.width * 0.0407) // 16/393, 左右边距减半
-                .frame(height: geometry.size.height * 0.0468) // 39.84/852, 介于44和35.78之间
+                .padding(.horizontal, geometry.size.width * 0.0407) // 按钮左右内边距
+                .frame(height: geometry.size.height * 0.0468) // 按钮高度
                 .background(backgroundColor)
                 .cornerRadius(geometry.size.height * 0.0234) // 按钮圆角
                 .blur(radius: geometry.size.height * 0.0003) // 按钮边缘模糊效果
                 .shadow(color: Color.black.opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023) // 按钮阴影
         }
+        .simultaneousGesture(TapGesture().onEnded {
+            viewModel.openDatePicker()
+        })
     }
 }
 

@@ -4,12 +4,14 @@ import SwiftUI
 struct DatePickerToolbar: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
+    let dismiss: DismissAction
 
     var body: some View {
         HStack {
             // 取消按钮
             Button(action: {
                 viewModel.closeDatePicker()
+                dismiss()
             }) {
                 Text("取消")
                     .font(.system(size: geometry.size.height * 0.0235, weight: .bold))
@@ -39,6 +41,7 @@ struct DatePickerToolbar: View {
             // 保存按钮
             Button(action: {
                 viewModel.savePeriodRecords()
+                dismiss()
             }) {
                 Text("保存")
                     .font(.system(size: geometry.size.height * 0.0235, weight: .bold))
