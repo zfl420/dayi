@@ -35,12 +35,28 @@ struct MenstrualCycleInfo: View {
         }
     }
 
+    // 计算经期长度范围
+    private var periodLengthRangeText: String {
+        let cycles = viewModel.completedCycles
+        guard !cycles.isEmpty else { return "-" }
+
+        let periodDays = cycles.map { $0.periodDays }
+        let minDays = periodDays.min() ?? 0
+        let maxDays = periodDays.max() ?? 0
+
+        if minDays == maxDays {
+            return "\(minDays)天"
+        } else {
+            return "\(minDays)-\(maxDays)天"
+        }
+    }
+
     // 月经周期数据
     private var cycleItems: [(String, String)] {
         [
             ("上一个月经周期天数", lastCycleDaysText),
             ("月经周期天数变化", cycleRangeText),
-            ("经期长度变化", "4-7天")
+            ("经期长度变化", periodLengthRangeText)
         ]
     }
 
