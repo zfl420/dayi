@@ -23,7 +23,7 @@ struct CycleStatsView: View {
                         .padding(.top, geometry.size.height * 0.0235)
 
                         ZStack(alignment: .topLeading) {
-                            VStack(spacing: geometry.size.height * 0.0188) {
+                            VStack(spacing: geometry.size.height * 0.01504) {
                                 if let currentCycle = viewModel.currentCycle {
                                     CurrentCycleCard(
                                         cycleData: currentCycle,
@@ -73,7 +73,7 @@ struct CycleStatsView: View {
             Spacer()
 
             Text("周期天数")
-                .font(.system(size: geometry.size.height * 0.0282, weight: .semibold))
+                .font(.system(size: geometry.size.height * 0.0254, weight: .semibold))
                 .foregroundColor(.black)
 
             Spacer()

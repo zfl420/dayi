@@ -12,9 +12,9 @@ struct AverageReferenceLine: View {
                 Text("平均")
                     .font(.system(size: geometry.size.height * 0.0164, weight: .medium))
                     .foregroundColor(Color(red: 153/255, green: 153/255, blue: 153/255))
-                    .padding(.bottom, geometry.size.height * 0.0047)
+                    .padding(.bottom, geometry.size.height * 0.003)
 
-                DashedVerticalLine(color: Color(red: 153/255, green: 153/255, blue: 153/255))
+                DashedVerticalLine(color: Color.black.opacity(0.3))
                     .frame(width: 1)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

@@ -17,8 +17,8 @@ struct HistoryCycleRow: View {
                 ZStack(alignment: .leading) {
                     Rectangle()
                         .fill(Color(red: 205/255, green: 205/255, blue: 205/255))
-                        .frame(width: scaledBarWidth, height: geometry.size.height * 0.0236)
-                        .cornerRadius(geometry.size.height * 0.0118)
+                        .frame(width: scaledBarWidth, height: geometry.size.height * 0.027)
+                        .cornerRadius(geometry.size.height * 0.0135)
 
                     Rectangle()
                         .fill(Color(red: 250/255, green: 100/255, blue: 100/255))

@@ -17,15 +17,15 @@ struct CurrentCycleCard: View {
                 // 底层：未过日期（浅灰色）- 最长
                 Rectangle()
                     .fill(Color(red: 228/255, green: 228/255, blue: 228/255))
-                    .frame(width: scaledBarWidth, height: geometry.size.height * 0.0236)
-                    .cornerRadius(geometry.size.height * 0.0118)
+                    .frame(width: scaledBarWidth, height: geometry.size.height * 0.027)
+                    .cornerRadius(geometry.size.height * 0.0135)
 
                 // 中层：已过日期（中灰色）+ 天数文本
                 HStack(alignment: .center, spacing: geometry.size.width * 0.0204) {
                     Rectangle()
                         .fill(Color(red: 205/255, green: 205/255, blue: 205/255))
-                        .frame(width: scaledBarWidth * elapsedRatio, height: geometry.size.height * 0.0236)
-                        .cornerRadius(geometry.size.height * 0.0118)
+                        .frame(width: scaledBarWidth * elapsedRatio, height: geometry.size.height * 0.027)
+                        .cornerRadius(geometry.size.height * 0.0135)
 
                     Text("\(cycleData.elapsedDays) 天")
                         .font(.system(size: geometry.size.height * 0.0211, weight: .medium))
