@@ -55,7 +55,7 @@ struct CurrentCycleCard: View {
     }
 
     private var periodRatio: CGFloat {
-        CGFloat(cycleData.periodDays) / CGFloat(actualCycleDays)
+        CGFloat(cycleData.predictedPeriodDays) / CGFloat(actualCycleDays)
     }
 
     private var maxBarWidth: CGFloat {

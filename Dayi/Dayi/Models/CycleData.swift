@@ -30,7 +30,8 @@ struct CurrentCycleData {
     let elapsedDays: Int           // 已进行天数
     let predictedTotalDays: Int    // 预计总天数
     let predictedEndDate: Date     // 预测结束日期
-    let periodDays: Int            // 经期天数
+    let periodDays: Int            // 经期天数（实际已记录）
+    let predictedPeriodDays: Int   // 预测经期天数（用于进度条显示）
 
     /// 周期日期范围文本
     var dateRangeText: String {

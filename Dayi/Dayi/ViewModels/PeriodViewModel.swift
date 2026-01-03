@@ -550,6 +550,9 @@ class PeriodViewModel: ObservableObject {
         let predictedTotalDays = averageCycleDays ?? 28
         let predictedEndDate = cycleStartDate.adding(days: predictedTotalDays - 1)
 
+        // 计算实际已过的经期天数（只包含今天及之前的日期）
+        let actualPeriodDays = latestPeriod.dates.filter { $0 <= today }.count
+
         return CurrentCycleData(
             cycleStartDate: cycleStartDate,
             periodStartDate: periodStart,
@@ -557,7 +560,8 @@ class PeriodViewModel: ObservableObject {
             elapsedDays: elapsedDays,
             predictedTotalDays: predictedTotalDays,
             predictedEndDate: predictedEndDate,
-            periodDays: latestPeriod.duration
+            periodDays: latestPeriod.duration,
+            predictedPeriodDays: actualPeriodDays
         )
     }
 
