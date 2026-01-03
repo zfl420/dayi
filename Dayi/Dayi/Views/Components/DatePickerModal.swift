@@ -65,9 +65,19 @@ struct DatePickerFullScreenContent: View {
                     DatePickerToolbar(viewModel: viewModel, geometry: geometry, dismiss: dismiss)
                         .padding(.bottom, geometry.size.height * 0.02)
                 }
+
             }
         }
-        .navigationTitle("记录月经")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Color(red: 250/255, green: 250/255, blue: 250/255), for: .navigationBar)
+        .onAppear {
+            // 隐藏返回按钮和标题，但保留导航栏占位
+            UINavigationBar.appearance().tintColor = .clear
+        }
+        .onDisappear {
+            // 恢复全局导航栏样式（颜色 #333333）
+            UINavigationBar.appearance().tintColor = UIColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1)
+        }
     }
 }
