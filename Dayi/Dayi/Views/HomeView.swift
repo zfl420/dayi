@@ -7,6 +7,7 @@ struct HomeView: View {
     @State private var carouselBaseDate: Date = Date() // 轮播组件的基准日期
     @State private var periodRatio: CGFloat = 0 // 背景色的经期比例（0 = 非经期，1 = 经期）
     @State private var showCycleStats: Bool = false // 显示周期统计页面
+    @State private var showPeriodStats: Bool = false // 显示经期统计页面
 
     init(viewModel: PeriodViewModel = PeriodViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -112,6 +113,7 @@ struct HomeView: View {
                     MenstrualCycleInfo(
                         geometry: geometry,
                         showCycleStats: $showCycleStats,
+                        showPeriodStats: $showPeriodStats,
                         viewModel: viewModel
                     )
                     .padding(.top, geometry.size.height * 0.042) //我的月经周期上边距
@@ -121,6 +123,11 @@ struct HomeView: View {
                 .fullScreenCover(isPresented: $showCycleStats) {
                     GeometryReader { sheetGeometry in
                         CycleStatsView(viewModel: viewModel, geometry: sheetGeometry)
+                    }
+                }
+                .fullScreenCover(isPresented: $showPeriodStats) {
+                    GeometryReader { sheetGeometry in
+                        PeriodLengthStatsView(viewModel: viewModel, geometry: sheetGeometry)
                     }
                 }
                 .fullScreenCover(isPresented: $viewModel.showDatePicker) {

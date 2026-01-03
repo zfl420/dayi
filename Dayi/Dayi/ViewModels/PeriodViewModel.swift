@@ -584,4 +584,66 @@ class PeriodViewModel: ObservableObject {
 
         return allCycleDays.max() ?? 28
     }
+
+    // MARK: - 经期统计计算
+
+    /// 平均经期天数
+    var averagePeriodDays: Int? {
+        guard !periodRecords.isEmpty else { return nil }
+
+        let validRecords = periodRecords.filter {
+            $0.startDate != nil && $0.endDate != nil
+        }
+        guard !validRecords.isEmpty else { return nil }
+
+        let total = validRecords.reduce(0) { $0 + $1.duration }
+        return total / validRecords.count
+    }
+
+    /// 最长经期天数
+    var maxPeriodDays: Int {
+        let allPeriodDays = periodRecords.compactMap { record -> Int? in
+            guard record.startDate != nil && record.endDate != nil else { return nil }
+            return record.duration
+        }
+        return allPeriodDays.max() ?? 7
+    }
+
+    /// 历史经期列表
+    var historicalPeriods: [PeriodData] {
+        periodRecords.compactMap { record in
+            guard let start = record.startDate,
+                  let end = record.endDate else { return nil }
+
+            return PeriodData(
+                periodStartDate: start,
+                periodEndDate: end,
+                periodDays: record.duration
+            )
+        }
+    }
+
+    /// 当前经期
+    var currentPeriod: CurrentPeriodData? {
+        guard let latestPeriod = periodRecords.last,
+              let periodStart = latestPeriod.startDate else { return nil }
+
+        let today = Date().startOfDay()
+
+        // 计算已过经期天数
+        let elapsedDays = latestPeriod.dates.filter { $0 <= today }.count
+
+        // 预测经期总天数
+        let predictedDays = averagePeriodDays ?? 5
+
+        // 经期结束日期
+        let periodEnd = latestPeriod.endDate ?? today
+
+        return CurrentPeriodData(
+            periodStartDate: periodStart,
+            periodEndDate: periodEnd,
+            elapsedPeriodDays: elapsedDays,
+            predictedPeriodDays: predictedDays
+        )
+    }
 }

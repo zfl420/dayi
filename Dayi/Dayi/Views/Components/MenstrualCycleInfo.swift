@@ -10,6 +10,7 @@ import SwiftUI
 struct MenstrualCycleInfo: View {
     let geometry: GeometryProxy
     @Binding var showCycleStats: Bool
+    @Binding var showPeriodStats: Bool
     @ObservedObject var viewModel: PeriodViewModel
 
     // 上一个周期天数
@@ -132,6 +133,8 @@ struct MenstrualCycleInfo: View {
                     .onTapGesture {
                         if index == 1 {
                             showCycleStats = true
+                        } else if index == 2 {
+                            showPeriodStats = true
                         }
                     }
 
@@ -160,6 +163,7 @@ struct MenstrualCycleInfo: View {
             MenstrualCycleInfo(
                 geometry: geometry,
                 showCycleStats: .constant(false),
+                showPeriodStats: .constant(false),
                 viewModel: PeriodViewModel()
             )
         }

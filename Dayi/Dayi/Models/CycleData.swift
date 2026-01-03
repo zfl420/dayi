@@ -45,3 +45,44 @@ struct CurrentCycleData {
         return "\(startText) - \(endText)"
     }
 }
+
+/// 历史经期数据
+struct PeriodData: Identifiable {
+    let id = UUID()
+    let periodStartDate: Date
+    let periodEndDate: Date
+    let periodDays: Int
+
+    /// 经期日期范围文本
+    var dateRangeText: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy年M月d日"
+        formatter.locale = Locale(identifier: "zh_CN")
+
+        let startText = formatter.string(from: periodStartDate)
+        let endText = formatter.string(from: periodEndDate)
+
+        return "\(startText) - \(endText)"
+    }
+}
+
+/// 当前进行中的经期数据
+struct CurrentPeriodData {
+    let periodStartDate: Date
+    let periodEndDate: Date
+    let elapsedPeriodDays: Int
+    let predictedPeriodDays: Int
+
+    /// 经期日期范围文本
+    var dateRangeText: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy年M月d日"
+        formatter.locale = Locale(identifier: "zh_CN")
+
+        let today = Date().startOfDay()
+        let startText = formatter.string(from: periodStartDate)
+        let endText = formatter.string(from: today)
+
+        return "\(startText) - \(endText)"
+    }
+}
