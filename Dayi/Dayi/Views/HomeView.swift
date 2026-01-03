@@ -124,11 +124,13 @@ struct HomeView: View {
                     GeometryReader { sheetGeometry in
                         CycleStatsView(viewModel: viewModel, geometry: sheetGeometry)
                     }
+                    .background(BackgroundClearView())
                 }
                 .fullScreenCover(isPresented: $showPeriodStats) {
                     GeometryReader { sheetGeometry in
                         PeriodLengthStatsView(viewModel: viewModel, geometry: sheetGeometry)
                     }
+                    .background(BackgroundClearView())
                 }
                 .fullScreenCover(isPresented: $viewModel.showDatePicker) {
                     GeometryReader { sheetGeometry in
@@ -498,4 +500,17 @@ struct BottomCurveShape: Shape {
 
         return path
     }
+}
+
+/// 透明背景视图辅助器
+struct BackgroundClearView: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        DispatchQueue.main.async {
+            view.superview?.superview?.backgroundColor = .clear
+        }
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
 }

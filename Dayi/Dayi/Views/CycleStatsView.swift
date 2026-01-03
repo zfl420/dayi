@@ -5,6 +5,7 @@ struct CycleStatsView: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
     @Environment(\.dismiss) private var dismiss
+    @State private var dragOffset: CGFloat = 0
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -59,6 +60,29 @@ struct CycleStatsView: View {
                 }
             }
         }
+        .offset(x: dragOffset)
+        .gesture(
+            DragGesture()
+                .onChanged { gesture in
+                    if gesture.translation.width > 0 {
+                        dragOffset = gesture.translation.width
+                    }
+                }
+                .onEnded { gesture in
+                    if gesture.translation.width > geometry.size.width * 0.3 {
+                        withAnimation(.spring(response: 0.15, dampingFraction: 0.8)) {
+                            dragOffset = geometry.size.width
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                            dismiss()
+                        }
+                    } else {
+                        withAnimation(.spring(response: 0.15, dampingFraction: 0.8)) {
+                            dragOffset = 0
+                        }
+                    }
+                }
+        )
     }
 
     private var navigationBar: some View {
