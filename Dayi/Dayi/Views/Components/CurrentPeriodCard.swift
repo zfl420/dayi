@@ -13,26 +13,27 @@ struct CurrentPeriodCard: View {
                 .font(.system(size: geometry.size.height * 0.0188, weight: .medium))
                 .foregroundColor(Color(red: 153/255, green: 153/255, blue: 153/255))
 
-            HStack(alignment: .center, spacing: geometry.size.width * 0.0204) {
-                ZStack(alignment: .leading) {
-                    // 底层：浅红色背景
-                    RoundedRectangle(cornerRadius: geometry.size.height * 0.0135)
-                        .fill(Color(red: 255/255, green: 210/255, blue: 218/255))
-                        .frame(width: scaledBarWidth, height: geometry.size.height * 0.027)
+            ZStack(alignment: .leading) {
+                // 底层：浅红色背景
+                RoundedRectangle(cornerRadius: geometry.size.height * 0.0135)
+                    .fill(Color(red: 255/255, green: 210/255, blue: 218/255))
+                    .frame(width: scaledBarWidth, height: geometry.size.height * 0.027)
 
-                    // 顶层：深红色进度
-                    RoundedRectangle(cornerRadius: geometry.size.height * 0.0135)
-                        .fill(Color(red: 255/255, green: 90/255, blue: 125/255))
-                        .frame(width: scaledBarWidth * periodRatio, height: geometry.size.height * 0.027)
-                }
-                .frame(height: geometry.size.height * 0.027)
-
-                Text("\(periodData.elapsedPeriodDays) 天")
-                    .font(.system(size: geometry.size.height * 0.0211, weight: .medium))
-                    .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
-
-                Spacer(minLength: 0)
+                // 顶层：深红色进度
+                RoundedRectangle(cornerRadius: geometry.size.height * 0.0135)
+                    .fill(Color(red: 255/255, green: 90/255, blue: 125/255))
+                    .frame(width: scaledBarWidth * periodRatio, height: geometry.size.height * 0.027)
+                    .overlay(
+                        // 天数文字定位在深红色进度条右侧末端
+                        Text("\(periodData.elapsedPeriodDays) 天")
+                            .font(.system(size: geometry.size.height * 0.0211, weight: .medium))
+                            .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
+                            .offset(x: scaledBarWidth * periodRatio + geometry.size.width * 0.0204, y: 0)
+                        , alignment: .leading
+                    )
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: geometry.size.height * 0.027)
         }
         .padding(.horizontal, geometry.size.width * 0.0407)
         .padding(.vertical, geometry.size.height * 0.0235)

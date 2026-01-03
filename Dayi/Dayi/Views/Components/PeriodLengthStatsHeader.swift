@@ -7,7 +7,7 @@ struct PeriodLengthStatsHeader: View {
 
     var body: some View {
         HStack(spacing: geometry.size.width * 0.0153) {
-            Text("你的平均月经天数:")
+            Text("你的平均经期天数:")
                 .font(.system(size: geometry.size.height * 0.024, weight: .bold))
                 .foregroundColor(.black)
 
