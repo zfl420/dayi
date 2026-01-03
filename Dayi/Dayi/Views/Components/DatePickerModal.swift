@@ -46,10 +46,6 @@ struct DatePickerFullScreenContent: View {
         Color(red: 250/255.0, green: 250/255.0, blue: 250/255.0)  // #FAFAFA
     }
 
-    private var topBackgroundUIColor: UIColor {
-        UIColor(red: 250/255.0, green: 250/255.0, blue: 250/255.0, alpha: 1.0)
-    }
-
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
@@ -73,18 +69,5 @@ struct DatePickerFullScreenContent: View {
         }
         .navigationTitle("记录月经")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            // 配置导航栏背景色为 #FAFAFA（分隔线已在全局隐藏）
-            let appearance = UINavigationBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = topBackgroundUIColor
-            appearance.shadowColor = .clear  // 确保分隔线隐藏
-
-            // 隐藏返回按钮文字
-            appearance.backButtonAppearance.normal.titlePositionAdjustment = UIOffset(horizontal: -1000, vertical: 0)
-
-            UINavigationBar.appearance().standardAppearance = appearance
-            UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        }
     }
 }

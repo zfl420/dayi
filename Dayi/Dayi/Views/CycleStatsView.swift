@@ -60,14 +60,5 @@ struct CycleStatsView: View {
         }
         .navigationTitle("周期天数")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            // 隐藏返回按钮文字
-            let appearance = UINavigationBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.shadowColor = .clear
-            appearance.backButtonAppearance.normal.titlePositionAdjustment = UIOffset(horizontal: -1000, vertical: 0)
-            UINavigationBar.appearance().standardAppearance = appearance
-            UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        }
     }
 }
