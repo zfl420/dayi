@@ -89,7 +89,9 @@ struct PeriodLengthStatsView: View {
         HStack {
             Button(action: { dismiss() }) {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: geometry.size.height * 0.0282, weight: .medium))
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: geometry.size.width * 0.0458, height: geometry.size.width * 0.0458)
                     .foregroundColor(.black)
             }
             .padding(.leading, geometry.size.width * 0.0509)
