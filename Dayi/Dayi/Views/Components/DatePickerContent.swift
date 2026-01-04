@@ -84,9 +84,9 @@ struct DatePickerContent: View {
                 ScrollView {
                     LazyVStack(spacing: 0) {
                         // 顶部占位空间（为星期标题留空）
-                        // 计算：星期标题高度 + 底部边距
+                        // 计算：星期标题高度 + 顶部边距 + 底部边距
                         Color.clear
-                            .frame(height: geometry.size.height * 0.0141 + geometry.size.height * 0.0075)
+                            .frame(height: geometry.size.height * 0.0366)
 
                         // 按月渲染（每个月是独立的 Section）
                         ForEach(Array(monthSections.enumerated()), id: \.element.id) { index, section in
@@ -171,7 +171,7 @@ struct DatePickerContent: View {
                     }
                 }
                 .padding(.horizontal, geometry.size.width * 0.03)
-                .padding(.top, 0)  // 紧贴导航栏
+                .padding(.top, geometry.size.height * 0.025)  // 星期标题顶部间距
                 .padding(.bottom, geometry.size.height * 0.0075)
                 .background(topBackgroundColor)
 
