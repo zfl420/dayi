@@ -134,27 +134,7 @@ struct MenstrualCycleInfo: View {
             Spacer()
 
             // 右侧内容区域
-            if index == 0 {
-                // 上一个周期长度:显示绿色对勾和"正常"文本
-                HStack(spacing: geometry.size.width * 0.0153) {
-                    // 绿色圆形对勾
-                    ZStack {
-                        Circle()
-                            .fill(Color(red: 52/255, green: 199/255, blue: 89/255)) // 绿色背景
-                            .frame(width: 18, height: 18) // 圆形尺寸
-
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 10, weight: .semibold)) // 对勾尺寸
-                            .foregroundColor(.white) // 白色对勾
-                    }
-
-                    // "正常"文本
-                    Text("正常")
-                        .font(.system(size: geometry.size.height * 0.0164)) // 正常文本字号
-                        .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 灰色文字
-                }
-                .padding(.trailing, geometry.size.width * 0.0204) // 右侧边距
-            } else {
+            if index != 0 {
                 // 周期变化和经期长度变化:显示箭头
                 Text("›")
                     .font(.system(size: 20, weight: .regular))
