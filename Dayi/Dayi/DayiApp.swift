@@ -22,14 +22,15 @@ struct DayiApp: App {
 
     // 统一配置导航栏外观
     private func configureNavigationBar() {
-        // 导航栏背景色 #FAFAFA，透明度 30%
+        // 导航栏背景色 #F2F2F2，透明度 90%
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
-        appearance.backgroundColor = UIColor(red: 250/255, green: 250/255, blue: 250/255, alpha: 0.9)
+        appearance.backgroundColor = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 0.9)
 
-        // 标题颜色 #333333
+        // 标题样式：颜色 #333333，字号 18pt
         appearance.titleTextAttributes = [
-            .foregroundColor: UIColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1)
+            .foregroundColor: UIColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1),
+            .font: UIFont.systemFont(ofSize: 18, weight: .semibold)
         ]
 
         // 大标题颜色（如果使用大标题模式）
