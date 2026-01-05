@@ -63,50 +63,76 @@ struct HomeView: View {
                         .ignoresSafeArea()
 
                     VStack(spacing: 0) {
-                    // ===== 渐变背景区域的内容 =====
-                    VStack(spacing: 0) {
-                        // ===== 日期标题 =====
-                        Text(viewModel.displayDateText)
-                            .font(.system(size: geometry.size.height * 0.0188, weight: .medium))
-                            .foregroundColor(.black)
-                            .padding(.top, geometry.size.height * 0.105)
+                    // ===== 渐变背景区域 =====
+                    ZStack(alignment: .center) {
+                        // ===== 底层：渐变背景 =====
+                        GradientBackground(geometry: geometry, periodRatio: periodRatio)
 
-                        // ===== 周历 =====
-                        WeekCalendar(
-                            viewModel: viewModel,
-                            geometry: geometry,
-                            isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground
-                        )
-                        .padding(.top, geometry.size.height * 0.0235)
+                        // ===== 中间层：圆形背景装饰 =====
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors:
+                                        viewModel.getDateStatus(for: carouselBaseDate).isInPeriod
+                                            ? [
+                                                Color(red: 1.0, green: 0.984, blue: 0.984),
+                                                Color(red: 1.0, green: 0.620, blue: 0.710)
+                                            ]
+                                            : [
+                                                Color(red: 0.9725, green: 0.9412, blue: 0.9294),
+                                                Color(red: 0.9961, green: 0.9922, blue: 0.9882)
+                                            ]
+                                    ),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .frame(width: geometry.size.height * 0.5, height: geometry.size.height * 0.5)
+                            .blur(radius: geometry.size.height * 0.005)
+                            .opacity(0.8)
 
-                        // ===== 经期状态区域和按钮层叠区域 =====
-                        ZStack(alignment: .center) {
-                            // ===== 经期状态区域（包含整个可滑动区域）=====
-                            PeriodStatusCarousel(
+                        // ===== 顶层：内容层 =====
+                        VStack(spacing: 0) {
+                            // ===== 日期标题 =====
+                            Text(viewModel.displayDateText)
+                                .font(.system(size: geometry.size.height * 0.0188, weight: .medium))
+                                .foregroundColor(.black)
+                                .padding(.top, geometry.size.height * 0.105)
+
+                            // ===== 周历 =====
+                            WeekCalendar(
                                 viewModel: viewModel,
                                 geometry: geometry,
-                                dragProgress: $dragProgress,
-                                isDragging: $isDragging,
-                                baseDate: $carouselBaseDate
+                                isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground
                             )
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .padding(.top, geometry.size.height * 0.018)
-                            .padding(.bottom, geometry.size.height * 0.1)
+                            .padding(.top, geometry.size.height * 0.0235)
 
-                            // ===== 按钮区域 =====
-                            VStack {
-                                Spacer()
-                                EditButton(viewModel: viewModel, geometry: geometry, isSelectedDateInPeriod: viewModel.isSelectedDateInPeriod)
-                                    .padding(.bottom, geometry.size.height * 0.036)
-                                    .allowsHitTesting(true)
+                            // ===== 经期状态区域和按钮层叠区域 =====
+                            ZStack(alignment: .center) {
+                                // ===== 经期状态区域（包含整个可滑动区域）=====
+                                PeriodStatusCarousel(
+                                    viewModel: viewModel,
+                                    geometry: geometry,
+                                    dragProgress: $dragProgress,
+                                    isDragging: $isDragging,
+                                    baseDate: $carouselBaseDate
+                                )
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .padding(.top, geometry.size.height * 0.018)
+                                .padding(.bottom, geometry.size.height * 0.1)
+
+                                // ===== 按钮区域 =====
+                                VStack {
+                                    Spacer()
+                                    EditButton(viewModel: viewModel, geometry: geometry, isSelectedDateInPeriod: viewModel.isSelectedDateInPeriod)
+                                        .padding(.bottom, geometry.size.height * 0.036)
+                                        .allowsHitTesting(true)
+                                }
                             }
+                            .frame(height: geometry.size.height * 0.3628)
                         }
-                        .frame(height: geometry.size.height * 0.3628)
+                        .frame(maxHeight: .infinity, alignment: .top)
                     }
-                    .background(
-                        // ===== 渐变背景直接作为内容背景，自动适应高度 =====
-                        GradientBackground(geometry: geometry, periodRatio: periodRatio)
-                    )
 
                     // 我的月经周期区域
                     MenstrualCycleInfo(
