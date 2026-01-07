@@ -276,7 +276,7 @@ struct GradientBackground: View {
             )
             .frame(height: totalHeight)
             .clipShape(BottomCurveShape())
-            .blur(radius: geometry.size.height * 0.0003) // 弧形边缘模糊效果
+            .blur(radius: geometry.size.height * 0.0008) // 弧形边缘模糊效果
             .offset(y: geometry.size.height * driftRatio)
             .onAppear {
                 withAnimation(.easeInOut(duration: 4.8).repeatForever(autoreverses: true)) {
