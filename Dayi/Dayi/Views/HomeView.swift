@@ -6,6 +6,8 @@ struct HomeView: View {
     @State private var isDragging: Bool = false // 是否正在滑动
     @State private var carouselBaseDate: Date = Date() // 轮播组件的基准日期
     @State private var periodRatio: CGFloat = 0 // 背景色的经期比例（0 = 非经期，1 = 经期）
+    @State private var buttonRatio: CGFloat = 0 // 按钮过渡比例
+    @State private var buttonScale: CGFloat = 1 // 按钮面积变化
 
     init(viewModel: PeriodViewModel = PeriodViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -67,28 +69,40 @@ struct HomeView: View {
                         // ===== 底层：渐变背景 =====
                         GradientBackground(geometry: geometry, periodRatio: periodRatio)
 
-                        // ===== 中间层：圆形背景装饰 =====
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    gradient: Gradient(colors:
-                                        viewModel.getDateStatus(for: carouselBaseDate).isInPeriod
-                                            ? [
-                                                Color(red: 1.0, green: 0.984, blue: 0.984),
-                                                Color(red: 1.0, green: 0.620, blue: 0.710)
-                                            ]
-                                            : [
-                                                Color(red: 0.9725, green: 0.9412, blue: 0.9294),
-                                                Color(red: 0.9961, green: 0.9922, blue: 0.9882)
-                                            ]
-                                    ),
-                                    startPoint: .top,
-                                    endPoint: .bottom
+                        // ===== 中间层：圆形背景装饰（淡入淡出过渡）=====
+                        ZStack {
+                            // 非经期圆形（淡出）
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(red: 0.90, green: 0.85, blue: 0.83),
+                                            Color(red: 0.95, green: 0.93, blue: 0.92)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
                                 )
-                            )
-                            .frame(width: geometry.size.height * 0.4, height: geometry.size.height * 0.4)
-                            .blur(radius: geometry.size.height * 0.005)
-                            .opacity(0.8)
+                                .frame(width: geometry.size.height * 0.44, height: geometry.size.height * 0.44)
+                                .blur(radius: geometry.size.height * 0.0164)
+                                .opacity(0.8 * (1 - periodRatio))
+
+                            // 经期圆形（淡入）
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(red: 1.0, green: 0.984, blue: 0.984),
+                                            Color(red: 1.0, green: 0.620, blue: 0.710)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                                .frame(width: geometry.size.height * 0.44, height: geometry.size.height * 0.44)
+                                .blur(radius: geometry.size.height * 0.0164)
+                                .opacity(0.8 * periodRatio)
+                        }
 
                         // ===== 顶层：内容层 =====
                         VStack(spacing: 0) {
@@ -123,7 +137,12 @@ struct HomeView: View {
                                 // ===== 按钮区域 =====
                                 VStack {
                                     Spacer()
-                                    EditButton(viewModel: viewModel, geometry: geometry, isSelectedDateInPeriod: viewModel.isSelectedDateInPeriod)
+                                    EditButton(
+                                        viewModel: viewModel,
+                                        geometry: geometry,
+                                        periodRatio: buttonRatio,
+                                        scale: buttonScale
+                                    )
                                         .padding(.bottom, geometry.size.height * 0.02)
                                         .allowsHitTesting(true)
                                 }
@@ -146,17 +165,33 @@ struct HomeView: View {
             .ignoresSafeArea()
             .onAppear {
                 // 初始化 periodRatio
-                periodRatio = calculatePeriodRatio()
+                let ratio = calculatePeriodRatio()
+                periodRatio = ratio
+                buttonRatio = ratio
             }
             .onChange(of: carouselBaseDate) { oldValue, newValue in
                 // carouselBaseDate 变化时，使用动画更新 periodRatio
                 withAnimation(.easeOut(duration: 0.3)) {
                     periodRatio = calculatePeriodRatio()
                 }
+                withAnimation(.easeOut(duration: 0.25)) {
+                    buttonRatio = calculatePeriodRatio()
+                }
+                withAnimation(.easeOut(duration: 0.12)) {
+                    buttonScale = 1.06
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                    withAnimation(.easeOut(duration: 0.18)) {
+                        buttonScale = 1
+                    }
+                }
             }
             .onChange(of: dragProgress) { oldValue, newValue in
                 // dragProgress 变化时，实时更新 periodRatio（滑动时不需要动画）
                 periodRatio = calculatePeriodRatio()
+                if isDragging {
+                    buttonRatio = periodRatio
+                }
             }
             .onChange(of: isDragging) { oldValue, newValue in
                 // isDragging 状态变化时，更新 periodRatio
@@ -164,6 +199,9 @@ struct HomeView: View {
                     // 滑动结束，使用动画过渡到最终状态
                     withAnimation(.easeOut(duration: 0.2)) {
                         periodRatio = calculatePeriodRatio()
+                    }
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        buttonRatio = calculatePeriodRatio()
                     }
                 }
             }
@@ -192,6 +230,8 @@ struct HomeView: View {
 struct GradientBackground: View {
     let geometry: GeometryProxy
     let periodRatio: CGFloat // 0 = 非经期，1 = 经期，中间值为过渡状态
+    @State private var flowShift: CGFloat = -0.0120
+    @State private var driftRatio: CGFloat = -0.0030
 
     // 经期渐变色
     private let periodTopColor = (r: 254.0/255, g: 229.0/255, b: 234.0/255)  // #FEE5EA
@@ -223,18 +263,29 @@ struct GradientBackground: View {
             let contentHeight = backgroundGeometry.size.height
             let extraHeight = geometry.size.height * 0.035
             let totalHeight = contentHeight + extraHeight
+            let gradientStart = UnitPoint(x: 0.5, y: 0.0 + flowShift)
+            let gradientEnd = UnitPoint(x: 0.5, y: 1.0 + flowShift)
 
             LinearGradient(
                 gradient: Gradient(stops: [
                     .init(color: currentTopColor, location: 0.0),
                     .init(color: currentBottomColor, location: 1.0)
                 ]),
-                startPoint: .top,
-                endPoint: .bottom
+                startPoint: gradientStart,
+                endPoint: gradientEnd
             )
             .frame(height: totalHeight)
             .clipShape(BottomCurveShape())
             .blur(radius: geometry.size.height * 0.0003) // 弧形边缘模糊效果
+            .offset(y: geometry.size.height * driftRatio)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 4.8).repeatForever(autoreverses: true)) {
+                    flowShift = 0.0120
+                }
+                withAnimation(.easeInOut(duration: 5.6).repeatForever(autoreverses: true)) {
+                    driftRatio = 0.0030
+                }
+            }
         }
     }
 }
@@ -299,60 +350,46 @@ struct PeriodStatusCarousel: View {
                             // 向右滑动，切换到前一天
                             let previousDate = baseDate.adding(days: -1)
 
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            // 先平滑完成滑入动画
+                            withAnimation(.easeOut(duration: 0.25)) {
                                 offset = width
-                                dragProgress = 1.0
+                                dragOffset = 0
                             }
 
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                // 使用 transaction 禁用隐式动画，避免时间戳冲突
-                                var transaction = Transaction()
-                                transaction.disablesAnimations = true
-
-                                withTransaction(transaction) {
-                                    // 先更新基准日期，这样 periodRatio 计算时使用的是新日期
-                                    baseDate = previousDate
-
-                                    // 然后重置滑动状态
-                                    isDragging = false
-                                    dragProgress = 0
-                                    offset = 0
-                                    dragOffset = 0
-                                }
+                            // 动画完成后更新状态
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                baseDate = previousDate
+                                offset = 0
+                                isDragging = false
+                                dragProgress = 0
 
                                 // 更新选中日期，触发周历动画
                                 viewModel.selectDate(previousDate)
                                 viewModel.updateWeekDates(for: previousDate)
                             }
+
                         } else if dragOffset < -threshold {
                             // 向左滑动，切换到后一天
                             let nextDate = baseDate.adding(days: 1)
 
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            // 先平滑完成滑入动画
+                            withAnimation(.easeOut(duration: 0.25)) {
                                 offset = -width
-                                dragProgress = -1.0
+                                dragOffset = 0
                             }
 
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                // 使用 transaction 禁用隐式动画，避免时间戳冲突
-                                var transaction = Transaction()
-                                transaction.disablesAnimations = true
-
-                                withTransaction(transaction) {
-                                    // 先更新基准日期，这样 periodRatio 计算时使用的是新日期
-                                    baseDate = nextDate
-
-                                    // 然后重置滑动状态
-                                    isDragging = false
-                                    dragProgress = 0
-                                    offset = 0
-                                    dragOffset = 0
-                                }
+                            // 动画完成后更新状态
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                baseDate = nextDate
+                                offset = 0
+                                isDragging = false
+                                dragProgress = 0
 
                                 // 更新选中日期，触发周历动画
                                 viewModel.selectDate(nextDate)
                                 viewModel.updateWeekDates(for: nextDate)
                             }
+
                         } else {
                             // 未达到阈值，回弹到当前页
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -443,38 +480,51 @@ struct PeriodStatus: View {
     }
 }
 
-// ===== 编辑按钮组件 =====
+// ===== 编辑按钮组件（淡入淡出过渡）=====
 struct EditButton: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
-    let isSelectedDateInPeriod: Bool
+    let periodRatio: CGFloat // 0 = 非经期，1 = 经期
+    let scale: CGFloat
 
     var body: some View {
-        NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
-            // 根据选中日期是否在经期选择不同的文本和颜色
-            let buttonText = isSelectedDateInPeriod ? "编辑月经日期" : "记录月经"
+        ZStack {
+            // 非经期按钮（淡出）
+            NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
+                Text("记录月经")
+                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold))
+                    .foregroundColor(Color.white)
+                    .padding(.horizontal, geometry.size.width * 0.0407)
+                    .frame(height: geometry.size.height * 0.0468)
+                    .background(Color(red: 255/255, green: 90/255, blue: 125/255))
+                    .cornerRadius(geometry.size.height * 0.0234)
+                    .blur(radius: geometry.size.height * 0.0003)
+                    .shadow(color: Color.black.opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
+            }
+            .simultaneousGesture(TapGesture().onEnded {
+                viewModel.openDatePicker()
+            })
+            .opacity(1 - periodRatio)
 
-            let textColor = isSelectedDateInPeriod
-                ? Color(red: 255/255, green: 90/255, blue: 125/255)  // #FF5A7D
-                : Color.white
-
-            let backgroundColor = isSelectedDateInPeriod
-                ? Color.white
-                : Color(red: 255/255, green: 90/255, blue: 125/255)  // #FF5A7D
-
-            Text(buttonText)
-                .font(.system(size: geometry.size.height * 0.0188, weight: .bold)) // 按钮字号
-                .foregroundColor(textColor)
-                .padding(.horizontal, geometry.size.width * 0.0407) // 按钮左右内边距
-                .frame(height: geometry.size.height * 0.0468) // 按钮高度
-                .background(backgroundColor)
-                .cornerRadius(geometry.size.height * 0.0234) // 按钮圆角
-                .blur(radius: geometry.size.height * 0.0003) // 按钮边缘模糊效果
-                .shadow(color: Color.black.opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023) // 按钮阴影
+            // 经期按钮（淡入）
+            NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
+                Text("编辑月经日期")
+                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold))
+                    .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
+                    .padding(.horizontal, geometry.size.width * 0.0407)
+                    .frame(height: geometry.size.height * 0.0468)
+                    .background(Color.white)
+                    .cornerRadius(geometry.size.height * 0.0234)
+                    .blur(radius: geometry.size.height * 0.0003)
+                    .shadow(color: Color.black.opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
+            }
+            .simultaneousGesture(TapGesture().onEnded {
+                viewModel.openDatePicker()
+            })
+            .opacity(periodRatio)
         }
-        .simultaneousGesture(TapGesture().onEnded {
-            viewModel.openDatePicker()
-        })
+        .animation(.easeInOut(duration: 0.25), value: periodRatio)
+        .scaleEffect(scale)
     }
 }
 

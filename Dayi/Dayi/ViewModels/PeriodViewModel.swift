@@ -7,7 +7,11 @@ class PeriodViewModel: ObservableObject {
 
     // MARK: - 日期选择器状态
     @Published var showDatePicker: Bool = false
-    @Published var tempSelectedDates: Set<Date> = []  // 临时选中的日期集合
+    @Published var tempSelectedDates: Set<Date> = [] {  // 临时选中的日期集合
+        didSet {
+            updateCachedExtendableDates()
+        }
+    }
     @Published var scrollToTodayTrigger: Bool = false  // 滚动到今天触发器
     @Published var isTodayVisible: Bool = true  // 今天是否在可见范围内
 
@@ -17,6 +21,7 @@ class PeriodViewModel: ObservableObject {
 
     // MARK: - 性能优化缓存
     private var cachedRecordedDates: Set<TimeInterval> = []  // 缓存所有记录日期的时间戳
+    private var cachedExtendableDateIntervals: Set<TimeInterval> = []  // 缓存可扩展日期的时间戳
 
     // MARK: - 配置参数
     private let defaultPredictionDays: Int = 6
@@ -205,7 +210,7 @@ class PeriodViewModel: ObservableObject {
     func handleDateTap(_ date: Date) {
         let targetDate = date.startOfDay()
         let today = Date().startOfDay()
-        let extendableDates = getExtendableDates()
+        let isExtendable = cachedExtendableDateIntervals.contains(targetDate.timeIntervalSince1970)
 
         if tempSelectedDates.contains(targetDate) {
             // 已选中 → 反选（取消）
@@ -219,7 +224,7 @@ class PeriodViewModel: ObservableObject {
                 removeFutureDatesAfter(targetDate)
             }
             // 取消过去日期 → 不做级联删除
-        } else if extendableDates.contains(targetDate) {
+        } else if isExtendable {
             // 可扩展日期 → 直接选中（不触发预测）
             tempSelectedDates.insert(targetDate)
         } else {
@@ -250,12 +255,13 @@ class PeriodViewModel: ObservableObject {
     /// 检查是否满足自动预测条件
     func shouldAutoPredict(for date: Date) -> Bool {
         let targetDate = date.startOfDay()
+        let existingPeriods = buildPeriodsFromSelectedDates()
 
         // 条件 A：与下一次经期的距离
-        let conditionA = checkConditionA(for: targetDate)
+        let conditionA = checkConditionA(for: targetDate, existingPeriods: existingPeriods)
 
         // 条件 B：与上一次经期的距离
-        let conditionB = checkConditionB(for: targetDate)
+        let conditionB = checkConditionB(for: targetDate, existingPeriods: existingPeriods)
 
         return conditionA && conditionB
     }
@@ -263,10 +269,7 @@ class PeriodViewModel: ObservableObject {
     /// 条件 A：检查与下一次经期的距离
     /// - 有下一次经期：当前日期 -> 下次开始 >= 10天
     /// - 无下一次经期：成立
-    private func checkConditionA(for date: Date) -> Bool {
-        // 从当前选中日期构建临时经期列表
-        let existingPeriods = buildPeriodsFromSelectedDates()
-
+    private func checkConditionA(for date: Date, existingPeriods: [PeriodRecord]) -> Bool {
         // 找到在 date 之后最近的经期开始日
         let nextPeriodStart = existingPeriods
             .compactMap { $0.startDate }
@@ -284,10 +287,7 @@ class PeriodViewModel: ObservableObject {
     /// 条件 B：检查与上一次经期的距离
     /// - 有上一次经期：上次结束 -> 当前日期 >= 6天
     /// - 无上一次经期：成立
-    private func checkConditionB(for date: Date) -> Bool {
-        // 从当前选中日期构建临时经期列表
-        let existingPeriods = buildPeriodsFromSelectedDates()
-
+    private func checkConditionB(for date: Date, existingPeriods: [PeriodRecord]) -> Bool {
         // 找到在 date 之前最近的经期结束日
         let prevPeriodEnd = existingPeriods
             .compactMap { $0.endDate }
@@ -300,21 +300,6 @@ class PeriodViewModel: ObservableObject {
 
         let gap = date.daysSince(prevEnd)
         return gap >= minGapFromLastPeriod
-    }
-
-    /// 获取所有可扩展日期（每个连续经期段的下一天）
-    func getExtendableDates() -> Set<Date> {
-        let periods = buildPeriodsFromSelectedDates()
-        var extendableDates: Set<Date> = []
-
-        for period in periods {
-            if let endDate = period.endDate {
-                // 经期最后一天的下一天是可扩展日期
-                extendableDates.insert(endDate.adding(days: 1))
-            }
-        }
-
-        return extendableDates
     }
 
     /// 从选中日期集合构建经期记录列表
@@ -369,8 +354,7 @@ class PeriodViewModel: ObservableObject {
         }
 
         // 检查是否是可扩展日期
-        let extendableDates = getExtendableDates()
-        if extendableDates.contains(dateToCheck) {
+        if cachedExtendableDateIntervals.contains(dateToCheck.timeIntervalSince1970) {
             // 只有未来日期的可扩展才显示虚线样式
             if dateToCheck > today {
                 return .extendable
@@ -414,6 +398,21 @@ class PeriodViewModel: ObservableObject {
         cachedRecordedDates = periodRecords.reduce(into: Set<TimeInterval>()) { result, record in
             // 直接使用 dateIntervals，避免调用 dates 计算属性
             result.formUnion(record.dateIntervals)
+        }
+    }
+
+    private func updateCachedExtendableDates() {
+        guard !tempSelectedDates.isEmpty else {
+            cachedExtendableDateIntervals = []
+            return
+        }
+
+        let periods = buildPeriodsFromSelectedDates()
+        cachedExtendableDateIntervals = periods.reduce(into: Set<TimeInterval>()) { result, period in
+            if let endDate = period.endDate {
+                let nextDate = endDate.adding(days: 1).startOfDay()
+                result.insert(nextDate.timeIntervalSince1970)
+            }
         }
     }
 

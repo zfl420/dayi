@@ -7,6 +7,11 @@ struct PeriodLengthStatsView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            let averageDays = viewModel.averagePeriodDays
+            let maxDays = viewModel.maxPeriodDays
+            let historicalPeriods = viewModel.historicalPeriods
+            let currentPeriod = viewModel.currentPeriod
+
             ZStack(alignment: .top) {
                 Color(red: 242/255, green: 242/255, blue: 242/255)
                     .ignoresSafeArea()
@@ -15,28 +20,28 @@ struct PeriodLengthStatsView: View {
                     ScrollView(.vertical, showsIndicators: true) {
                         VStack(spacing: geometry.size.height * 0.0235) {
                             PeriodLengthStatsHeader(
-                                averageDays: viewModel.averagePeriodDays,
+                                averageDays: averageDays,
                                 geometry: geometry
                             )
                             .padding(.top, geometry.size.height * 0.0235)
 
                             ZStack(alignment: .topLeading) {
                                 VStack(spacing: geometry.size.height * 0.01504) {
-                                    if let currentPeriod = viewModel.currentPeriod {
+                                    if let currentPeriod = currentPeriod {
                                         CurrentPeriodCard(
                                             periodData: currentPeriod,
-                                            averageDays: viewModel.averagePeriodDays,
-                                            maxPeriodDays: viewModel.maxPeriodDays,
+                                            averageDays: averageDays,
+                                            maxPeriodDays: maxDays,
                                             geometry: geometry
                                         )
                                     }
 
-                                    if !viewModel.historicalPeriods.isEmpty {
-                                        ForEach(viewModel.historicalPeriods.reversed()) { period in
+                                    if !historicalPeriods.isEmpty {
+                                        ForEach(historicalPeriods.reversed()) { period in
                                             HistoryPeriodRow(
                                                 period: period,
-                                                averageDays: viewModel.averagePeriodDays,
-                                                maxPeriodDays: viewModel.maxPeriodDays,
+                                                averageDays: averageDays,
+                                                maxPeriodDays: maxDays,
                                                 geometry: geometry
                                             )
                                         }
@@ -44,8 +49,8 @@ struct PeriodLengthStatsView: View {
                                 }
 
                                 PeriodAverageReferenceLine(
-                                    averageDays: viewModel.averagePeriodDays,
-                                    maxPeriodDays: viewModel.maxPeriodDays,
+                                    averageDays: averageDays,
+                                    maxPeriodDays: maxDays,
                                     geometry: geometry
                                 )
                             }

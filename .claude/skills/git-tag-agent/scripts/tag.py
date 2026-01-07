@@ -24,6 +24,50 @@ def run_command(command, description):
         return False, e.stderr
 
 
+def has_uncommitted_changes():
+    """检查是否有未提交的修改"""
+    success, output = run_command(
+        'git status --porcelain',
+        "检查 git 状态"
+    )
+    if not success:
+        return False
+
+    # 如果有输出，说明有未提交的修改
+    return len(output.strip()) > 0
+
+
+def commit_changes(version):
+    """自动提交未提交的修改"""
+    print("📝 检测到未提交的修改，正在自动提交...")
+
+    # 添加所有修改
+    success, output = run_command(
+        'git add .',
+        "添加修改到暂存区"
+    )
+
+    if not success:
+        print(f"❌ 添加文件失败: {output}")
+        return False
+
+    # 使用固定格式的提交信息
+    commit_message = f"chore: 版本备份 v{version} - 自动提交"
+
+    # 提交修改
+    success, output = run_command(
+        f'git commit -m "{commit_message}"',
+        "提交修改"
+    )
+
+    if not success:
+        print(f"❌ 提交失败: {output}")
+        return False
+
+    print("✓ 修改已自动提交")
+    return True
+
+
 def get_latest_version():
     """从远程仓库获取最新版本号"""
     # 获取远程所有版本 tag
@@ -90,6 +134,28 @@ def main():
     tag_name = f"v{new_version}-{timestamp}"
 
     print(f"上一版本: v{latest_version}")
+
+    # 检查是否有未提交的修改
+    if has_uncommitted_changes():
+        # 如果有未提交的修改，先自动提交
+        if not commit_changes(new_version):
+            print("❌ 自动提交失败，终止创建 tag")
+            sys.exit(1)
+
+        # 提交后需要先推送到远程
+        print("正在推送提交到远程仓库...")
+        success, output = run_command(
+            'git push origin main',
+            "推送提交"
+        )
+
+        if not success:
+            print(f"❌ 推送提交失败: {output}")
+            sys.exit(1)
+
+        print("✓ 提交已推送到远程")
+        print("")
+
     print(f"正在创建 tag: {tag_name}")
 
     # 创建 tag

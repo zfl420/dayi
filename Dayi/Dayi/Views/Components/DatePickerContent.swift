@@ -24,6 +24,10 @@ struct DatePickerContent: View {
     // 今天是否可见（本地状态，不写回 ObservedObject 避免触发重绘）
     @State private var isTodayVisibleLocal: Bool = true
 
+    @State private var monthSections: [MonthSection] = []
+    @State private var isLoadingPastMonths = false
+    @State private var hasReachedStartLimit = false
+
     // 日期范围：今天往前 60 个月（5 年历史）+ 往后 14 天（两周）
     private var startDate: Date {
         let today = Date().startOfDay()
@@ -60,9 +64,10 @@ struct DatePickerContent: View {
         return finalEndDate
     }
 
-    // 按月分段的数据（懒加载，按 futureEndDate 截断）
-    private var monthSections: [MonthSection] {
-        MonthSection.generateMonthSections(from: startDate, to: futureEndDate)
+    private var minStartDate: Date {
+        let calendar = Calendar.current
+        let components = DateComponents(year: 2000, month: 1, day: 1)
+        return calendar.date(from: components)?.startOfDay() ?? Date.distantPast
     }
 
     // 今天所在月的 ID（稳定标识，不用 index）
@@ -93,6 +98,14 @@ struct DatePickerContent: View {
                         // 计算：星期标题高度 + 顶部边距 + 底部边距
                         Color.clear
                             .frame(height: geometry.size.height * 0.0366)
+
+                        // 顶部加载触发器
+                        Color.clear
+                            .frame(height: 1)
+                            .id("TOP")
+                            .onAppear {
+                                loadPreviousMonths(using: proxy)
+                            }
 
                         // 按月渲染（每个月是独立的 Section）
                         ForEach(Array(monthSections.enumerated()), id: \.element.id) { index, section in
@@ -143,6 +156,7 @@ struct DatePickerContent: View {
 
                     // 加载数据
                     viewModel.loadDatePickerData()
+                    loadInitialMonths()
 
                     // 滚动到底部并在完成后显示内容
                     DispatchQueue.main.async {
@@ -193,5 +207,51 @@ struct DatePickerContent: View {
 
         // 检查 item 是否与容器有交集
         return itemFrame.maxY > containerFrame.minY && itemFrame.minY < containerFrame.maxY
+    }
+
+    private func loadInitialMonths() {
+        monthSections = MonthSection.generateMonthSections(from: startDate, to: futureEndDate)
+        hasReachedStartLimit = startDate <= minStartDate
+    }
+
+    private func loadPreviousMonths(using proxy: ScrollViewProxy) {
+        guard hasScrolledToBottom else { return }
+        guard !isLoadingPastMonths, !hasReachedStartLimit else { return }
+        guard let firstSection = monthSections.first else { return }
+
+        let calendar = Calendar.current
+        guard let firstMonthStart = calendar.date(from: DateComponents(year: firstSection.year, month: firstSection.month, day: 1)) else {
+            return
+        }
+
+        isLoadingPastMonths = true
+
+        let candidateStart = calendar.date(byAdding: .month, value: -12, to: firstMonthStart) ?? firstMonthStart
+        let limitedStart = candidateStart < minStartDate ? minStartDate : candidateStart
+        let endDate = calendar.date(byAdding: .day, value: -1, to: firstMonthStart) ?? firstMonthStart
+
+        guard limitedStart <= endDate else {
+            hasReachedStartLimit = true
+            isLoadingPastMonths = false
+            return
+        }
+
+        let prependSections = MonthSection.generateMonthSections(from: limitedStart, to: endDate)
+        guard !prependSections.isEmpty else {
+            hasReachedStartLimit = true
+            isLoadingPastMonths = false
+            return
+        }
+
+        let anchorId = firstSection.id
+        monthSections.insert(contentsOf: prependSections, at: 0)
+
+        DispatchQueue.main.async {
+            proxy.scrollTo(anchorId, anchor: .top)
+            isLoadingPastMonths = false
+            if limitedStart <= minStartDate {
+                hasReachedStartLimit = true
+            }
+        }
     }
 }

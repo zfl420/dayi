@@ -223,6 +223,10 @@ struct DayCellContent: View {
     }
 
     var body: some View {
+        let showPeriodBackground = viewModel.shouldShowPeriodBackground(date)
+        let showPredictionBorder = viewModel.shouldShowPredictionBorder(date)
+        let periodDayNumber = showPeriodBackground ? viewModel.getDayNumberInPeriod(date) : nil
+
         ZStack {
             // 1. 底层：原有白色选中圆（保持不变）
             if showBackground && state == .selected {
@@ -232,13 +236,13 @@ struct DayCellContent: View {
             }
 
             // 2. 中层：新增背景圈
-            if viewModel.shouldShowPeriodBackground(date) {
+            if showPeriodBackground {
                 // 实心浅红小圆（记录日至今天）
                 Circle()
                     .fill(Color(red: 255.0/255.0, green: 90.0/255.0, blue: 125.0/255.0)) // 经期实心圆颜色
                     .blur(radius: geometry.size.height * 0.0003) // 经期圆模糊效果
                     .frame(width: smallCircleSize, height: smallCircleSize)
-            } else if viewModel.shouldShowPredictionBorder(date) {
+            } else if showPredictionBorder {
                 // 空心红色圆点虚线小圆（今天至第七天）
                 DottedCircle(dotCount: 18, dotRadius: 1.5)
                     .foregroundColor(Color(red: 1.0, green: 90/255.0, blue: 125/255.0)) // 经期预测虚线圆颜色
@@ -249,18 +253,17 @@ struct DayCellContent: View {
             VStack(spacing: geometry.size.height * 0.0023) {
                 Text(date.shortDateString)
                     .font(.system(size: geometry.size.height * 0.0229, weight: fontWeight)) // 日期数字字号
-                    .foregroundColor(viewModel.shouldShowPeriodBackground(date) ? .white : .black)
+                    .foregroundColor(showPeriodBackground ? .white : .black)
 
                 if isToday {
                     Circle()
-                        .fill(viewModel.shouldShowPeriodBackground(date) ? .white : Color(red: 0.6, green: 0.6, blue: 0.6)) // 今天标记圆点颜色
+                        .fill(showPeriodBackground ? .white : Color(red: 0.6, green: 0.6, blue: 0.6)) // 今天标记圆点颜色
                         .frame(width: geometry.size.height * 0.0047, height: geometry.size.height * 0.0047) // 今天标记圆点尺寸
                 }
             }
 
             // 4. 经期天数角标（左上角）
-            if viewModel.shouldShowPeriodBackground(date),
-               let dayNumber = viewModel.getDayNumberInPeriod(date) {
+            if let dayNumber = periodDayNumber {
                 VStack {
                     HStack {
                         // 左上角角标

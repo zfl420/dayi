@@ -7,6 +7,11 @@ struct CycleStatsView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            let averageDays = viewModel.averageCycleDays
+            let maxDays = viewModel.maxCycleDays
+            let completedCycles = viewModel.completedCycles
+            let currentCycle = viewModel.currentCycle
+
             ZStack(alignment: .top) {
                 Color(red: 242/255, green: 242/255, blue: 242/255)
                     .ignoresSafeArea()
@@ -15,28 +20,28 @@ struct CycleStatsView: View {
                     ScrollView(.vertical, showsIndicators: true) {
                         VStack(spacing: geometry.size.height * 0.0235) {
                             CycleStatsHeader(
-                                averageDays: viewModel.averageCycleDays,
+                                averageDays: averageDays,
                                 geometry: geometry
                             )
                             .padding(.top, geometry.size.height * 0.0235)
 
                             ZStack(alignment: .topLeading) {
                                 VStack(spacing: geometry.size.height * 0.01504) {
-                                    if let currentCycle = viewModel.currentCycle {
+                                    if let currentCycle = currentCycle {
                                         CurrentCycleCard(
                                             cycleData: currentCycle,
-                                            averageDays: viewModel.averageCycleDays,
-                                            maxCycleDays: viewModel.maxCycleDays,
+                                            averageDays: averageDays,
+                                            maxCycleDays: maxDays,
                                             geometry: geometry
                                         )
                                     }
 
-                                    if !viewModel.completedCycles.isEmpty {
-                                        ForEach(viewModel.completedCycles.reversed()) { cycle in
+                                    if !completedCycles.isEmpty {
+                                        ForEach(completedCycles.reversed()) { cycle in
                                             HistoryCycleRow(
                                                 cycle: cycle,
-                                                averageDays: viewModel.averageCycleDays,
-                                                maxCycleDays: viewModel.maxCycleDays,
+                                                averageDays: averageDays,
+                                                maxCycleDays: maxDays,
                                                 geometry: geometry
                                             )
                                         }
@@ -44,8 +49,8 @@ struct CycleStatsView: View {
                                 }
 
                                 AverageReferenceLine(
-                                    averageDays: viewModel.averageCycleDays,
-                                    maxCycleDays: viewModel.maxCycleDays,
+                                    averageDays: averageDays,
+                                    maxCycleDays: maxDays,
                                     geometry: geometry
                                 )
                             }

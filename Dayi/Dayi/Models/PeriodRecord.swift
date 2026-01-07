@@ -18,10 +18,10 @@ struct PeriodRecord: Codable, Equatable, Identifiable {
     /// 经期包含的所有日期（存储为 TimeInterval 便于 Codable）
     private(set) var dateIntervals: [TimeInterval]
 
-    /// 经期包含的所有日期（计算属性，已排序）
+    /// 经期包含的所有日期（计算属性）
     var dates: [Date] {
         get {
-            dateIntervals.map { Date(timeIntervalSince1970: $0) }.sorted()
+            dateIntervals.map { Date(timeIntervalSince1970: $0) }
         }
         set {
             dateIntervals = newValue.map { $0.startOfDay().timeIntervalSince1970 }.sorted()
@@ -64,6 +64,26 @@ struct PeriodRecord: Codable, Equatable, Identifiable {
             allDates.append(date.timeIntervalSince1970)
         }
         self.dateIntervals = allDates.sorted()
+    }
+
+    // MARK: - Codable
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case dateIntervals
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        let intervals = try container.decode([TimeInterval].self, forKey: .dateIntervals)
+        dateIntervals = intervals.sorted()
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(dateIntervals, forKey: .dateIntervals)
     }
 
     // MARK: - Equatable
