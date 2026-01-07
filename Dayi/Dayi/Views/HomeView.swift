@@ -360,8 +360,8 @@ struct PeriodStatusCarousel: View {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                                 baseDate = previousDate
                                 offset = 0
-                                isDragging = false
                                 dragProgress = 0
+                                isDragging = false
 
                                 // 更新选中日期，触发周历动画
                                 viewModel.selectDate(previousDate)
@@ -382,8 +382,8 @@ struct PeriodStatusCarousel: View {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                                 baseDate = nextDate
                                 offset = 0
-                                isDragging = false
                                 dragProgress = 0
+                                isDragging = false
 
                                 // 更新选中日期，触发周历动画
                                 viewModel.selectDate(nextDate)

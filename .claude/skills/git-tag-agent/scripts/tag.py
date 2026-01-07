@@ -134,28 +134,6 @@ def main():
     tag_name = f"v{new_version}-{timestamp}"
 
     print(f"上一版本: v{latest_version}")
-
-    # 检查是否有未提交的修改
-    if has_uncommitted_changes():
-        # 如果有未提交的修改，先自动提交
-        if not commit_changes(new_version):
-            print("❌ 自动提交失败，终止创建 tag")
-            sys.exit(1)
-
-        # 提交后需要先推送到远程
-        print("正在推送提交到远程仓库...")
-        success, output = run_command(
-            'git push origin main',
-            "推送提交"
-        )
-
-        if not success:
-            print(f"❌ 推送提交失败: {output}")
-            sys.exit(1)
-
-        print("✓ 提交已推送到远程")
-        print("")
-
     print(f"正在创建 tag: {tag_name}")
 
     # 创建 tag
