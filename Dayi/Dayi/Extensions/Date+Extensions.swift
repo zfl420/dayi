@@ -1,5 +1,24 @@
 import Foundation
 
+private enum DateFormatters {
+    static let weekday: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter
+    }()
+    static let monthDay: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M月d日"
+        formatter.locale = Locale(identifier: "zh_CN")
+        return formatter
+    }()
+    static let day: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d"
+        return formatter
+    }()
+}
+
 extension Date {
     func startOfDay() -> Date {
         Calendar.current.startOfDay(for: self)
@@ -19,22 +38,15 @@ extension Date {
     }
 
     var weekdayName: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE"
-        return formatter.string(from: self)
+        DateFormatters.weekday.string(from: self)
     }
 
     var monthDayString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "M月d日"
-        formatter.locale = Locale(identifier: "zh_CN")
-        return formatter.string(from: self)
+        DateFormatters.monthDay.string(from: self)
     }
 
     var shortDateString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d"
-        return formatter.string(from: self)
+        DateFormatters.day.string(from: self)
     }
 
     func getWeekStart() -> Date {

@@ -25,10 +25,20 @@ class PeriodViewModel: ObservableObject {
 
     // MARK: - 日期监听
     private var dateCheckTimer: Timer?
+    private var lastObservedToday: Date
+
+    // Cached formatter to avoid repeated allocations in SwiftUI updates.
+    private static let displayDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M月d日"
+        formatter.locale = Locale(identifier: "zh_CN")
+        return formatter
+    }()
 
     init() {
         let today = Date().startOfDay()
         self.selectedDate = today
+        self.lastObservedToday = today
         updateWeekDates(for: today)
         loadRecords()
         startDateMonitoring()
@@ -45,11 +55,15 @@ class PeriodViewModel: ObservableObject {
             guard let self = self else { return }
             let today = Date().startOfDay()
 
-            // 如果当前选中的日期不是今天，自动更新到今天
-            if !self.selectedDate.isSameDay(as: today) {
+            // 仅在跨天时检查是否需要自动跳转
+            guard !self.lastObservedToday.isSameDay(as: today) else { return }
+
+            if self.selectedDate.isSameDay(as: self.lastObservedToday) {
                 self.selectedDate = today
                 self.updateWeekDates(for: today)
             }
+
+            self.lastObservedToday = today
         }
     }
 
@@ -81,10 +95,7 @@ class PeriodViewModel: ObservableObject {
     // MARK: - Computed Properties
 
     var displayDateText: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "M月d日"
-        formatter.locale = Locale(identifier: "zh_CN")
-        return formatter.string(from: selectedDate)
+        Self.displayDateFormatter.string(from: selectedDate)
     }
 
     var currentPeriodDay: Int? {
@@ -380,7 +391,7 @@ class PeriodViewModel: ObservableObject {
 
     func savePeriodRecords() {
         // 从散点日期构建经期记录
-        periodRecords = buildPeriodsFromSelectedDates()
+        periodRecords = normalizeRecords(buildPeriodsFromSelectedDates())
 
         // 更新当前记录（最新的一条）
         currentPeriodRecord = periodRecords.last
@@ -478,8 +489,8 @@ class PeriodViewModel: ObservableObject {
         // 加载新格式数据
         if let data = UserDefaults.standard.data(forKey: recordsKey),
            let records = try? JSONDecoder().decode([PeriodRecord].self, from: data) {
-            self.periodRecords = records
-            self.currentPeriodRecord = records.last
+            self.periodRecords = normalizeRecords(records)
+            self.currentPeriodRecord = periodRecords.last
             // 更新缓存
             updateCachedDates()
         }
@@ -501,11 +512,16 @@ class PeriodViewModel: ObservableObject {
         // 尝试读取旧数据并迁移
         if let legacyData = UserDefaults.standard.data(forKey: legacyRecordsKey),
            let legacyRecords = try? JSONDecoder().decode([LegacyPeriodRecord].self, from: legacyData) {
-            let newRecords = legacyRecords.map { $0.toNewFormat() }
+            let newRecords = normalizeRecords(legacyRecords.map { $0.toNewFormat() })
             if let newData = try? JSONEncoder().encode(newRecords) {
                 UserDefaults.standard.set(newData, forKey: recordsKey)
             }
         }
+    }
+
+    // Ensure records are in chronological order for correct stats and status.
+    private func normalizeRecords(_ records: [PeriodRecord]) -> [PeriodRecord] {
+        records.sorted { ($0.startDate ?? Date.distantPast) < ($1.startDate ?? Date.distantPast) }
     }
 
     // MARK: - 周期统计计算
@@ -525,6 +541,7 @@ class PeriodViewModel: ObservableObject {
                   let nextStart = nextPeriod.startDate else { continue }
 
             let cycleDays = nextStart.daysSince(currentStart)
+            guard cycleDays > 0 else { continue }
 
             cycles.append(CycleData(
                 periodStartDate: currentStart,

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>经期追踪应用 - UI 优化预览</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(180deg,
+                #FFE5EC 0%,
+                #FFB6C1 40%,
+                #FF8FA3 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow:
+                0 8px 32px rgba(255, 90, 125, 0.1),
+                0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .soft-shadow {
+            box-shadow:
+                -4px -4px 12px rgba(255, 255, 255, 0.5),
+                4px 4px 12px rgba(255, 90, 125, 0.15);
+        }
+
+        .day-circle {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .day-circle:hover {
+            transform: scale(1.05);
+        }
+
+        .current-day {
+            background: linear-gradient(135deg, #FF5A7D 0%, #FF8FA3 100%);
+            box-shadow:
+                0 4px 12px rgba(255, 90, 125, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .period-day {
+            background: transparent;
+            border: 2px dashed #FF5A7D;
+        }
+
+        .status-circle {
+            background: linear-gradient(135deg,
+                rgba(255, 255, 255, 0.9) 0%,
+                rgba(255, 235, 240, 0.9) 100%);
+            backdrop-filter: blur(20px);
+            box-shadow:
+                0 12px 40px rgba(255, 90, 125, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .edit-button {
+            background: white;
+            color: #FF5A7D;
+            transition: all 0.2s ease;
+            box-shadow:
+                0 4px 16px rgba(255, 90, 125, 0.15);
+        }
+
+        .edit-button:hover {
+            background: #FF5A7D;
+            color: white;
+            box-shadow:
+                0 6px 24px rgba(255, 90, 125, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .info-card {
+            transition: all 0.2s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 12px 40px rgba(255, 90, 125, 0.15),
+                0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        .status-bar {
+            height: 44px;
+            background: transparent;
+        }
+
+        .home-indicator {
+            width: 134px;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 100px;
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+    <!-- iPhone Frame -->
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="relative w-full max-w-[393px] mx-auto">
+            <!-- Status Bar -->
+            <div class="status-bar flex items-center justify-between px-6 text-sm font-medium text-gray-900">
+                <div class="flex items-center gap-1">
+                    <span>18:49</span>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                    </svg>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                    </svg>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    <div class="flex items-center gap-0.5">
+                        <div class="w-6 h-3 border border-gray-900 rounded-sm relative">
+                            <div class="absolute inset-0.5 bg-gray-900 rounded-sm"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="bg-transparent pb-8 pt-4">
+                <!-- Date Header -->
+                <div class="text-center mb-8">
+                    <h1 class="text-2xl font-medium text-gray-900">1月5日</h1>
+                </div>
+
+                <!-- Week Calendar -->
+                <div class="px-6 mb-12">
+                    <div class="grid grid-cols-7 gap-2 mb-3">
+                        <div class="text-center text-xs text-gray-700 font-medium">今天</div>
+                        <div class="text-center text-xs text-gray-700 font-medium">二</div>
+                        <div class="text-center text-xs text-gray-700 font-medium">三</div>
+                        <div class="text-center text-xs text-gray-700 font-medium">四</div>
+                        <div class="text-center text-xs text-gray-700 font-medium">五</div>
+                        <div class="text-center text-xs text-gray-700 font-medium">六</div>
+                        <div class="text-center text-xs text-gray-700 font-medium">日</div>
+                    </div>
+                    <div class="grid grid-cols-7 gap-2">
+                        <!-- Current Day -->
+                        <div class="relative">
+                            <div class="current-day day-circle w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg relative">
+                                5
+                                <div class="absolute -top-1 -left-1 w-5 h-5 bg-white rounded-full flex items-center justify-center text-xs text-[#FF5A7D] font-bold shadow-md">
+                                    1
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Period Days -->
+                        <div class="period-day day-circle w-12 h-12 rounded-full flex items-center justify-center text-[#FF5A7D] font-semibold text-lg">
+                            6
+                        </div>
+                        <div class="period-day day-circle w-12 h-12 rounded-full flex items-center justify-center text-[#FF5A7D] font-semibold text-lg">
+                            7
+                        </div>
+                        <div class="period-day day-circle w-12 h-12 rounded-full flex items-center justify-center text-[#FF5A7D] font-semibold text-lg">
+                            8
+                        </div>
+                        <div class="period-day day-circle w-12 h-12 rounded-full flex items-center justify-center text-[#FF5A7D] font-semibold text-lg">
+                            9
+                        </div>
+                        <div class="period-day day-circle w-12 h-12 rounded-full flex items-center justify-center text-[#FF5A7D] font-semibold text-lg">
+                            10
+                        </div>
+                        <!-- Regular Day -->
+                        <div class="day-circle w-12 h-12 rounded-full flex items-center justify-center text-gray-700 font-medium text-lg">
+                            11
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Circle -->
+                <div class="flex justify-center mb-8 px-6">
+                    <div class="status-circle w-72 h-72 rounded-full flex flex-col items-center justify-center">
+                        <div class="text-sm text-gray-600 font-medium mb-3">经期</div>
+                        <div class="text-6xl font-bold text-gray-900 mb-1">第 1 天</div>
+                        <div class="mt-6">
+                            <button class="edit-button px-8 py-3 rounded-full font-medium text-base">
+                                编辑月经日期
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Section -->
+                <div class="px-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">我的月经周期</h2>
+
+                    <div class="space-y-3">
+                        <!-- Card 1 -->
+                        <div class="info-card glass-card rounded-2xl p-5">
+                            <div class="text-sm text-gray-600 mb-2">上一个月经周期天数</div>
+                            <div class="text-3xl font-bold text-gray-900">10 天</div>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div class="info-card glass-card rounded-2xl p-5 flex items-center justify-between cursor-pointer">
+                            <div>
+                                <div class="text-sm text-gray-600 mb-2">月经周期天数变化</div>
+                                <div class="text-3xl font-bold text-gray-900">10-22 天</div>
+                            </div>
+                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+
+                        <!-- Card 3 -->
+                        <div class="info-card glass-card rounded-2xl p-5 flex items-center justify-between cursor-pointer">
+                            <div>
+                                <div class="text-sm text-gray-600 mb-2">经期长度变化</div>
+                                <div class="text-3xl font-bold text-gray-900">6 天</div>
+                            </div>
+                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Home Indicator -->
+                <div class="flex justify-center mt-8">
+                    <div class="home-indicator"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Design Notes Panel -->
+    <div class="fixed top-4 right-4 max-w-xs bg-white rounded-2xl shadow-2xl p-6 hidden lg:block">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">🎨 设计优化说明</h3>
+        <ul class="space-y-3 text-sm text-gray-700">
+            <li class="flex items-start gap-2">
+                <span class="text-green-500 font-bold">✓</span>
+                <span><strong>玻璃态卡片：</strong>使用半透明白色背景 + 柔和阴影</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-green-500 font-bold">✓</span>
+                <span><strong>渐变主题色：</strong>保持 #FF5A7D，添加渐变效果</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-green-500 font-bold">✓</span>
+                <span><strong>圆角优化：</strong>统一使用 12-16px 圆角</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-green-500 font-bold">✓</span>
+                <span><strong>交互优化：</strong>悬停状态 + 平滑过渡动画</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-green-500 font-bold">✓</span>
+                <span><strong>视觉层次：</strong>改进阴影和间距，提升可读性</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-green-500 font-bold">✓</span>
+                <span><strong>iOS 风格：</strong>保持原生 iOS 状态栏和底部指示器</span>
+            </li>
+            <li class="flex items-start gap-2">
+                <span class="text-green-500 font-bold">✓</span>
+                <span><strong>无障碍支持：</strong>尊重用户的减少动画偏好设置</span>
+            </li>
+        </ul>
+
+        <div class="mt-6 pt-4 border-t border-gray-200">
+            <p class="text-xs text-gray-500">
+                设计风格：Soft UI Evolution + 玻璃态<br>
+                色彩方案：粉色主题 (#FF5A7D)<br>
+                字体：Noto Sans SC
+            </p>
+        </div>
+    </div>
+</body>
+</html>

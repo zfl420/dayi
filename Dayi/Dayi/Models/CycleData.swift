@@ -1,5 +1,14 @@
 import Foundation
 
+private enum DateFormatters {
+    static let ymd: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy年M月d日"
+        formatter.locale = Locale(identifier: "zh_CN")
+        return formatter
+    }()
+}
+
 /// 已完成的周期数据
 struct CycleData: Identifiable {
     let id = UUID()
@@ -11,12 +20,8 @@ struct CycleData: Identifiable {
 
     /// 周期日期范围文本
     var dateRangeText: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy年M月d日"
-        formatter.locale = Locale(identifier: "zh_CN")
-
-        let startText = formatter.string(from: periodStartDate)
-        let endText = formatter.string(from: nextPeriodStartDate.adding(days: -1))
+        let startText = DateFormatters.ymd.string(from: periodStartDate)
+        let endText = DateFormatters.ymd.string(from: nextPeriodStartDate.adding(days: -1))
 
         return "\(startText) - \(endText)"
     }
@@ -35,12 +40,8 @@ struct CurrentCycleData {
 
     /// 周期日期范围文本
     var dateRangeText: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy年M月d日"
-        formatter.locale = Locale(identifier: "zh_CN")
-
-        let startText = formatter.string(from: cycleStartDate)
-        let endText = formatter.string(from: predictedEndDate)
+        let startText = DateFormatters.ymd.string(from: cycleStartDate)
+        let endText = DateFormatters.ymd.string(from: predictedEndDate)
 
         return "\(startText) - \(endText)"
     }
@@ -55,12 +56,8 @@ struct PeriodData: Identifiable {
 
     /// 经期日期范围文本
     var dateRangeText: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy年M月d日"
-        formatter.locale = Locale(identifier: "zh_CN")
-
-        let startText = formatter.string(from: periodStartDate)
-        let endText = formatter.string(from: periodEndDate)
+        let startText = DateFormatters.ymd.string(from: periodStartDate)
+        let endText = DateFormatters.ymd.string(from: periodEndDate)
 
         return "\(startText) - \(endText)"
     }
@@ -75,13 +72,9 @@ struct CurrentPeriodData {
 
     /// 经期日期范围文本
     var dateRangeText: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy年M月d日"
-        formatter.locale = Locale(identifier: "zh_CN")
-
         let today = Date().startOfDay()
-        let startText = formatter.string(from: periodStartDate)
-        let endText = formatter.string(from: today)
+        let startText = DateFormatters.ymd.string(from: periodStartDate)
+        let endText = DateFormatters.ymd.string(from: today)
 
         return "\(startText) - \(endText)"
     }

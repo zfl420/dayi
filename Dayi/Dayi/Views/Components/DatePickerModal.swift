@@ -32,8 +32,7 @@ struct DatePickerSheetContent: View {
                 .padding(.bottom, geometry.size.height * 0.02)
         }
         .background(Color.white)
-        .presentationDetents([.fraction(0.99)])
-        .presentationDragIndicator(.visible)
+        .iOS16SheetPresentation()
     }
 }
 
@@ -70,6 +69,6 @@ struct DatePickerFullScreenContent: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .navigationBar)
+        .iOS16NavigationBarHidden()
     }
 }

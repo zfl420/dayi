@@ -39,7 +39,8 @@ struct HistoryCycleRow: View {
     }
 
     private var periodRatio: CGFloat {
-        CGFloat(cycle.periodDays) / CGFloat(cycle.cycleDays)
+        guard cycle.cycleDays > 0 else { return 0 }
+        return CGFloat(cycle.periodDays) / CGFloat(cycle.cycleDays)
     }
 
     private var maxBarWidth: CGFloat {
@@ -48,7 +49,8 @@ struct HistoryCycleRow: View {
     }
 
     private var scaledBarWidth: CGFloat {
-        let ratio = CGFloat(cycle.cycleDays) / CGFloat(maxCycleDays)
-        return maxBarWidth * ratio
+        let safeMax = max(maxCycleDays, 1)
+        let ratio = CGFloat(cycle.cycleDays) / CGFloat(safeMax)
+        return maxBarWidth * max(min(ratio, 1), 0)
     }
 }

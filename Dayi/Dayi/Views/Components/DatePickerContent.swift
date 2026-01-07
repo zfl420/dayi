@@ -50,12 +50,10 @@ struct DatePickerContent: View {
 
         // ✅ 调试打印：验证最后一天是周日
         #if DEBUG
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd (E)"
         let finalWeekday = calendar.component(.weekday, from: finalEndDate)
-        print("📅 [futureEndDate] today: \(formatter.string(from: today))")
-        print("📅 [futureEndDate] endOfThisWeek: \(formatter.string(from: endOfThisWeek))")
-        print("📅 [futureEndDate] futureEndDate: \(formatter.string(from: finalEndDate)), weekday=\(finalWeekday) (1=周日)")
+        print("📅 [futureEndDate] today: \(DateFormatters.debugYmdWeek.string(from: today))")
+        print("📅 [futureEndDate] endOfThisWeek: \(DateFormatters.debugYmdWeek.string(from: endOfThisWeek))")
+        print("📅 [futureEndDate] futureEndDate: \(DateFormatters.debugYmdWeek.string(from: finalEndDate)), weekday=\(finalWeekday) (1=周日)")
         assert(finalWeekday == 1, "❌ futureEndDate 必须是周日！")
         #endif
 
@@ -74,6 +72,14 @@ struct DatePickerContent: View {
         let year = calendar.component(.year, from: today)
         let month = calendar.component(.month, from: today)
         return "\(year)-\(month)"
+    }
+
+    private enum DateFormatters {
+        static let debugYmdWeek: DateFormatter = {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd (E)"
+            return formatter
+        }()
     }
 
 

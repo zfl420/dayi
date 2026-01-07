@@ -13,11 +13,11 @@ struct HomeView: View {
 
     // 计算整体背景色
     private var overallBackgroundColor: Color {
-        // 非经期背景色
-        let normalColor = Color(red: 248/255.0, green: 243/255.0, blue: 241/255.0)
+        // 非经期背景色（与渐变底部颜色一致）
+        let normalColor = Color(red: 244/255.0, green: 233/255.0, blue: 231/255.0)
 
-        // 经期背景色（与渐变顶部色系相同但更淡）
-        let periodColor = Color(red: 254/255.0, green: 235/255.0, blue: 240/255.0)
+        // 经期背景色（与渐变顶部颜色一致）
+        let periodColor = Color(red: 254/255.0, green: 229/255.0, blue: 234/255.0)
 
         // 使用轮播组件的基准日期判断是否在经期
         let isInPeriod = viewModel.getDateStatus(for: carouselBaseDate).isInPeriod
@@ -54,17 +54,16 @@ struct HomeView: View {
         return currentValue + (targetValue - currentValue) * progress
     }
 
-    var body: some View {
-        NavigationStack {
-            GeometryReader { geometry in
-                ZStack(alignment: .top) {
-                    // ===== 整体背景色 =====
-                    overallBackgroundColor
-                        .ignoresSafeArea()
+    private var mainContent: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .top) {
+                // ===== 整体背景色 =====
+                overallBackgroundColor
+                    .ignoresSafeArea()
 
-                    VStack(spacing: 0) {
+                VStack(spacing: 0) {
                     // ===== 渐变背景区域 =====
-                    ZStack(alignment: .center) {
+                    ZStack(alignment: .bottom) {
                         // ===== 底层：渐变背景 =====
                         GradientBackground(geometry: geometry, periodRatio: periodRatio)
 
@@ -87,7 +86,7 @@ struct HomeView: View {
                                     endPoint: .bottom
                                 )
                             )
-                            .frame(width: geometry.size.height * 0.5, height: geometry.size.height * 0.5)
+                            .frame(width: geometry.size.height * 0.4, height: geometry.size.height * 0.4)
                             .blur(radius: geometry.size.height * 0.005)
                             .opacity(0.8)
 
@@ -125,7 +124,7 @@ struct HomeView: View {
                                 VStack {
                                     Spacer()
                                     EditButton(viewModel: viewModel, geometry: geometry, isSelectedDateInPeriod: viewModel.isSelectedDateInPeriod)
-                                        .padding(.bottom, geometry.size.height * 0.036)
+                                        .padding(.bottom, geometry.size.height * 0.02)
                                         .allowsHitTesting(true)
                                 }
                             }
@@ -143,34 +142,48 @@ struct HomeView: View {
 
                     Spacer()
                 }
-                }
-                .ignoresSafeArea()
-                .onAppear {
-                    // 初始化 periodRatio
+            }
+            .ignoresSafeArea()
+            .onAppear {
+                // 初始化 periodRatio
+                periodRatio = calculatePeriodRatio()
+            }
+            .onChange(of: carouselBaseDate) { oldValue, newValue in
+                // carouselBaseDate 变化时，使用动画更新 periodRatio
+                withAnimation(.easeOut(duration: 0.3)) {
                     periodRatio = calculatePeriodRatio()
                 }
-                .onChange(of: carouselBaseDate) { oldValue, newValue in
-                    // carouselBaseDate 变化时，使用动画更新 periodRatio
-                    withAnimation(.easeOut(duration: 0.3)) {
+            }
+            .onChange(of: dragProgress) { oldValue, newValue in
+                // dragProgress 变化时，实时更新 periodRatio（滑动时不需要动画）
+                periodRatio = calculatePeriodRatio()
+            }
+            .onChange(of: isDragging) { oldValue, newValue in
+                // isDragging 状态变化时，更新 periodRatio
+                if !newValue {
+                    // 滑动结束，使用动画过渡到最终状态
+                    withAnimation(.easeOut(duration: 0.2)) {
                         periodRatio = calculatePeriodRatio()
                     }
                 }
-                .onChange(of: dragProgress) { oldValue, newValue in
-                    // dragProgress 变化时，实时更新 periodRatio（滑动时不需要动画）
-                    periodRatio = calculatePeriodRatio()
-                }
-                .onChange(of: isDragging) { oldValue, newValue in
-                    // isDragging 状态变化时，更新 periodRatio
-                    if !newValue {
-                        // 滑动结束，使用动画过渡到最终状态
-                        withAnimation(.easeOut(duration: 0.2)) {
-                            periodRatio = calculatePeriodRatio()
-                        }
-                    }
-                }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.hidden, for: .navigationBar)
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .iOS16ToolbarBackgroundHidden()
+    }
+
+    var body: some View {
+        Group {
+            if #available(iOS 16.0, *) {
+                NavigationStack {
+                    mainContent
+                }
+            } else {
+                NavigationView {
+                    mainContent
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
+            }
         }
     }
 }
@@ -185,8 +198,8 @@ struct GradientBackground: View {
     private let periodBottomColor = (r: 255.0/255, g: 90.0/255, b: 125.0/255)   // #FF5A7D
 
     // 非经期渐变色
-    private let normalTopColor = (r: 243.0/255, g: 233.0/255, b: 230.0/255)  // #F3E9E6
-    private let normalBottomColor = (r: 254.0/255, g: 255.0/255, b: 254.0/255)  // #FEFDFD
+    private let normalTopColor = (r: 244.0/255, g: 233.0/255, b: 231.0/255)
+    private let normalBottomColor = (r: 253.0/255, g: 253.0/255, b: 253.0/255)
 
     // 根据 periodRatio 插值计算当前颜色
     private var currentTopColor: Color {
