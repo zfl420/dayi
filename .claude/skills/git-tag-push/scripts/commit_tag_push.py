@@ -109,6 +109,17 @@ def get_short_commit_hash():
     return output.strip()
 
 
+def show_status_summary():
+    success, output = run_command(
+        "git status -sb",
+        "确认工作区状态"
+    )
+    if not success:
+        print(f"❌ 获取工作区状态失败: {output}")
+        return
+    print(output.strip())
+
+
 def push_commit():
     success, output = run_command(
         "git push",
@@ -198,6 +209,8 @@ def main():
     print("推送 tag 完成！")
     print("")
     print("✓ 自动提交 + 版本备份完成")
+    print("工作区状态:")
+    show_status_summary()
     print(f"Tag: {tag_name}")
 
 

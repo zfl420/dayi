@@ -16,6 +16,7 @@ description: "自动 commit、创建版本 tag 并推送（轻量化流程）"
 - 从远程仓库自动获取最新版本并递增
 - 起始版本：v0.6.0
 - 自动推送 commit 与 tag
+- 推送完成后自动输出工作区状态（`git status -sb`）
 
 ## 使用方法
 
@@ -40,6 +41,7 @@ python3 .claude/skills/git-tag-push/scripts/commit_tag_push.py "chore: 自动提
 7. 创建 Git tag
 8. 推送 commit（`git push`，若无上游则推送到 `origin`）
 9. 推送 tag 到远程仓库
+10. 输出工作区状态（`git status -sb`）
 
 ## 版本号递增规则
 

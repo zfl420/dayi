@@ -91,8 +91,17 @@ struct WeekCalendar: View {
             }
         }
         .onChange(of: viewModel.currentWeekDates) { _, _ in
-            updateSelectedIndex(animated: false)
-            updateCircleColor(animated: false)
+            if isSwipingWeek {
+                // 跨周切换时,延迟更新避免与 selectedDate 的动画冲突
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    updateSelectedIndex(animated: false)
+                    updateCircleColor(animated: false)
+                }
+            } else {
+                // 非跨周切换时,立即更新
+                updateSelectedIndex(animated: false)
+                updateCircleColor(animated: false)
+            }
         }
         .onChange(of: isTodayInPeriod) { _, _ in
             // 背景状态变化时过渡颜色

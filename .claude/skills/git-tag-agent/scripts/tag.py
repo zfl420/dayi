@@ -129,6 +129,11 @@ def main():
     latest_version = get_latest_version()
     new_version = increment_version(latest_version)
 
+    # 检查并自动提交未提交的修改
+    if has_uncommitted_changes():
+        if not commit_changes(new_version):
+            sys.exit(1)
+
     # 生成时间戳
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     tag_name = f"v{new_version}-{timestamp}"
