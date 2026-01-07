@@ -77,8 +77,8 @@ def get_latest_version():
     )
 
     if not success:
-        print("获取远程 tags 失败，使用默认版本 v0.6.0")
-        return "0.6.0"
+        print("获取远程 tags 失败，使用默认版本 v0.0.0")
+        return "0.0.0"
 
     # 匹配版本号格式: v0.0.0-timestamp
     pattern = r'refs/tags/v(\d+)\.(\d+)\.(\d+)-'
@@ -94,7 +94,7 @@ def get_latest_version():
 
     if not versions:
         # 没有找到版本 tag，使用默认版本
-        return "0.6.0"
+        return "0.0.0"
 
     # 找到最大版本号
     latest = max(versions)
