@@ -79,3 +79,16 @@ struct CurrentPeriodData {
         return "\(startText) - \(endText)"
     }
 }
+
+/// 周期信息(用于进度环计算)
+struct CycleInfo {
+    enum CycleType {
+        case beforeAllPeriods               // 无历史记录
+        case historicalCycle(CycleData)     // 历史周期
+        case currentCycle(CurrentCycleData) // 当前周期
+    }
+
+    let type: CycleType
+    let cycleStartDate: Date    // 周期开始日
+    let cycleDays: Int          // 周期总天数
+}

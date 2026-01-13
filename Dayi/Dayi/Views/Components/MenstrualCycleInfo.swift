@@ -50,101 +50,73 @@ struct MenstrualCycleInfo: View {
         }
     }
 
-    // 月经周期数据
-    private var cycleItems: [(String, String)] {
+    private var cycleItems: [(title: String, value: String, iconName: String, isLink: Bool)] {
         [
-            ("上一个月经周期天数", lastCycleDaysText),
-            ("月经周期天数变化", cycleRangeText),
-            ("经期长度变化", periodLengthRangeText)
+            (title: "上一个月经周期天数", value: lastCycleDaysText, iconName: "clock.arrow.circlepath", isLink: false),
+            (title: "月经周期天数变化", value: cycleRangeText, iconName: "arrow.left.and.right.circle", isLink: true),
+            (title: "经期长度变化", value: periodLengthRangeText, iconName: "drop.fill", isLink: true)
         ]
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: geometry.size.height * 0.02) {
-            // 月经周期模块
-            sectionView(title: "我的月经周期", items: cycleItems)
-        }
-        .padding(.horizontal, geometry.size.width * 0.0509) // 整体区域左右边距
-    }
-
-    // 可复用的模块视图
-    @ViewBuilder
-    private func sectionView(title: String, items: [(String, String)]) -> some View {
-        VStack(alignment: .leading, spacing: geometry.size.height * 0.02) {
-            // 标题区域
-            Text(title)
-                .font(.system(size: geometry.size.height * 0.025, weight: .semibold)) // 标题字号
-                .foregroundColor(.black)
-
-            // 白色卡片内容区
-            VStack(spacing: geometry.size.height * 0.02) {
-                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    // 根据 index 决定是否使用 NavigationLink
-                    Group {
-                        if index == 1 {
-                            // 月经周期天数变化 - 使用 NavigationLink
-                            NavigationLink(destination: CycleStatsView(viewModel: viewModel)) {
-                                itemRow(index: index, item: item)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        } else if index == 2 {
-                            // 经期长度变化 - 使用 NavigationLink
-                            NavigationLink(destination: PeriodLengthStatsView(viewModel: viewModel)) {
-                                itemRow(index: index, item: item)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        } else {
-                            // 上一个周期长度 - 不可点击
-                            itemRow(index: index, item: item)
+        HStack(spacing: geometry.size.width * 0.0204) {
+            ForEach(cycleItems.indices, id: \.self) { index in
+                let item = cycleItems[index]
+                Group {
+                    if item.isLink {
+                        NavigationLink(destination: destinationView(for: index)) {
+                            statCard(title: item.title, value: item.value, iconName: item.iconName)
                         }
-                    }
-
-                    // 分割线
-                    if index < items.count - 1 {
-                        Rectangle()
-                            .fill(Color(red: 240/255, green: 240/255, blue: 240/255)) // 分割线颜色
-                            .frame(height: 1) // 分割线高度
-                            .padding(.horizontal, geometry.size.width * 0.0407) // 分割线左右边距
+                        .buttonStyle(PlainButtonStyle())
+                    } else {
+                        statCard(title: item.title, value: item.value, iconName: item.iconName)
                     }
                 }
             }
-            .padding(.vertical, geometry.size.height * 0.0235) // 白色卡片上下内边距
-            .background(Color.white) // 卡片白色背景
-            .cornerRadius(geometry.size.width * 0.0305) // 卡片圆角
+        }
+        .padding(.horizontal, geometry.size.width * 0.0509)
+    }
+
+    @ViewBuilder
+    private func destinationView(for index: Int) -> some View {
+        switch index {
+        case 1:
+            CycleStatsView(viewModel: viewModel)
+        case 2:
+            PeriodLengthStatsView(viewModel: viewModel)
+        default:
+            EmptyView()
         }
     }
 
-    // 单项行视图
-    @ViewBuilder
-    private func itemRow(index: Int, item: (String, String)) -> some View {
-        HStack(spacing: 0) {
-            // 左侧文字区域
-            VStack(alignment: .leading, spacing: geometry.size.height * 0.0047) {
-                // 灰色小标题
-                Text(item.0)
-                    .font(.system(size: geometry.size.height * 0.018)) // 小标题字号
-                    .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 灰色文字颜色
+    private func statCard(title: String, value: String, iconName: String) -> some View {
+        VStack(spacing: geometry.size.height * 0.0070) {
+            Image(systemName: iconName)
+                .font(.system(size: geometry.size.height * 0.0153, weight: .semibold))
+                .foregroundColor(Color(red: 1.000, green: 0.353, blue: 0.490).opacity(0.75))
 
-                // 黑色粗体数据
-                Text(item.1)
-                    .font(.system(size: geometry.size.height * 0.023, weight: .medium)) // 数据字号
-                    .foregroundColor(.black)
-            }
+            Text(value)
+                .font(.system(size: geometry.size.height * 0.0199, weight: .semibold, design: .rounded))
+                .foregroundColor(Color(red: 0.169, green: 0.145, blue: 0.153))
 
-            Spacer()
-
-            // 右侧内容区域
-            if index != 0 {
-                // 周期变化和经期长度变化:显示箭头
-                Text("›")
-                    .font(.system(size: 20, weight: .regular))
-                    .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 箭头颜色
-                    .padding(.trailing, geometry.size.width * 0.0204) // 箭头右侧边距
-            }
+            Text(title)
+                .font(.system(size: geometry.size.height * 0.0106, weight: .bold, design: .rounded))
+                .foregroundColor(Color(red: 0.555, green: 0.506, blue: 0.518))
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
         }
-        .frame(height: geometry.size.height * 0.0657) // 单项行高
-        .contentShape(Rectangle()) // 扩大可点击区域
-        .padding(.horizontal, geometry.size.width * 0.0407) // 单项左右内边距
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, geometry.size.height * 0.0176)
+        .background(
+            RoundedRectangle(cornerRadius: geometry.size.width * 0.0356)
+                .fill(Color.white.opacity(0.75))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: geometry.size.width * 0.0356)
+                .stroke(Color(red: 1.000, green: 0.353, blue: 0.490).opacity(0.08), lineWidth: geometry.size.height * 0.0012)
+        )
+        .shadow(color: Color.black.opacity(0.04), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
     }
 }
 

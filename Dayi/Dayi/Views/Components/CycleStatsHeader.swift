@@ -8,16 +8,16 @@ struct CycleStatsHeader: View {
     var body: some View {
         HStack(spacing: geometry.size.width * 0.0153) {
             Text("你的平均周期天数:")
-                .font(.system(size: geometry.size.height * 0.024, weight: .bold))
+                .font(.system(size: geometry.size.height * 0.024, weight: .bold, design: .rounded))
                 .foregroundColor(.black)
 
             if let days = averageDays {
                 Text("\(days) 天")
-                    .font(.system(size: geometry.size.height * 0.024, weight: .bold))
+                    .font(.system(size: geometry.size.height * 0.024, weight: .bold, design: .rounded))
                     .foregroundColor(.black)
             } else {
                 Text("暂无数据")
-                    .font(.system(size: geometry.size.height * 0.024, weight: .bold))
+                    .font(.system(size: geometry.size.height * 0.024, weight: .bold, design: .rounded))
                     .foregroundColor(.black)
             }
         }

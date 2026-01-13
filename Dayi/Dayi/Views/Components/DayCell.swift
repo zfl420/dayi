@@ -10,7 +10,7 @@ struct DayCell: View {
             // 主圆形背景
             VStack(spacing: geometry.size.height * 0.0023) { // 2/852
                 Text(date.shortDateString)
-                    .font(.system(size: fontSize, weight: fontWeight))
+                    .font(.system(size: fontSize, weight: fontWeight, design: .rounded))
                     .foregroundColor(textColor)
 
                 if isToday {

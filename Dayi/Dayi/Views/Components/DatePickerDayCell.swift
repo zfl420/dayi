@@ -104,19 +104,19 @@ struct DatePickerDayCell: View {
             // 今天标签
             if isToday {
                 Text("今天")
-                    .font(.system(size: geometry.size.height * 0.014 * 1.2, weight: .heavy))
+                    .font(.system(size: geometry.size.height * 0.014 * 1.2, weight: .heavy, design: .rounded))
                     .foregroundColor(isSelected ? primaryColor : Color(red: 100/255.0, green: 100/255.0, blue: 100/255.0))
                     .padding(.bottom, geometry.size.height * 0.008 * 0.2)
             } else {
                 // 占位，保持布局一致
                 Text(" ")
-                    .font(.system(size: geometry.size.height * 0.014))
+                    .font(.system(size: geometry.size.height * 0.014, design: .rounded))
                     .padding(.bottom, geometry.size.height * 0.008 * 0.2)
             }
 
             // 日期数字
             Text(date.shortDateString)
-                .font(.system(size: geometry.size.height * 0.025, weight: dateFontWeight))
+                .font(.system(size: geometry.size.height * 0.025, weight: dateFontWeight, design: .rounded))
                 .foregroundColor(dateTextColor)
                 .padding(.bottom, geometry.size.height * 0.008 * 0.2)
 
@@ -173,7 +173,7 @@ struct DatePickerDayCell: View {
 
             Image(systemName: "checkmark")
                 .foregroundColor(.white)
-                .font(.system(size: checkmarkSize, weight: checkmarkWeight))
+                .font(.system(size: checkmarkSize, weight: checkmarkWeight, design: .rounded))
         }
     }
 
@@ -195,7 +195,7 @@ struct DatePickerDayCell: View {
             // 红色勾
             Image(systemName: "checkmark")
                 .foregroundColor(primaryColor)
-                .font(.system(size: checkmarkSize, weight: checkmarkWeight))
+                .font(.system(size: checkmarkSize, weight: checkmarkWeight, design: .rounded))
         }
     }
 

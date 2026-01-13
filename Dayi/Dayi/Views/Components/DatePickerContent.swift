@@ -185,7 +185,7 @@ struct DatePickerContent: View {
                 HStack(spacing: geometry.size.width * 0.01) {
                     ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { label in
                         Text(label)
-                            .font(.system(size: geometry.size.height * 0.0141, weight: .medium))
+                            .font(.system(size: geometry.size.height * 0.0141, weight: .medium, design: .rounded))
                             .foregroundColor(Color(red: 90/255.0, green: 87/255.0, blue: 86/255.0))
                             .frame(maxWidth: .infinity)
                     }

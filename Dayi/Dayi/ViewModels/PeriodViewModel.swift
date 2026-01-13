@@ -590,6 +590,146 @@ class PeriodViewModel: ObservableObject {
         return total / cycles.count
     }
 
+    /// 获取指定日期所属的周期信息
+    func getCycleInfo(for date: Date) -> CycleInfo? {
+        let targetDate = date.startOfDay()
+
+        // 1. 检查是否在历史周期内
+        for cycle in completedCycles {
+            let cycleStart = cycle.periodStartDate
+            let cycleEnd = cycle.nextPeriodStartDate.adding(days: -1)
+
+            if targetDate >= cycleStart && targetDate <= cycleEnd {
+                return CycleInfo(
+                    type: .historicalCycle(cycle),
+                    cycleStartDate: cycleStart,
+                    cycleDays: cycle.cycleDays
+                )
+            }
+        }
+
+        // 2. 检查是否在当前周期内
+        if let current = currentCycle {
+            let cycleStart = current.cycleStartDate
+            if targetDate >= cycleStart {
+                return CycleInfo(
+                    type: .currentCycle(current),
+                    cycleStartDate: cycleStart,
+                    cycleDays: current.predictedTotalDays
+                )
+            }
+        }
+
+        // 3. 不在任何周期内
+        return nil
+    }
+
+    /// 获取实际经期进度(红色层)
+    func getActualPeriodProgress(for date: Date, cycleInfo: CycleInfo) -> CGFloat {
+        let targetDate = date.startOfDay()
+        let today = Date().startOfDay()
+
+        switch cycleInfo.type {
+        case .beforeAllPeriods:
+            return 0
+
+        case .historicalCycle(let cycle):
+            // 历史周期:经期天数 / 周期天数
+            return CGFloat(cycle.periodDays) / CGFloat(cycle.cycleDays)
+
+        case .currentCycle:
+            // 当前周期:只计算已记录的经期天数
+            guard let latestRecord = periodRecords.last else { return 0 }
+
+            if targetDate <= today {
+                // 已过去的日期:计算到该日期为止的已记录天数
+                let recordedDays = latestRecord.dates.filter { $0 <= targetDate }.count
+                return CGFloat(recordedDays) / CGFloat(cycleInfo.cycleDays)
+            } else {
+                // 未来日期:只显示到今天的已记录天数
+                let recordedDays = latestRecord.dates.filter { $0 <= today }.count
+                return CGFloat(recordedDays) / CGFloat(cycleInfo.cycleDays)
+            }
+        }
+    }
+
+    /// 获取预测经期进度(浅粉色层)
+    func getPredictedPeriodProgress(for date: Date, cycleInfo: CycleInfo) -> CGFloat {
+        let targetDate = date.startOfDay()
+        let today = Date().startOfDay()
+
+        switch cycleInfo.type {
+        case .beforeAllPeriods:
+            return 0
+
+        case .historicalCycle:
+            // 历史周期:不显示预测层
+            return 0
+
+        case .currentCycle:
+            guard let latestRecord = periodRecords.last,
+                  let periodStart = latestRecord.startDate else { return 0 }
+
+            if targetDate <= today {
+                // 已过去的日期:已记录天数 + 预测天数
+                let recordedDays = latestRecord.dates.filter { $0 <= targetDate }.count
+
+                // 从targetDate的下一天开始查找预测日期
+                var predictedDays = 0
+                var checkDate = targetDate.adding(days: 1)
+
+                // 最多查找14天
+                for _ in 1...14 {
+                    if checkDate <= today && latestRecord.contains(checkDate) {
+                        predictedDays += 1
+                        checkDate = checkDate.adding(days: 1)
+                    } else if checkDate > today && shouldShowPredictionBorder(checkDate) {
+                        predictedDays += 1
+                        checkDate = checkDate.adding(days: 1)
+                    } else {
+                        break
+                    }
+                }
+
+                return CGFloat(recordedDays + predictedDays) / CGFloat(cycleInfo.cycleDays)
+
+            } else {
+                // 未来日期:如果在预测经期内,显示预测层
+                if shouldShowPredictionBorder(targetDate) {
+                    let daysFromStart = targetDate.daysSince(periodStart) + 1
+                    return CGFloat(daysFromStart) / CGFloat(cycleInfo.cycleDays)
+                } else {
+                    return 0
+                }
+            }
+        }
+    }
+
+    /// 获取指定日期的周期进度（0.0 ~ 1.0）
+    func getCycleProgress(for date: Date) -> CGFloat {
+        let targetDate = date.startOfDay()
+        let predictedCycleLength = averageCycleDays ?? 28
+
+        // 获取日期状态
+        let status = getDateStatus(for: targetDate)
+
+        switch status {
+        case .beforeAllPeriods:
+            // 没有记录时返回0
+            return 0
+
+        case .inPeriod(let dayNumber):
+            // 经期内：当前天数 / 预测周期长度
+            let progress = CGFloat(dayNumber) / CGFloat(predictedCycleLength)
+            return min(progress, 1.0)
+
+        case .afterPeriod(let daysSinceLastPeriodStart):
+            // 经期后：从经期开始算起的天数 / 预测周期长度
+            let progress = CGFloat(daysSinceLastPeriodStart) / CGFloat(predictedCycleLength)
+            return min(progress, 1.0)
+        }
+    }
+
     /// 最长周期天数
     var maxCycleDays: Int {
         var allCycleDays: [Int] = completedCycles.map { $0.cycleDays }

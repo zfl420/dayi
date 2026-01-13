@@ -33,7 +33,7 @@ struct WeekCalendar: View {
             HStack(spacing: spacing) {
                 ForEach(Array(viewModel.currentWeekDates.enumerated()), id: \.element) { index, date in
                     Text(getLabelForDate(date, index: index))
-                        .font(.system(size: geometry.size.height * 0.0141, weight: date.isSameDay(as: Date()) ? .bold : .medium)) // 今天标签字号
+                        .font(.system(size: geometry.size.height * 0.0141, weight: date.isSameDay(as: Date()) ? .bold : .medium, design: .rounded)) // 今天标签字号
                         .foregroundColor(date.isSameDay(as: Date()) ? .black : Color(red: 90/255.0, green: 87/255.0, blue: 86/255.0))
                         .frame(width: cellWidth) // 星期标签宽度
                 }
@@ -91,8 +91,17 @@ struct WeekCalendar: View {
             }
         }
         .onChange(of: viewModel.currentWeekDates) { _, _ in
-            updateSelectedIndex(animated: false)
-            updateCircleColor(animated: false)
+            if isSwipingWeek {
+                // 跨周切换时,延迟更新避免与 selectedDate 的动画冲突
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    updateSelectedIndex(animated: false)
+                    updateCircleColor(animated: false)
+                }
+            } else {
+                // 非跨周切换时,立即更新
+                updateSelectedIndex(animated: false)
+                updateCircleColor(animated: false)
+            }
         }
         .onChange(of: isTodayInPeriod) { _, _ in
             // 背景状态变化时过渡颜色
@@ -252,7 +261,7 @@ struct DayCellContent: View {
             // 3. 顶层：日期文字（居中显示）
             VStack(spacing: geometry.size.height * 0.0023) {
                 Text(date.shortDateString)
-                    .font(.system(size: geometry.size.height * 0.0229, weight: fontWeight)) // 日期数字字号
+                    .font(.system(size: geometry.size.height * 0.0229, weight: fontWeight, design: .rounded)) // 日期数字字号
                     .foregroundColor(showPeriodBackground ? .white : .black)
 
                 if isToday {
@@ -281,7 +290,8 @@ struct DayCellContent: View {
                             Text("\(dayNumber)")
                                 .font(.system(
                                     size: geometry.size.height * 0.0117, // 角标字号
-                                    weight: .bold
+                                    weight: .bold,
+                                    design: .rounded
                                 ))
                                 .foregroundColor(.white)
                         }

@@ -8,6 +8,7 @@ struct HomeView: View {
     @State private var periodRatio: CGFloat = 0 // 背景色的经期比例（0 = 非经期，1 = 经期）
     @State private var buttonRatio: CGFloat = 0 // 按钮过渡比例
     @State private var buttonScale: CGFloat = 1 // 按钮面积变化
+    @State private var cycleProgress: CGFloat = 0 // 周期进度
 
     init(viewModel: PeriodViewModel = PeriodViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -58,121 +59,130 @@ struct HomeView: View {
 
     private var mainContent: some View {
         GeometryReader { geometry in
-            ZStack(alignment: .top) {
+            ZStack {
                 // ===== 整体背景色 =====
                 overallBackgroundColor
                     .ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    // ===== 渐变背景区域 =====
-                    ZStack(alignment: .bottom) {
-                        // ===== 底层：渐变背景 =====
-                        GradientBackground(geometry: geometry, periodRatio: periodRatio)
+                // ===== 主内容区域 =====
+                VStack(alignment: .center, spacing: 0) {
+                    // ===== 1.1 日期区域 =====
+                    VStack(spacing: 0) {
+                        // 日期标题
+                        Text(viewModel.displayDateText)
+                            .font(.system(size: geometry.size.height * 0.0188, weight: .medium, design: .rounded))
+                            .foregroundColor(.black)
+                            .padding(.top, geometry.size.height * 0.105)
 
-                        // ===== 中间层：圆形背景装饰（淡入淡出过渡）=====
+                        // 周历区域
+                        WeekCalendar(
+                            viewModel: viewModel,
+                            geometry: geometry,
+                            isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground
+                        )
+                        .padding(.top, geometry.size.height * 0.0235)
+                    }
+
+                    // ===== 1.2 经期状态区域 =====
+                    ZStack(alignment: .center) {
+                        // 1.2.1 背景圆
                         ZStack {
                             // 非经期圆形（淡出）
                             Circle()
                                 .fill(
-                                    LinearGradient(
+                                    RadialGradient(
                                         gradient: Gradient(colors: [
-                                            Color(red: 0.90, green: 0.85, blue: 0.83),
+                                            Color(red: 0.75, green: 0.75, blue: 0.75),
                                             Color(red: 0.95, green: 0.93, blue: 0.92)
                                         ]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
+                                        center: .center,
+                                        startRadius: 0,
+                                        endRadius: geometry.size.height * 0.152
                                     )
                                 )
-                                .frame(width: geometry.size.height * 0.44, height: geometry.size.height * 0.44)
+                                .frame(width: geometry.size.height * 0.304, height: geometry.size.height * 0.304)
                                 .blur(radius: geometry.size.height * 0.0164)
                                 .opacity(0.8 * (1 - periodRatio))
 
                             // 经期圆形（淡入）
                             Circle()
                                 .fill(
-                                    LinearGradient(
+                                    RadialGradient(
                                         gradient: Gradient(colors: [
-                                            Color(red: 1.0, green: 0.984, blue: 0.984),
-                                            Color(red: 1.0, green: 0.620, blue: 0.710)
+                                            Color(red: 1.0, green: 0.620, blue: 0.710),
+                                            Color(red: 1.0, green: 0.620, blue: 0.710).opacity(0)
                                         ]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
+                                        center: .center,
+                                        startRadius: 0,
+                                        endRadius: geometry.size.height * 0.152
                                     )
                                 )
-                                .frame(width: geometry.size.height * 0.44, height: geometry.size.height * 0.44)
-                                .blur(radius: geometry.size.height * 0.0164)
+                                .frame(width: geometry.size.height * 0.4, height: geometry.size.height * 0.4)
+                                .blur(radius: geometry.size.height * 0.02)
                                 .opacity(0.8 * periodRatio)
                         }
 
-                        // ===== 顶层：内容层 =====
-                        VStack(spacing: 0) {
-                            // ===== 日期标题 =====
-                            Text(viewModel.displayDateText)
-                                .font(.system(size: geometry.size.height * 0.0188, weight: .medium))
-                                .foregroundColor(.black)
-                                .padding(.top, geometry.size.height * 0.105)
+                        // 1.2.2 进度环
+                        CircleProgressRing(
+                            progress: cycleProgress,
+                            geometry: geometry,
+                            periodRatio: periodRatio,
+                            viewModel: viewModel,
+                            baseDate: carouselBaseDate
+                        )
 
-                            // ===== 周历 =====
-                            WeekCalendar(
+                        // 1.2.3 经期内容和按钮
+                        VStack(spacing: 0) {
+                            // 1.2.3.1 经期状态文案
+                            PeriodStatusCarousel(
                                 viewModel: viewModel,
                                 geometry: geometry,
-                                isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground
+                                dragProgress: $dragProgress,
+                                isDragging: $isDragging,
+                                baseDate: $carouselBaseDate
                             )
-                            .padding(.top, geometry.size.height * 0.0235)
+                            .frame(maxWidth: .infinity)
 
-                            // ===== 经期状态区域和按钮层叠区域 =====
-                            ZStack(alignment: .center) {
-                                // ===== 经期状态区域（包含整个可滑动区域）=====
-                                PeriodStatusCarousel(
-                                    viewModel: viewModel,
-                                    geometry: geometry,
-                                    dragProgress: $dragProgress,
-                                    isDragging: $isDragging,
-                                    baseDate: $carouselBaseDate
-                                )
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .padding(.top, geometry.size.height * 0.018)
-                                .padding(.bottom, geometry.size.height * 0.1)
-
-                                // ===== 按钮区域 =====
-                                VStack {
-                                    Spacer()
-                                    EditButton(
-                                        viewModel: viewModel,
-                                        geometry: geometry,
-                                        periodRatio: buttonRatio,
-                                        scale: buttonScale
-                                    )
-                                        .padding(.bottom, geometry.size.height * 0.02)
-                                        .allowsHitTesting(true)
-                                }
-                            }
-                            .frame(height: geometry.size.height * 0.3628)
+                            // 1.2.3.2 按钮
+                            EditButton(
+                                viewModel: viewModel,
+                                geometry: geometry,
+                                periodRatio: buttonRatio,
+                                scale: buttonScale
+                            )
+                            .padding(.top, geometry.size.height * 0.045)
+                            .allowsHitTesting(true)
                         }
-                        .frame(maxHeight: .infinity, alignment: .top)
+                        .padding(.top, geometry.size.height * 0.018)
+                        .padding(.bottom, geometry.size.height * 0.05)
                     }
+                    .frame(height: geometry.size.height * 0.3628)
+                    .padding(.top, geometry.size.height * 0.05)
 
-                    // 我的月经周期区域
+                    // ===== 1.3 我的月经周期区域 =====
                     MenstrualCycleInfo(
                         geometry: geometry,
                         viewModel: viewModel
                     )
-                    .padding(.top, geometry.size.height * 0.042) //我的月经周期上边距
+                    .padding(.top, geometry.size.height * 0.042)
 
                     Spacer()
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
             .ignoresSafeArea()
             .onAppear {
-                // 初始化 periodRatio
+                // 初始化 periodRatio 和 cycleProgress
                 let ratio = calculatePeriodRatio()
                 periodRatio = ratio
                 buttonRatio = ratio
+                cycleProgress = viewModel.getCycleProgress(for: carouselBaseDate)
             }
             .onChange(of: carouselBaseDate) { oldValue, newValue in
-                // carouselBaseDate 变化时，使用动画更新 periodRatio
+                // carouselBaseDate 变化时，使用动画更新 periodRatio 和 cycleProgress
                 withAnimation(.easeOut(duration: 0.3)) {
                     periodRatio = calculatePeriodRatio()
+                    cycleProgress = viewModel.getCycleProgress(for: newValue)
                 }
                 withAnimation(.easeOut(duration: 0.25)) {
                     buttonRatio = calculatePeriodRatio()
@@ -276,7 +286,7 @@ struct GradientBackground: View {
             )
             .frame(height: totalHeight)
             .clipShape(BottomCurveShape())
-            .blur(radius: geometry.size.height * 0.0003) // 弧形边缘模糊效果
+            .blur(radius: geometry.size.height * 0.0008) // 弧形边缘模糊效果
             .offset(y: geometry.size.height * driftRatio)
             .onAppear {
                 withAnimation(.easeInOut(duration: 4.8).repeatForever(autoreverses: true)) {
@@ -426,12 +436,17 @@ struct PeriodStatusPage: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer() // 上方填充
+            // 黄金分割布局：上方占 61.8%，下方占 38.2%
+            Spacer()
+                .frame(maxHeight: .infinity)
+                .layoutPriority(600)
 
             PeriodStatus(date: date, viewModel: viewModel, geometry: geometry)
                 .frame(maxWidth: .infinity, alignment: .center)
 
-            Spacer() // 下方填充
+            Spacer()
+                .frame(maxHeight: .infinity)
+                .layoutPriority(400)
         }
     }
 }
@@ -453,14 +468,14 @@ struct PeriodStatus: View {
                 titleText("记录你上一次经期开始的日期")
 
             case .inPeriod(let dayNumber):
-                // 情况2：经期内 - 双行布局
+                // 情况2：经期内 - 双行布局（数字在上，标题在下）
+                dayText("\(dayNumber)")
                 titleText("经期")
-                dayText("第 \(dayNumber) 天")
 
             case .afterPeriod(let daysSince):
-                // 情况3：经期后 - 双行布局
+                // 情况3：经期后 - 双行布局（数字在上，标题在下）
+                dayText("\(daysSince)")
                 titleText("过去的月经周期")
-                dayText("第 \(daysSince) 天")
             }
         }
     }
@@ -468,14 +483,14 @@ struct PeriodStatus: View {
     // 标题文字样式
     private func titleText(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: geometry.size.height * 0.022, weight: .bold)) // 标题字号
+            .font(.system(size: geometry.size.height * 0.022, weight: .bold, design: .rounded)) // 标题字号
             .foregroundColor(.black)
     }
 
     // 天数文字样式
     private func dayText(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: geometry.size.height * 0.054, weight: .bold)) // 天数字号
+            .font(.system(size: geometry.size.height * 0.11, weight: .bold, design: .rounded)) // 大号数字
             .foregroundColor(.black)
     }
 }
@@ -492,7 +507,7 @@ struct EditButton: View {
             // 非经期按钮（淡出）
             NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
                 Text("记录月经")
-                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold))
+                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold, design: .rounded))
                     .foregroundColor(Color.white)
                     .padding(.horizontal, geometry.size.width * 0.0407)
                     .frame(height: geometry.size.height * 0.0468)
@@ -509,7 +524,7 @@ struct EditButton: View {
             // 经期按钮（淡入）
             NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
                 Text("编辑月经日期")
-                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold))
+                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold, design: .rounded))
                     .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
                     .padding(.horizontal, geometry.size.width * 0.0407)
                     .frame(height: geometry.size.height * 0.0468)
@@ -525,6 +540,75 @@ struct EditButton: View {
         }
         .animation(.easeInOut(duration: 0.25), value: periodRatio)
         .scaleEffect(scale)
+    }
+}
+
+// ===== 圆形进度条组件 =====
+struct CircleProgressRing: View {
+    let progress: CGFloat           // 周期进度 0.0 ~ 1.0
+    let geometry: GeometryProxy
+    let periodRatio: CGFloat        // 用于颜色过渡
+    @ObservedObject var viewModel: PeriodViewModel
+    let baseDate: Date
+
+    // 获取周期信息
+    private var cycleInfo: CycleInfo? {
+        viewModel.getCycleInfo(for: baseDate)
+    }
+
+    // 计算红色实际经期进度
+    private var actualPeriodProgress: CGFloat {
+        guard let info = cycleInfo else { return 0 }
+        return viewModel.getActualPeriodProgress(for: baseDate, cycleInfo: info)
+    }
+
+    // 计算浅粉色预测经期进度
+    private var predictedPeriodProgress: CGFloat {
+        guard let info = cycleInfo else { return 0 }
+        return viewModel.getPredictedPeriodProgress(for: baseDate, cycleInfo: info)
+    }
+
+    var body: some View {
+        let ringSize = geometry.size.height * 0.38
+        let backgroundWidth = geometry.size.height * 0.012
+        let progressWidth = geometry.size.height * 0.0145
+
+        ZStack {
+            // 第1层:浅灰色完整圆环(整个周期)
+            Circle()
+                .stroke(Color(red: 0.85, green: 0.85, blue: 0.85), lineWidth: backgroundWidth)
+                .frame(width: ringSize, height: ringSize)
+
+            // 第2层:深灰色进度圆环(已过去的天数)
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(
+                    Color(red: 0.6, green: 0.6, blue: 0.6),
+                    style: StrokeStyle(lineWidth: progressWidth, lineCap: .round)
+                )
+                .frame(width: ringSize, height: ringSize)
+                .rotationEffect(.degrees(-90))
+
+            // 第3层:浅粉色圆环(预测经期总天数)
+            Circle()
+                .trim(from: 0, to: predictedPeriodProgress)
+                .stroke(
+                    Color(red: 1.0, green: 0.8, blue: 0.85),
+                    style: StrokeStyle(lineWidth: progressWidth, lineCap: .round)
+                )
+                .frame(width: ringSize, height: ringSize)
+                .rotationEffect(.degrees(-90))
+
+            // 第4层:红色圆环(已发生的经期天数),覆盖在浅粉色上面
+            Circle()
+                .trim(from: 0, to: actualPeriodProgress)
+                .stroke(
+                    Color(red: 255/255, green: 90/255, blue: 125/255),
+                    style: StrokeStyle(lineWidth: progressWidth, lineCap: .round)
+                )
+                .frame(width: ringSize, height: ringSize)
+                .rotationEffect(.degrees(-90))
+        }
     }
 }
 

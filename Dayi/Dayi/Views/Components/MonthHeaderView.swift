@@ -20,7 +20,7 @@ struct MonthHeaderView: View {
 
             // 月份文字
             Text(headerText)
-                .font(.system(size: geometry.size.height * 0.025, weight: .medium))
+                .font(.system(size: geometry.size.height * 0.025, weight: .medium, design: .rounded))
                 .foregroundColor(.black)
                 .fixedSize(horizontal: true, vertical: false)
 
