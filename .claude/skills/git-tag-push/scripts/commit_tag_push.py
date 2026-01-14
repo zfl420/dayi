@@ -7,9 +7,10 @@ import subprocess
 import sys
 import re
 from datetime import datetime
+from subprocess import TimeoutExpired
 
 
-def run_command(command, description):
+def run_command(command, description, timeout=30):
     """运行 shell 命令并返回结果"""
     try:
         result = subprocess.run(
@@ -17,9 +18,12 @@ def run_command(command, description):
             shell=True,
             check=True,
             capture_output=True,
-            text=True
+            text=True,
+            timeout=timeout
         )
         return True, result.stdout
+    except subprocess.TimeoutExpired:
+        return False, f"命令执行超时（{timeout}秒）"
     except subprocess.CalledProcessError as e:
         return False, e.stderr
 
@@ -109,27 +113,20 @@ def get_short_commit_hash():
     return output.strip()
 
 
-def show_status_summary():
-    success, output = run_command(
-        "git status -sb",
-        "确认工作区状态"
-    )
-    if not success:
-        print(f"❌ 获取工作区状态失败: {output}")
-        return
-    print(output.strip())
-
-
 def push_commit():
+    print("正在推送 commit（可能需要 10-30 秒，请等待）...")
     success, output = run_command(
         "git push",
-        "推送 commit"
+        "推送 commit",
+        timeout=60
     )
     if success:
         return True, ""
+    print("尝试备用推送方式...")
     fallback_success, fallback_output = run_command(
         "git push origin HEAD",
-        "推送 commit（origin HEAD）"
+        "推送 commit（origin HEAD）",
+        timeout=60
     )
     if fallback_success:
         return True, ""
@@ -185,7 +182,6 @@ def main():
         sys.exit(1)
 
     print("Tag 创建成功！")
-    print("正在推送 commit...")
 
     success, output = push_commit()
     if not success:
@@ -193,24 +189,23 @@ def main():
         print("提示: 请先设置上游分支或手动推送。")
         sys.exit(1)
 
-    print("推送 commit 完成！")
-    print("正在推送 tag...")
+    print("✓ 推送 commit 完成！")
+    print("正在推送 tag（可能需要 10-30 秒，请等待）...")
 
     # 推送 tag 到远程
     success, output = run_command(
         f'git push origin {tag_name}',
-        "推送 tag"
+        "推送 tag",
+        timeout=60
     )
     if not success:
         print(f"❌ 推送 tag 失败: {output}")
         print(f"提示: 可以稍后手动推送: git push origin {tag_name}")
         sys.exit(1)
 
-    print("推送 tag 完成！")
+    print("✓ 推送 tag 完成！")
     print("")
     print("✓ 自动提交 + 版本备份完成")
-    print("工作区状态:")
-    show_status_summary()
     print(f"Tag: {tag_name}")
 
 
