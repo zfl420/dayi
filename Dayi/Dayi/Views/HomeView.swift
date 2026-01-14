@@ -113,13 +113,30 @@ struct HomeView: View {
                                 Circle()
                                     .fill(
                                         LinearGradient(
-                                            gradient: Gradient(colors: [
-                                                Color(red: 1.0, green: 0.984, blue: 0.984),
-                                                Color(red: 1.0, green: 0.620, blue: 0.710)
+                                            gradient: Gradient(stops: [
+                                                .init(color: Color(red: 1.0, green: 1.0, blue: 1.0), location: 0.0), // white 纯白色
+                                                .init(color: Color(red: 1.0, green: 0.945, blue: 0.949), location: 0.5), // rose-50 极浅玫瑰粉
+                                                .init(color: Color(red: 0.996, green: 0.804, blue: 0.827), location: 1.0) // rose-200 柔和玫瑰粉
                                             ]),
-                                            startPoint: .top,
-                                            endPoint: .bottom
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
                                         )
+                                    )
+                                    .overlay(
+                                        // 内阴影效果
+                                        Circle()
+                                            .fill(
+                                                RadialGradient(
+                                                    gradient: Gradient(stops: [
+                                                        .init(color: Color.white.opacity(0.8), location: 0.0),
+                                                        .init(color: Color.white.opacity(0.4), location: 0.05),
+                                                        .init(color: Color.clear, location: 0.15)
+                                                    ]),
+                                                    center: .top,
+                                                    startRadius: 0,
+                                                    endRadius: geometry.size.height * 0.18
+                                                )
+                                            )
                                     )
                                     .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
                                     .opacity(0.8 * periodRatio)
@@ -176,9 +193,8 @@ struct HomeView: View {
                 withAnimation(.easeOut(duration: 0.3)) {
                     periodRatio = calculatePeriodRatio()
                 }
-                withAnimation(.easeOut(duration: 0.25)) {
-                    buttonRatio = calculatePeriodRatio()
-                }
+                // 按钮立即切换，不使用动画
+                buttonRatio = calculatePeriodRatio()
             }
             .onChange(of: dragProgress) { oldValue, newValue in
                 // dragProgress 变化时，实时更新 periodRatio（滑动时不需要动画）
@@ -194,9 +210,8 @@ struct HomeView: View {
                     withAnimation(.easeOut(duration: 0.2)) {
                         periodRatio = calculatePeriodRatio()
                     }
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        buttonRatio = calculatePeriodRatio()
-                    }
+                    // 按钮立即切换，不使用动画
+                    buttonRatio = calculatePeriodRatio()
                 }
             }
         }
@@ -506,7 +521,7 @@ struct EditButton: View {
                     .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
                     .padding(.horizontal, geometry.size.width * 0.0407)
                     .frame(height: geometry.size.height * 0.0468)
-                    .background(Color.white.opacity(0.5))
+                    .background(Color.white)
                     .cornerRadius(geometry.size.height * 0.0234)
                     .blur(radius: geometry.size.height * 0.0003)
                     .shadow(color: Color.black.opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
@@ -516,7 +531,6 @@ struct EditButton: View {
             })
             .opacity(periodRatio)
         }
-        .animation(.easeInOut(duration: 0.25), value: periodRatio)
     }
 }
 
