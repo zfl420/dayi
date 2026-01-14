@@ -64,60 +64,60 @@ struct HomeView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    // ===== 渐变背景区域 =====
-                    ZStack(alignment: .bottom) {
-                        // ===== 中间层：圆形背景装饰（淡入淡出过渡）=====
-                        ZStack {
-                            // 非经期圆形（淡出）
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color(red: 0.90, green: 0.85, blue: 0.83),
-                                            Color(red: 0.95, green: 0.93, blue: 0.92)
-                                        ]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
+                    // ===== 上半部分区域 =====
+                    VStack(spacing: 0) {
+                        // ===== 日期标题 =====
+                        Text(viewModel.displayDateText)
+                            .font(.system(size: geometry.size.height * 0.0188, weight: .medium))
+                            .foregroundColor(.black)
+                            .padding(.top, geometry.size.height * 0.105)
+
+                        // ===== 周历 =====
+                        WeekCalendar(
+                            viewModel: viewModel,
+                            geometry: geometry,
+                            isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground
+                        )
+                        .padding(.top, geometry.size.height * 0.0235)
+
+                        // ===== 经期状态和按钮层叠区域 =====
+                        ZStack(alignment: .center) {
+                            // ===== 底层：圆形背景装饰（淡入淡出过渡）=====
+                            ZStack {
+                                // 非经期圆形（淡出）
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [
+                                                Color(red: 0.90, green: 0.85, blue: 0.83),
+                                                Color(red: 0.95, green: 0.93, blue: 0.92)
+                                            ]),
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
                                     )
-                                )
-                                .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
-                                .opacity(0.8 * (1 - periodRatio))
+                                    .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
+                                    .opacity(0.8 * (1 - periodRatio))
 
-                            // 经期圆形（淡入）
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color(red: 1.0, green: 0.984, blue: 0.984),
-                                            Color(red: 1.0, green: 0.620, blue: 0.710)
-                                        ]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
+                                // 经期圆形（淡入）
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [
+                                                Color(red: 1.0, green: 0.984, blue: 0.984),
+                                                Color(red: 1.0, green: 0.620, blue: 0.710)
+                                            ]),
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
                                     )
-                                )
-                                .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
-                                .opacity(0.8 * periodRatio)
-                        }
+                                    .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
+                                    .opacity(0.8 * periodRatio)
+                            }
 
-                        // ===== 顶层：内容层 =====
-                        VStack(spacing: 0) {
-                            // ===== 日期标题 =====
-                            Text(viewModel.displayDateText)
-                                .font(.system(size: geometry.size.height * 0.0188, weight: .medium))
-                                .foregroundColor(.black)
-                                .padding(.top, geometry.size.height * 0.105)
-
-                            // ===== 周历 =====
-                            WeekCalendar(
-                                viewModel: viewModel,
-                                geometry: geometry,
-                                isTodayInPeriod: viewModel.isSelectedDateInPeriodForBackground
-                            )
-                            .padding(.top, geometry.size.height * 0.0235)
-
-                            // ===== 经期状态区域和按钮层叠区域 =====
-                            ZStack(alignment: .center) {
-                                // ===== 经期状态区域（包含整个可滑动区域）=====
+                            // ===== 上层：状态及按钮区域 =====
+                            VStack(spacing: 0) {
+                                // ===== 经期状态文案 =====
                                 PeriodStatusCarousel(
                                     viewModel: viewModel,
                                     geometry: geometry,
@@ -125,26 +125,24 @@ struct HomeView: View {
                                     isDragging: $isDragging,
                                     baseDate: $carouselBaseDate
                                 )
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .frame(maxWidth: .infinity)
                                 .padding(.top, geometry.size.height * 0.018)
-                                .padding(.bottom, geometry.size.height * 0.1)
 
-                                // ===== 按钮区域 =====
-                                VStack {
-                                    Spacer()
-                                    EditButton(
-                                        viewModel: viewModel,
-                                        geometry: geometry,
-                                        periodRatio: buttonRatio,
-                                        scale: buttonScale
-                                    )
-                                        .padding(.bottom, geometry.size.height * 0.02)
-                                        .allowsHitTesting(true)
-                                }
+                                Spacer()
+
+                                // ===== 编辑按钮 =====
+                                EditButton(
+                                    viewModel: viewModel,
+                                    geometry: geometry,
+                                    periodRatio: buttonRatio,
+                                    scale: buttonScale
+                                )
+                                .padding(.bottom, geometry.size.height * 0.02)
+                                .allowsHitTesting(true)
                             }
-                            .frame(height: geometry.size.height * 0.3628)
                         }
-                        .frame(maxHeight: .infinity, alignment: .top)
+                        .frame(height: geometry.size.height * 0.3628)
+                        .padding(.top, geometry.size.height * 0.042) // 经期状态和按钮区域上边距
                     }
 
                     // 我的月经周期区域
@@ -152,7 +150,7 @@ struct HomeView: View {
                         geometry: geometry,
                         viewModel: viewModel
                     )
-                    .padding(.top, geometry.size.height * 0.042) //我的月经周期上边距
+                    .padding(.top, geometry.size.height * 0.042) // 我的月经周期上边距
 
                     Spacer()
                 }
