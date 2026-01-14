@@ -7,7 +7,6 @@ struct HomeView: View {
     @State private var carouselBaseDate: Date = Date() // 轮播组件的基准日期
     @State private var periodRatio: CGFloat = 0 // 背景色的经期比例（0 = 非经期，1 = 经期）
     @State private var buttonRatio: CGFloat = 0 // 按钮过渡比例
-    @State private var buttonScale: CGFloat = 1 // 按钮面积变化
 
     init(viewModel: PeriodViewModel = PeriodViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -134,8 +133,7 @@ struct HomeView: View {
                                 EditButton(
                                     viewModel: viewModel,
                                     geometry: geometry,
-                                    periodRatio: buttonRatio,
-                                    scale: buttonScale
+                                    periodRatio: buttonRatio
                                 )
                                 .padding(.bottom, geometry.size.height * 0.05)
                                 .allowsHitTesting(true)
@@ -169,14 +167,6 @@ struct HomeView: View {
                 }
                 withAnimation(.easeOut(duration: 0.25)) {
                     buttonRatio = calculatePeriodRatio()
-                }
-                withAnimation(.easeOut(duration: 0.12)) {
-                    buttonScale = 1.06
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
-                    withAnimation(.easeOut(duration: 0.18)) {
-                        buttonScale = 1
-                    }
                 }
             }
             .onChange(of: dragProgress) { oldValue, newValue in
@@ -478,7 +468,6 @@ struct EditButton: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
     let periodRatio: CGFloat // 0 = 非经期，1 = 经期
-    let scale: CGFloat
 
     var body: some View {
         ZStack {
@@ -517,7 +506,6 @@ struct EditButton: View {
             .opacity(periodRatio)
         }
         .animation(.easeInOut(duration: 0.25), value: periodRatio)
-        .scaleEffect(scale)
     }
 }
 

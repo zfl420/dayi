@@ -28,24 +28,31 @@ def run_command(command, description, timeout=30):
         return False, e.stderr
 
 
-def get_latest_version():
-    """从远程仓库获取最新版本号"""
-    # 获取远程所有版本 tag
+def get_latest_version_from_remote():
+    """从远程仓库获取最新版本号（必须从远程获取以确保一致性）"""
+    print("正在从远程获取最新版本号...")
+
+    # 匹配版本号格式: v0.0.0-timestamp
+    pattern = r'v(\d+)\.(\d+)\.(\d+)-'
+
+    # 从远程获取所有 tags
     success, output = run_command(
         'git ls-remote --tags origin',
-        "获取远程 tags"
+        "获取远程 tags",
+        timeout=120
     )
 
     if not success:
-        print("获取远程 tags 失败，使用默认版本 v0.6.0")
-        return "0.6.0"
+        print("❌ 获取远程 tags 失败")
+        print(f"错误信息: {output}")
+        sys.exit(1)
 
-    # 匹配版本号格式: v0.0.0-timestamp
-    pattern = r'refs/tags/v(\d+)\.(\d+)\.(\d+)-'
     versions = []
-
     for line in output.strip().split('\n'):
-        match = re.search(pattern, line)
+        if not line:
+            continue
+        # 远程格式: refs/tags/v0.0.0-timestamp
+        match = re.search(r'refs/tags/' + pattern, line)
         if match:
             major = int(match.group(1))
             minor = int(match.group(2))
@@ -53,8 +60,8 @@ def get_latest_version():
             versions.append((major, minor, patch))
 
     if not versions:
-        # 没有找到版本 tag，使用默认版本
-        return "0.6.0"
+        print("远程未找到任何版本 tag，将从 v0.0.0 开始")
+        return "0.0.0"
 
     # 找到最大版本号
     latest = max(versions)
@@ -114,11 +121,11 @@ def get_short_commit_hash():
 
 
 def push_commit():
-    print("正在推送 commit（可能需要 10-30 秒，请等待）...")
+    print("正在推送 commit...")
     success, output = run_command(
         "git push",
         "推送 commit",
-        timeout=60
+        timeout=120
     )
     if success:
         return True, ""
@@ -126,7 +133,7 @@ def push_commit():
     fallback_success, fallback_output = run_command(
         "git push origin HEAD",
         "推送 commit（origin HEAD）",
-        timeout=60
+        timeout=120
     )
     if fallback_success:
         return True, ""
@@ -134,13 +141,28 @@ def push_commit():
 
 
 def main():
+    # 第1步：首先从远程获取最新版本号（必须先执行）
+    latest_version = get_latest_version_from_remote()
+    new_version = increment_version(latest_version)
+
+    # 生成时间戳和新 tag 名称
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    tag_name = f"v{new_version}-{timestamp}"
+
+    print(f"远程最新版本: v{latest_version}")
+    print(f"即将创建版本: {tag_name}")
+    print("")
+
+    # 第2步：检查是否有改动
     if not has_changes():
         print("没有可提交的改动，已退出。")
         return
 
+    # 第3步：获取提交信息
     commit_message = get_commit_message()
     print(f"提交信息: {commit_message}")
 
+    # 第4步：添加改动
     success, output = run_command(
         "git add -A",
         "添加改动"
@@ -149,6 +171,7 @@ def main():
         print(f"❌ git add 失败: {output}")
         sys.exit(1)
 
+    # 第5步：提交改动
     success, output = run_command(
         f'git commit -m "{commit_message}"',
         "提交改动"
@@ -161,18 +184,8 @@ def main():
     if commit_hash:
         print(f"提交完成: {commit_hash}")
 
-    # 获取最新版本并递增
-    latest_version = get_latest_version()
-    new_version = increment_version(latest_version)
-
-    # 生成时间戳
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    tag_name = f"v{new_version}-{timestamp}"
-
-    print(f"上一版本: v{latest_version}")
+    # 第6步：创建 tag
     print(f"正在创建 tag: {tag_name}")
-
-    # 创建 tag
     success, output = run_command(
         f'git tag {tag_name}',
         "创建 tag"
@@ -183,6 +196,7 @@ def main():
 
     print("Tag 创建成功！")
 
+    # 第7步：推送 commit
     success, output = push_commit()
     if not success:
         print(f"❌ 推送 commit 失败: {output}")
@@ -190,13 +204,13 @@ def main():
         sys.exit(1)
 
     print("✓ 推送 commit 完成！")
-    print("正在推送 tag（可能需要 10-30 秒，请等待）...")
 
-    # 推送 tag 到远程
+    # 第8步：推送 tag
+    print("正在推送 tag...")
     success, output = run_command(
         f'git push origin {tag_name}',
         "推送 tag",
-        timeout=60
+        timeout=120
     )
     if not success:
         print(f"❌ 推送 tag 失败: {output}")
