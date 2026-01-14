@@ -31,12 +31,12 @@ python3 .claude/skills/git-tag-push/scripts/commit_tag_push.py "chore: 自动提
 
 ## 工作流程
 
-1. 检查工作区是否有改动（无改动则退出）
-2. `git add -A`
-3. `git commit -m <message>`（默认 `chore: auto commit`）
-4. 从远程仓库获取最新版本号（格式：`v*.*.*-*`）
-5. 智能递增版本号（patch + 1，满 10 进位）
-6. 获取当前时间戳并生成 tag 名称
+1. 检查工作区是否有改动（无改动则直接退出，避免不必要的远程查询）
+2. 从远程仓库获取最新版本号（格式：`v*.*.*-*`）
+3. 智能递增版本号（patch + 1，满 10 进位）
+4. 获取当前时间戳并生成 tag 名称
+5. `git add -A`
+6. `git commit -m <message>`（默认 `chore: auto commit`）
 7. 创建 Git tag
 8. 推送 commit（`git push`，若无上游则推送到 `origin`）
 9. 推送 tag 到远程仓库

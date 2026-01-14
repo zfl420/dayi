@@ -141,7 +141,12 @@ def push_commit():
 
 
 def main():
-    # 第1步：首先从远程获取最新版本号（必须先执行）
+    # 第1步：检查是否有改动（快速检查，避免不必要的远程查询）
+    if not has_changes():
+        print("没有可提交的改动，已退出。")
+        return
+
+    # 第2步：从远程获取最新版本号
     latest_version = get_latest_version_from_remote()
     new_version = increment_version(latest_version)
 
@@ -152,11 +157,6 @@ def main():
     print(f"远程最新版本: v{latest_version}")
     print(f"即将创建版本: {tag_name}")
     print("")
-
-    # 第2步：检查是否有改动
-    if not has_changes():
-        print("没有可提交的改动，已退出。")
-        return
 
     # 第3步：获取提交信息
     commit_message = get_commit_message()

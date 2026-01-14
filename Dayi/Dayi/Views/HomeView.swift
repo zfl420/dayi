@@ -12,20 +12,6 @@ struct HomeView: View {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 
-    // 计算整体背景色
-    private var overallBackgroundColor: Color {
-        // 非经期背景色（与渐变底部颜色一致）
-        let normalColor = Color(red: 244/255.0, green: 233/255.0, blue: 231/255.0)
-
-        // 经期背景色（与渐变顶部颜色一致）
-        let periodColor = Color(red: 254/255.0, green: 229/255.0, blue: 234/255.0)
-
-        // 使用轮播组件的基准日期判断是否在经期
-        let isInPeriod = viewModel.getDateStatus(for: carouselBaseDate).isInPeriod
-
-        return isInPeriod ? periodColor : normalColor
-    }
-
     // 计算目标的经期比例
     private func calculatePeriodRatio() -> CGFloat {
         // 使用轮播组件的基准日期来判断当前状态
@@ -59,8 +45,33 @@ struct HomeView: View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
                 // ===== 整体背景色 =====
-                overallBackgroundColor
+                ZStack {
+                    // 非经期背景（3色渐变）
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 254/255, green: 215/255, blue: 170/255), // 浅橙 orange-200
+                            Color(red: 214/255, green: 211/255, blue: 209/255), // 浅石灰 stone-300
+                            Color(red: 249/255, green: 247/255, blue: 244/255)  // #F9F7F4
+                        ]),
+                        startPoint: .bottomTrailing,
+                        endPoint: .topLeading
+                    )
                     .ignoresSafeArea()
+                    .opacity(1 - periodRatio)
+
+                    // 经期背景（3色渐变，右下角颜色范围扩大）
+                    LinearGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: Color(red: 255/255, green: 240/255, blue: 243/255), location: 0.0), // #FFF0F3
+                            .init(color: Color(red: 253/255, green: 164/255, blue: 175/255), location: 0.667), // rose-300 玫瑰粉
+                            .init(color: Color(red: 249/255, green: 168/255, blue: 212/255), location: 1.0)  // pink-300 粉红
+                        ]),
+                        startPoint: .bottomTrailing,
+                        endPoint: .topLeading
+                    )
+                    .ignoresSafeArea()
+                    .opacity(periodRatio)
+                }
 
                 VStack(spacing: 0) {
                     // ===== 上半部分区域 =====
@@ -495,7 +506,7 @@ struct EditButton: View {
                     .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
                     .padding(.horizontal, geometry.size.width * 0.0407)
                     .frame(height: geometry.size.height * 0.0468)
-                    .background(Color.white)
+                    .background(Color.white.opacity(0.5))
                     .cornerRadius(geometry.size.height * 0.0234)
                     .blur(radius: geometry.size.height * 0.0003)
                     .shadow(color: Color.black.opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
