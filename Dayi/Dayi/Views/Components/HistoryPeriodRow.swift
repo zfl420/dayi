@@ -10,7 +10,7 @@ struct HistoryPeriodRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.0141) {
             Text(period.dateRangeText)
-                .font(.system(size: geometry.size.height * 0.0188, weight: .medium))
+                .font(.system(size: geometry.size.height * 0.0188, weight: .medium, design: .rounded))
                 .foregroundColor(Color(red: 153/255, green: 153/255, blue: 153/255))
 
             HStack(alignment: .center, spacing: geometry.size.width * 0.0204) {
@@ -19,7 +19,7 @@ struct HistoryPeriodRow: View {
                     .frame(width: scaledBarWidth, height: geometry.size.height * 0.027)
 
                 Text("\(period.periodDays) 天")
-                    .font(.system(size: geometry.size.height * 0.0211, weight: .medium))
+                    .font(.system(size: geometry.size.height * 0.0211, weight: .medium, design: .rounded))
                     .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
 
                 Spacer(minLength: 0)

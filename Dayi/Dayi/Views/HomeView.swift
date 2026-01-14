@@ -68,7 +68,7 @@ struct HomeView: View {
                     VStack(spacing: 0) {
                         // ===== 日期标题 =====
                         Text(viewModel.displayDateText)
-                            .font(.system(size: geometry.size.height * 0.0188, weight: .medium))
+                            .font(.system(size: geometry.size.height * 0.0188, weight: .medium, design: .rounded))
                             .foregroundColor(.black)
                             .padding(.top, geometry.size.height * 0.105)
 
@@ -137,7 +137,7 @@ struct HomeView: View {
                                     periodRatio: buttonRatio,
                                     scale: buttonScale
                                 )
-                                .padding(.bottom, geometry.size.height * 0.02)
+                                .padding(.bottom, geometry.size.height * 0.05)
                                 .allowsHitTesting(true)
                             }
                         }
@@ -461,14 +461,14 @@ struct PeriodStatus: View {
     // 标题文字样式
     private func titleText(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: geometry.size.height * 0.022, weight: .bold)) // 标题字号
+            .font(.system(size: geometry.size.height * 0.022, weight: .bold, design: .rounded)) // 标题字号
             .foregroundColor(.black)
     }
 
     // 天数文字样式
     private func dayText(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: geometry.size.height * 0.054, weight: .bold)) // 天数字号
+            .font(.system(size: geometry.size.height * 0.054, weight: .bold, design: .rounded)) // 天数字号
             .foregroundColor(.black)
     }
 }
@@ -485,7 +485,7 @@ struct EditButton: View {
             // 非经期按钮（淡出）
             NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
                 Text("记录月经")
-                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold))
+                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold, design: .rounded))
                     .foregroundColor(Color.white)
                     .padding(.horizontal, geometry.size.width * 0.0407)
                     .frame(height: geometry.size.height * 0.0468)
@@ -502,7 +502,7 @@ struct EditButton: View {
             // 经期按钮（淡入）
             NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
                 Text("编辑月经日期")
-                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold))
+                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold, design: .rounded))
                     .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
                     .padding(.horizontal, geometry.size.width * 0.0407)
                     .frame(height: geometry.size.height * 0.0468)

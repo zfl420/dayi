@@ -14,7 +14,7 @@ struct DatePickerToolbar: View {
                 dismiss()
             }) {
                 Text("取消")
-                    .font(.system(size: geometry.size.height * 0.0235, weight: .bold))
+                    .font(.system(size: geometry.size.height * 0.0235, weight: .bold, design: .rounded))
                     .foregroundColor(Color(red: 1.0, green: 90/255.0, blue: 125/255.0))
             }
 
@@ -26,7 +26,7 @@ struct DatePickerToolbar: View {
                     viewModel.scrollToToday()
                 }) {
                     Text("今天")
-                        .font(.system(size: geometry.size.height * 0.02, weight: .medium))
+                        .font(.system(size: geometry.size.height * 0.02, weight: .medium, design: .rounded))
                         .foregroundColor(Color(red: 1.0, green: 90/255.0, blue: 125/255.0))
                         .padding(.horizontal, geometry.size.width * 0.05)
                         .padding(.vertical, geometry.size.height * 0.005)
@@ -44,7 +44,7 @@ struct DatePickerToolbar: View {
                 dismiss()
             }) {
                 Text("保存")
-                    .font(.system(size: geometry.size.height * 0.0235, weight: .bold))
+                    .font(.system(size: geometry.size.height * 0.0235, weight: .bold, design: .rounded))
                     .foregroundColor(Color(red: 1.0, green: 90/255.0, blue: 125/255.0))
             }
         }
