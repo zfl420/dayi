@@ -66,9 +66,6 @@ struct HomeView: View {
                 VStack(spacing: 0) {
                     // ===== 渐变背景区域 =====
                     ZStack(alignment: .bottom) {
-                        // ===== 底层：渐变背景 =====
-                        GradientBackground(geometry: geometry, periodRatio: periodRatio)
-
                         // ===== 中间层：圆形背景装饰（淡入淡出过渡）=====
                         ZStack {
                             // 非经期圆形（淡出）
@@ -83,8 +80,7 @@ struct HomeView: View {
                                         endPoint: .bottom
                                     )
                                 )
-                                .frame(width: geometry.size.height * 0.44, height: geometry.size.height * 0.44)
-                                .blur(radius: geometry.size.height * 0.0164)
+                                .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
                                 .opacity(0.8 * (1 - periodRatio))
 
                             // 经期圆形（淡入）
@@ -99,8 +95,7 @@ struct HomeView: View {
                                         endPoint: .bottom
                                     )
                                 )
-                                .frame(width: geometry.size.height * 0.44, height: geometry.size.height * 0.44)
-                                .blur(radius: geometry.size.height * 0.0164)
+                                .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
                                 .opacity(0.8 * periodRatio)
                         }
 

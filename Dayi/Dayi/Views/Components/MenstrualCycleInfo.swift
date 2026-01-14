@@ -61,91 +61,85 @@ struct MenstrualCycleInfo: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.02) {
-            // 月经周期模块
-            sectionView(title: "我的月经周期", items: cycleItems)
+            // 标题区域
+            Text("我的月经周期")
+                .font(.system(size: geometry.size.height * 0.025, weight: .semibold)) // 标题字号
+                .foregroundColor(.black)
+
+            // 3个独立的小卡片
+            VStack(spacing: geometry.size.height * 0.012) {
+                // 第一个卡片：上一个月经周期天数
+                singleCardView(
+                    title: cycleItems[0].0,
+                    value: cycleItems[0].1,
+                    isClickable: false,
+                    destination: nil
+                )
+
+                // 第二个卡片：月经周期天数变化
+                singleCardView(
+                    title: cycleItems[1].0,
+                    value: cycleItems[1].1,
+                    isClickable: true,
+                    destination: AnyView(CycleStatsView(viewModel: viewModel))
+                )
+
+                // 第三个卡片：经期长度变化
+                singleCardView(
+                    title: cycleItems[2].0,
+                    value: cycleItems[2].1,
+                    isClickable: true,
+                    destination: AnyView(PeriodLengthStatsView(viewModel: viewModel))
+                )
+            }
         }
         .padding(.horizontal, geometry.size.width * 0.0509) // 整体区域左右边距
     }
 
-    // 可复用的模块视图
+    // 单个卡片视图
     @ViewBuilder
-    private func sectionView(title: String, items: [(String, String)]) -> some View {
-        VStack(alignment: .leading, spacing: geometry.size.height * 0.02) {
-            // 标题区域
-            Text(title)
-                .font(.system(size: geometry.size.height * 0.025, weight: .semibold)) // 标题字号
-                .foregroundColor(.black)
-
-            // 白色卡片内容区
-            VStack(spacing: geometry.size.height * 0.02) {
-                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    // 根据 index 决定是否使用 NavigationLink
-                    Group {
-                        if index == 1 {
-                            // 月经周期天数变化 - 使用 NavigationLink
-                            NavigationLink(destination: CycleStatsView(viewModel: viewModel)) {
-                                itemRow(index: index, item: item)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        } else if index == 2 {
-                            // 经期长度变化 - 使用 NavigationLink
-                            NavigationLink(destination: PeriodLengthStatsView(viewModel: viewModel)) {
-                                itemRow(index: index, item: item)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        } else {
-                            // 上一个周期长度 - 不可点击
-                            itemRow(index: index, item: item)
-                        }
-                    }
-
-                    // 分割线
-                    if index < items.count - 1 {
-                        Rectangle()
-                            .fill(Color(red: 240/255, green: 240/255, blue: 240/255)) // 分割线颜色
-                            .frame(height: 1) // 分割线高度
-                            .padding(.horizontal, geometry.size.width * 0.0407) // 分割线左右边距
-                    }
-                }
-            }
-            .padding(.vertical, geometry.size.height * 0.0235) // 白色卡片上下内边距
-            .background(Color.white) // 卡片白色背景
-            .cornerRadius(geometry.size.width * 0.0305) // 卡片圆角
-        }
-    }
-
-    // 单项行视图
-    @ViewBuilder
-    private func itemRow(index: Int, item: (String, String)) -> some View {
-        HStack(spacing: 0) {
+    private func singleCardView(title: String, value: String, isClickable: Bool, destination: AnyView?) -> some View {
+        let cardContent = HStack(spacing: 0) {
             // 左侧文字区域
             VStack(alignment: .leading, spacing: geometry.size.height * 0.0047) {
                 // 灰色小标题
-                Text(item.0)
+                Text(title)
                     .font(.system(size: geometry.size.height * 0.018)) // 小标题字号
                     .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 灰色文字颜色
 
                 // 黑色粗体数据
-                Text(item.1)
+                Text(value)
                     .font(.system(size: geometry.size.height * 0.023, weight: .medium)) // 数据字号
                     .foregroundColor(.black)
             }
 
             Spacer()
 
-            // 右侧内容区域
-            if index != 0 {
-                // 周期变化和经期长度变化:显示箭头
+            // 右侧箭头（仅可点击的卡片显示）
+            if isClickable {
                 Text("›")
                     .font(.system(size: 20, weight: .regular))
                     .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 箭头颜色
                     .padding(.trailing, geometry.size.width * 0.0204) // 箭头右侧边距
             }
         }
-        .frame(height: geometry.size.height * 0.0657) // 单项行高
+        .frame(height: geometry.size.height * 0.0558) // 卡片高度
+        .padding(.horizontal, geometry.size.width * 0.0407) // 卡片左右内边距
+        .padding(.vertical, geometry.size.height * 0.0235) // 卡片上下内边距
+        .background(Color.white.opacity(0.5)) // 半透明白色背景
+        .cornerRadius(geometry.size.width * 0.0305) // 卡片圆角
         .contentShape(Rectangle()) // 扩大可点击区域
-        .padding(.horizontal, geometry.size.width * 0.0407) // 单项左右内边距
+
+        if isClickable, let destination = destination {
+            NavigationLink(destination: destination) {
+                cardContent
+            }
+            .buttonStyle(PlainButtonStyle())
+        } else {
+            cardContent
+        }
     }
+
 }
 
 #Preview {
