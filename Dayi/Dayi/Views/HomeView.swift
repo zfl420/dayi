@@ -106,7 +106,7 @@ struct HomeView: View {
 
                             // ===== 上层：状态及按钮区域 =====
                             VStack(spacing: 0) {
-                                // ===== 经期状态文案 =====
+                                // ==== 经期状态文案 ====
                                 PeriodStatusCarousel(
                                     viewModel: viewModel,
                                     geometry: geometry,
