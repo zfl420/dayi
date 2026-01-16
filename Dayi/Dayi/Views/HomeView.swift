@@ -474,7 +474,7 @@ struct EditButton: View {
             })
             .opacity(1 - periodRatio)
 
-            // 经期按钮（淡入）
+            // 经期按钮（淡入） 
             NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
                 Text("编辑月经日期")
                     .font(.pingFang(size: geometry.size.height * 0.0188, weight: .bold))
