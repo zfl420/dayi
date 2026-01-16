@@ -115,7 +115,7 @@ struct HomeView: View {
                                     baseDate: $carouselBaseDate
                                 )
                                 .frame(maxWidth: .infinity)
-                                .padding(.top, geometry.size.height * 0.018)
+                                .padding(.top, geometry.size.height * 0.05)
 
                                 Spacer()
 
@@ -125,7 +125,7 @@ struct HomeView: View {
                                     geometry: geometry,
                                     periodRatio: buttonRatio
                                 )
-                                .padding(.bottom, geometry.size.height * 0.05)
+                                .padding(.bottom, geometry.size.height * 0.07)
                                 .allowsHitTesting(true)
                             }
                         }
@@ -430,7 +430,7 @@ struct PeriodStatus: View {
     // 标题文字样式
     private func titleText(_ text: String) -> some View {
         Text(text)
-            .font(.pingFang(size: geometry.size.height * 0.0211, weight: .regular)) // 标题字号
+            .font(.pingFang(size: geometry.size.height * 0.0211, weight: .medium)) // 标题字号
             .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
     }
 

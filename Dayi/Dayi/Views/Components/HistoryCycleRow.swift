@@ -21,7 +21,7 @@ struct HistoryCycleRow: View {
                         .cornerRadius(geometry.size.height * 0.0135)
 
                     Rectangle()
-                        .fill(Color(red: 250/255, green: 100/255, blue: 100/255))
+                        .fill(Color(red: 255/255, green: 103/255, blue: 139/255))
                         .frame(width: scaledBarWidth * periodRatio, height: geometry.size.height * 0.0325)
                         .cornerRadius(geometry.size.height * 0.0163)
                 }
