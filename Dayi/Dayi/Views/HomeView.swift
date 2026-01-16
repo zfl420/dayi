@@ -7,6 +7,8 @@ struct HomeView: View {
     @State private var carouselBaseDate: Date = Date() // 轮播组件的基准日期
     @State private var periodRatio: CGFloat = 0 // 背景色的经期比例（0 = 非经期，1 = 经期）
     @State private var buttonRatio: CGFloat = 0 // 按钮过渡比例
+    @State private var carouselOffset: CGFloat = 0 // 轮播组件的偏移
+    @State private var carouselDragOffset: CGFloat = 0 // 轮播组件的拖动偏移
 
     init(viewModel: PeriodViewModel = PeriodViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -65,72 +67,136 @@ struct HomeView: View {
                         .padding(.top, geometry.size.height * 0.0235)
 
                         // ===== 经期状态和按钮层叠区域 =====
-                        ZStack(alignment: .center) {
-                            // ===== 底层：圆形背景装饰（淡入淡出过渡）=====
-                            ZStack {
-                                // 非经期状态背景圆
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            gradient: Gradient(stops: [
-                                                .init(color: Color(red: 254/255, green: 255/255, blue: 255/255), location: 0.0),
-                                                .init(color: Color(red: 255/255, green: 235/255, blue: 239/255), location: 0.4),
-                                                .init(color: Color(red: 255/255, green: 214/255, blue: 224/255), location: 1.0)
-                                            ]),
-                                            startPoint: UnitPoint(x: 0.2, y: 0.0),
-                                            endPoint: UnitPoint(x: 0.8, y: 1.0)
+                        GeometryReader { zstackGeometry in
+                            let width = zstackGeometry.size.width
+
+                            ZStack(alignment: .center) {
+                                // ===== 底层：圆形背景装饰（淡入淡出过渡）=====
+                                ZStack {
+                                    // 非经期状态背景圆
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(stops: [
+                                                    .init(color: Color(red: 254/255, green: 255/255, blue: 255/255), location: 0.0),
+                                                    .init(color: Color(red: 255/255, green: 235/255, blue: 239/255), location: 0.4),
+                                                    .init(color: Color(red: 255/255, green: 214/255, blue: 224/255), location: 1.0)
+                                                ]),
+                                                startPoint: UnitPoint(x: 0.2, y: 0.0),
+                                                endPoint: UnitPoint(x: 0.8, y: 1.0)
+                                            )
                                         )
-                                    )
-                                    .blur(radius: geometry.size.height * 0.005)
-                                    .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
-                                    .opacity(0.8 * (1 - periodRatio))
+                                        .blur(radius: geometry.size.height * 0.005)
+                                        .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
+                                        .opacity(0.8 * (1 - periodRatio))
 
-                                // 经期状态背景圆
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            gradient: Gradient(stops: [
-                                                .init(color: Color(red: 254/255, green: 255/255, blue: 255/255), location: 0.0),
-                                                .init(color: Color(red: 255/255, green: 235/255, blue: 239/255), location: 0.25),
-                                                .init(color: Color(red: 255/255, green: 214/255, blue: 224/255), location: 0.5),
-                                                .init(color: Color(red: 255/255, green: 103/255, blue: 139/255), location: 1.0)
-                                            ]),
-                                            startPoint: UnitPoint(x: 0.2, y: 0.0),
-                                            endPoint: UnitPoint(x: 0.8, y: 1.0)
+                                    // 经期状态背景圆
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(stops: [
+                                                    .init(color: Color(red: 254/255, green: 255/255, blue: 255/255), location: 0.0),
+                                                    .init(color: Color(red: 255/255, green: 235/255, blue: 239/255), location: 0.25),
+                                                    .init(color: Color(red: 255/255, green: 214/255, blue: 224/255), location: 0.5),
+                                                    .init(color: Color(red: 255/255, green: 103/255, blue: 139/255), location: 1.0)
+                                                ]),
+                                                startPoint: UnitPoint(x: 0.2, y: 0.0),
+                                                endPoint: UnitPoint(x: 0.8, y: 1.0)
+                                            )
                                         )
+                                        .blur(radius: geometry.size.height * 0.005)
+                                        .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
+                                        .opacity(0.8 * periodRatio)
+                                }
+
+                                // ===== 上层：状态及按钮区域 =====
+                                VStack(spacing: 0) {
+                                    // ==== 经期状态文案 ====
+                                    PeriodStatusCarousel(
+                                        viewModel: viewModel,
+                                        geometry: geometry,
+                                        dragProgress: $dragProgress,
+                                        isDragging: $isDragging,
+                                        baseDate: $carouselBaseDate,
+                                        offset: $carouselOffset,
+                                        dragOffset: $carouselDragOffset
                                     )
-                                    .blur(radius: geometry.size.height * 0.005)
-                                    .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
-                                    .opacity(0.8 * periodRatio)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.top, geometry.size.height * 0.05)
+
+                                    Spacer()
+
+                                    // ===== 编辑按钮 =====
+                                    EditButton(
+                                        viewModel: viewModel,
+                                        geometry: geometry,
+                                        periodRatio: buttonRatio
+                                    )
+                                    .padding(.bottom, geometry.size.height * 0.07)
+                                    .allowsHitTesting(true)
+                                }
                             }
+                            .contentShape(Rectangle())
+                            .gesture(
+                                DragGesture()
+                                    .onChanged { value in
+                                        carouselDragOffset = value.translation.width
+                                        isDragging = true
+                                        dragProgress = carouselDragOffset / width
+                                    }
+                                    .onEnded { value in
+                                        let threshold = width * 0.15
 
-                            // ===== 上层：状态及按钮区域 =====
-                            VStack(spacing: 0) {
-                                // ==== 经期状态文案 ====
-                                PeriodStatusCarousel(
-                                    viewModel: viewModel,
-                                    geometry: geometry,
-                                    dragProgress: $dragProgress,
-                                    isDragging: $isDragging,
-                                    baseDate: $carouselBaseDate
-                                )
-                                .frame(maxWidth: .infinity)
-                                .padding(.top, geometry.size.height * 0.05)
+                                        if carouselDragOffset > threshold {
+                                            let previousDate = carouselBaseDate.adding(days: -1)
 
-                                Spacer()
+                                            withAnimation(.easeOut(duration: 0.25)) {
+                                                carouselOffset = width
+                                                carouselDragOffset = 0
+                                            }
 
-                                // ===== 编辑按钮 =====
-                                EditButton(
-                                    viewModel: viewModel,
-                                    geometry: geometry,
-                                    periodRatio: buttonRatio
-                                )
-                                .padding(.bottom, geometry.size.height * 0.07)
-                                .allowsHitTesting(true)
-                            }
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                                carouselBaseDate = previousDate
+                                                carouselOffset = 0
+                                                dragProgress = 0
+                                                isDragging = false
+
+                                                viewModel.selectDate(previousDate)
+                                                viewModel.updateWeekDates(for: previousDate)
+                                            }
+
+                                        } else if carouselDragOffset < -threshold {
+                                            let nextDate = carouselBaseDate.adding(days: 1)
+
+                                            withAnimation(.easeOut(duration: 0.25)) {
+                                                carouselOffset = -width
+                                                carouselDragOffset = 0
+                                            }
+
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                                carouselBaseDate = nextDate
+                                                carouselOffset = 0
+                                                dragProgress = 0
+                                                isDragging = false
+
+                                                viewModel.selectDate(nextDate)
+                                                viewModel.updateWeekDates(for: nextDate)
+                                            }
+
+                                        } else {
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                                carouselDragOffset = 0
+                                                dragProgress = 0
+                                            }
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                                isDragging = false
+                                            }
+                                        }
+                                    }
+                            )
                         }
                         .frame(height: geometry.size.height * 0.3628)
-                        .padding(.top, geometry.size.height * 0.042) // 经期状态和按钮区域上边距
+                        .padding(.top, geometry.size.height * 0.042)
                     }
 
                     // 我的月经周期区域
@@ -259,8 +325,8 @@ struct PeriodStatusCarousel: View {
     @Binding var dragProgress: CGFloat // 滑动进度，传递给父视图
     @Binding var isDragging: Bool // 是否正在滑动
     @Binding var baseDate: Date // 基准日期，传递给父视图用于计算背景色
-    @State private var offset: CGFloat = 0
-    @State private var dragOffset: CGFloat = 0
+    @Binding var offset: CGFloat // 轮播偏移，由父视图控制
+    @Binding var dragOffset: CGFloat // 拖动偏移，由父视图控制
 
     var body: some View {
         GeometryReader { scrollGeometry in
@@ -293,77 +359,9 @@ struct PeriodStatusCarousel: View {
                     )
                     .frame(width: width)
                 }
-                .offset(x: -width + offset + dragOffset) // 默认显示中间页
+                .offset(x: -width + offset + dragOffset)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity) // 填充整个区域
-            .contentShape(Rectangle()) // 让整个区域可响应手势
-            .gesture(
-                DragGesture()
-                    .onChanged { value in
-                        dragOffset = value.translation.width
-                        isDragging = true
-                        // 更新滑动进度（归一化到 -1 到 1）
-                        dragProgress = dragOffset / width
-                    }
-                    .onEnded { value in
-                        let threshold = width * 0.15 // 滑动阈值：15%
-
-                        if dragOffset > threshold {
-                            // 向右滑动，切换到前一天
-                            let previousDate = baseDate.adding(days: -1)
-
-                            // 先平滑完成滑入动画
-                            withAnimation(.easeOut(duration: 0.25)) {
-                                offset = width
-                                dragOffset = 0
-                            }
-
-                            // 动画完成后更新状态
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                                baseDate = previousDate
-                                offset = 0
-                                dragProgress = 0
-                                isDragging = false
-
-                                // 更新选中日期，触发周历动画
-                                viewModel.selectDate(previousDate)
-                                viewModel.updateWeekDates(for: previousDate)
-                            }
-
-                        } else if dragOffset < -threshold {
-                            // 向左滑动，切换到后一天
-                            let nextDate = baseDate.adding(days: 1)
-
-                            // 先平滑完成滑入动画
-                            withAnimation(.easeOut(duration: 0.25)) {
-                                offset = -width
-                                dragOffset = 0
-                            }
-
-                            // 动画完成后更新状态
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                                baseDate = nextDate
-                                offset = 0
-                                dragProgress = 0
-                                isDragging = false
-
-                                // 更新选中日期，触发周历动画
-                                viewModel.selectDate(nextDate)
-                                viewModel.updateWeekDates(for: nextDate)
-                            }
-
-                        } else {
-                            // 未达到阈值，回弹到当前页
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                dragOffset = 0
-                                dragProgress = 0
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                isDragging = false
-                            }
-                        }
-                    }
-            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .onAppear {
             baseDate = viewModel.selectedDate
