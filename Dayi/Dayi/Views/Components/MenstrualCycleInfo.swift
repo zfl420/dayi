@@ -105,7 +105,7 @@ struct MenstrualCycleInfo: View {
                 // 灰色小标题
                 Text(title)
                     .font(.pingFang(size: geometry.size.height * 0.018)) // 小标题字号
-                    .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 灰色文字颜色
+                    .foregroundColor(Color(red: 107/255, green: 114/255, blue: 128/255)) // 灰色文字颜色
 
                 // 黑色粗体数据
                 Text(value)
@@ -119,7 +119,7 @@ struct MenstrualCycleInfo: View {
             if isClickable {
                 Text("›")
                     .font(.pingFang(size: 30, weight: .regular))
-                    .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 箭头颜色
+                    .foregroundColor(Color(red: 107/255, green: 114/255, blue: 128/255)) // 箭头颜色
                     .padding(.trailing, geometry.size.width * 0.0204) // 箭头右侧边距
             }
         }

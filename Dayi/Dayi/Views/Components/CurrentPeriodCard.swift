@@ -14,20 +14,20 @@ struct CurrentPeriodCard: View {
                 .foregroundColor(Color(red: 153/255, green: 153/255, blue: 153/255))
 
             ZStack(alignment: .leading) {
-                // 底层：浅红色背景
+                // 底层：背景
                 RoundedRectangle(cornerRadius: geometry.size.height * 0.0135)
-                    .fill(Color(red: 255/255, green: 210/255, blue: 218/255))
+                    .fill(Color(red: 255/255, green: 103/255, blue: 139/255))
                     .frame(width: scaledBarWidth, height: geometry.size.height * 0.027)
 
                 // 顶层：深红色进度
                 RoundedRectangle(cornerRadius: geometry.size.height * 0.0135)
-                    .fill(Color(red: 255/255, green: 90/255, blue: 125/255))
+                    .fill(Color(red: 255/255, green: 103/255, blue: 139/255))
                     .frame(width: scaledBarWidth * periodRatio, height: geometry.size.height * 0.027)
                     .overlay(
                         // 天数文字定位在深红色进度条右侧末端
                         Text("\(periodData.elapsedPeriodDays) 天")
                             .font(.pingFang(size: geometry.size.height * 0.0211, weight: .medium))
-                            .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
+                            .foregroundColor(Color(red: 255/255, green: 103/255, blue: 139/255))
                             .offset(x: scaledBarWidth * periodRatio + geometry.size.width * 0.0204, y: 0)
                         , alignment: .leading
                     )

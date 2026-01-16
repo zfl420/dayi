@@ -15,12 +15,12 @@ struct HistoryPeriodRow: View {
 
             HStack(alignment: .center, spacing: geometry.size.width * 0.0204) {
                 RoundedRectangle(cornerRadius: geometry.size.height * 0.0135)
-                    .fill(Color(red: 255/255, green: 90/255, blue: 125/255))
+                    .fill(Color(red: 255/255, green: 103/255, blue: 139/255))
                     .frame(width: scaledBarWidth, height: geometry.size.height * 0.027)
 
                 Text("\(period.periodDays) 天")
                     .font(.pingFang(size: geometry.size.height * 0.0211, weight: .medium))
-                    .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
+                    .foregroundColor(Color(red: 255/255, green: 103/255, blue: 139/255))
 
                 Spacer(minLength: 0)
             }
