@@ -44,9 +44,8 @@ struct HomeView: View {
     private var mainContent: some View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
-                // ===== 整体背景色 =====
-                Color.white
-                    .ignoresSafeArea()
+                // ===== 整体背景渐变 =====
+                GradientBackground(geometry: geometry, periodRatio: periodRatio)
 
                 VStack(spacing: 0) {
                     // ===== 上半部分区域 =====
@@ -54,7 +53,7 @@ struct HomeView: View {
                         // ===== 日期标题 =====
                         Text(viewModel.displayDateText)
                             .font(.system(size: geometry.size.height * 0.0188, weight: .medium, design: .rounded))
-                            .foregroundColor(Color(red: 107/255, green: 114/255, blue: 128/255))
+                            .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
                             .padding(.top, geometry.size.height * 0.105)
 
                         // ===== 周历 =====
@@ -69,50 +68,38 @@ struct HomeView: View {
                         ZStack(alignment: .center) {
                             // ===== 底层：圆形背景装饰（淡入淡出过渡）=====
                             ZStack {
-                                // 非经期圆形（淡出）
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [
-                                                Color(red: 0.90, green: 0.85, blue: 0.83),
-                                                Color(red: 0.95, green: 0.93, blue: 0.92)
-                                            ]),
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        )
-                                    )
-                                    .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
-                                    .opacity(0.8 * (1 - periodRatio))
-
-                                // 经期圆形（淡入）
+                                // 非经期状态背景圆
                                 Circle()
                                     .fill(
                                         LinearGradient(
                                             gradient: Gradient(stops: [
-                                                .init(color: Color(red: 1.0, green: 1.0, blue: 1.0), location: 0.0), // white 纯白色
-                                                .init(color: Color(red: 1.0, green: 0.945, blue: 0.949), location: 0.5), // rose-50 极浅玫瑰粉
-                                                .init(color: Color(red: 0.996, green: 0.804, blue: 0.827), location: 1.0) // rose-200 柔和玫瑰粉
+                                                .init(color: Color(red: 254/255, green: 255/255, blue: 255/255), location: 0.0),
+                                                .init(color: Color(red: 255/255, green: 235/255, blue: 239/255), location: 0.3),
+                                                .init(color: Color(red: 255/255, green: 214/255, blue: 224/255), location: 1.0)
                                             ]),
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         )
                                     )
-                                    .overlay(
-                                        // 内阴影效果
-                                        Circle()
-                                            .fill(
-                                                RadialGradient(
-                                                    gradient: Gradient(stops: [
-                                                        .init(color: Color.white.opacity(0.8), location: 0.0),
-                                                        .init(color: Color.white.opacity(0.4), location: 0.05),
-                                                        .init(color: Color.clear, location: 0.15)
-                                                    ]),
-                                                    center: .top,
-                                                    startRadius: 0,
-                                                    endRadius: geometry.size.height * 0.18
-                                                )
-                                            )
+                                    .blur(radius: geometry.size.height * 0.005)
+                                    .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
+                                    .opacity(0.8 * (1 - periodRatio))
+
+                                // 经期状态背景圆
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            gradient: Gradient(stops: [
+                                                .init(color: Color(red: 254/255, green: 255/255, blue: 255/255), location: 0.0),
+                                                .init(color: Color(red: 255/255, green: 235/255, blue: 239/255), location: 0.25),
+                                                .init(color: Color(red: 255/255, green: 214/255, blue: 224/255), location: 0.5),
+                                                .init(color: Color(red: 255/255, green: 103/255, blue: 139/255), location: 1.0)
+                                            ]),
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
                                     )
+                                    .blur(radius: geometry.size.height * 0.005)
                                     .frame(width: geometry.size.height * 0.36, height: geometry.size.height * 0.36)
                                     .opacity(0.8 * periodRatio)
                             }
@@ -214,63 +201,54 @@ struct HomeView: View {
 struct GradientBackground: View {
     let geometry: GeometryProxy
     let periodRatio: CGFloat // 0 = 非经期，1 = 经期，中间值为过渡状态
-    @State private var flowShift: CGFloat = -0.0120
-    @State private var driftRatio: CGFloat = -0.0030
-
-    // 经期渐变色
-    private let periodTopColor = (r: 254.0/255, g: 229.0/255, b: 234.0/255)  // #FEE5EA
-    private let periodBottomColor = (r: 255.0/255, g: 90.0/255, b: 125.0/255)   // #FF5A7D
 
     // 非经期渐变色
-    private let normalTopColor = (r: 244.0/255, g: 233.0/255, b: 231.0/255)
-    private let normalBottomColor = (r: 253.0/255, g: 253.0/255, b: 253.0/255)
+    private let normalColor1 = Color(red: 254/255, green: 255/255, blue: 255/255)
+    private let normalColor2 = Color(red: 255/255, green: 247/255, blue: 249/255)
+    private let normalColor3 = Color(red: 255/255, green: 185/255, blue: 205/255)
 
-    // 根据 periodRatio 插值计算当前颜色
-    private var currentTopColor: Color {
-        Color(
-            red: normalTopColor.r + (periodTopColor.r - normalTopColor.r) * periodRatio,
-            green: normalTopColor.g + (periodTopColor.g - normalTopColor.g) * periodRatio,
-            blue: normalTopColor.b + (periodTopColor.b - normalTopColor.b) * periodRatio
-        )
-    }
+    // 经期渐变色
+    private let periodColor1 = Color(red: 254/255, green: 255/255, blue: 255/255)
+    private let periodColor2 = Color(red: 255/255, green: 247/255, blue: 249/255)
+    private let periodColor3 = Color(red: 255/255, green: 227/255, blue: 235/255)
+    private let periodColor4 = Color(red: 255/255, green: 168/255, blue: 188/255)
 
-    private var currentBottomColor: Color {
-        Color(
-            red: normalBottomColor.r + (periodBottomColor.r - normalBottomColor.r) * periodRatio,
-            green: normalBottomColor.g + (periodBottomColor.g - normalBottomColor.g) * periodRatio,
-            blue: normalBottomColor.b + (periodBottomColor.b - normalBottomColor.b) * periodRatio
-        )
+    // 根据 periodRatio 插值计算各个渐变点的颜色
+    private var gradientStops: [Gradient.Stop] {
+        if periodRatio < 0.5 {
+            // 非经期主导，使用3个色点
+            let color1 = normalColor1
+            let color2 = normalColor2
+            let color3 = normalColor3
+
+            return [
+                .init(color: color1, location: 0.0),
+                .init(color: color2, location: 0.5),
+                .init(color: color3, location: 1.0)
+            ]
+        } else {
+            // 经期主导，使用4个色点
+            let color1 = periodColor1
+            let color2 = periodColor2
+            let color3 = periodColor3
+            let color4 = periodColor4
+
+            return [
+                .init(color: color1, location: 0.0),
+                .init(color: color2, location: 0.3),
+                .init(color: color3, location: 0.6),
+                .init(color: color4, location: 1.0)
+            ]
+        }
     }
 
     var body: some View {
-        GeometryReader { backgroundGeometry in
-            let contentHeight = backgroundGeometry.size.height
-            let extraHeight = geometry.size.height * 0.035
-            let totalHeight = contentHeight + extraHeight
-            let gradientStart = UnitPoint(x: 0.5, y: 0.0 + flowShift)
-            let gradientEnd = UnitPoint(x: 0.5, y: 1.0 + flowShift)
-
-            LinearGradient(
-                gradient: Gradient(stops: [
-                    .init(color: currentTopColor, location: 0.0),
-                    .init(color: currentBottomColor, location: 1.0)
-                ]),
-                startPoint: gradientStart,
-                endPoint: gradientEnd
-            )
-            .frame(height: totalHeight)
-            .clipShape(BottomCurveShape())
-            .blur(radius: geometry.size.height * 0.0008) // 弧形边缘模糊效果
-            .offset(y: geometry.size.height * driftRatio)
-            .onAppear {
-                withAnimation(.easeInOut(duration: 4.8).repeatForever(autoreverses: true)) {
-                    flowShift = 0.0120
-                }
-                withAnimation(.easeInOut(duration: 5.6).repeatForever(autoreverses: true)) {
-                    driftRatio = 0.0030
-                }
-            }
-        }
+        LinearGradient(
+            gradient: Gradient(stops: gradientStops),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
     }
 }
 
@@ -453,14 +431,14 @@ struct PeriodStatus: View {
     private func titleText(_ text: String) -> some View {
         Text(text)
             .font(.system(size: geometry.size.height * 0.022, weight: .bold, design: .rounded)) // 标题字号
-            .foregroundColor(.black)
+            .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
     }
 
     // 天数文字样式
     private func dayText(_ text: String) -> some View {
         Text(text)
             .font(.system(size: geometry.size.height * 0.054, weight: .bold, design: .rounded)) // 天数字号
-            .foregroundColor(.black)
+            .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
     }
 }
 

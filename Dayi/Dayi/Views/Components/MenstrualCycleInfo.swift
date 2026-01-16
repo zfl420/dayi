@@ -64,7 +64,7 @@ struct MenstrualCycleInfo: View {
             // 标题区域
             Text("我的月经周期")
                 .font(.system(size: geometry.size.height * 0.025, weight: .semibold, design: .rounded)) // 标题字号
-                .foregroundColor(.black)
+                .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
 
             // 3个独立的小卡片
             VStack(spacing: geometry.size.height * 0.012) {
@@ -110,7 +110,7 @@ struct MenstrualCycleInfo: View {
                 // 黑色粗体数据
                 Text(value)
                     .font(.system(size: geometry.size.height * 0.023, weight: .medium, design: .rounded)) // 数据字号
-                    .foregroundColor(.black)
+                    .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
             }
 
             Spacer()

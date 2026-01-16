@@ -34,7 +34,7 @@ struct WeekCalendar: View {
                 ForEach(Array(viewModel.currentWeekDates.enumerated()), id: \.element) { index, date in
                     Text(getLabelForDate(date, index: index))
                         .font(.system(size: geometry.size.height * 0.0141, weight: date.isSameDay(as: Date()) ? .bold : .medium, design: .rounded)) // 今天标签字号
-                        .foregroundColor(index == 6 ? Color(red: 17/255, green: 24/255, blue: 39/255) : Color(red: 107/255, green: 114/255, blue: 128/255))
+                        .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
                         .frame(width: cellWidth) // 星期标签宽度
                 }
             }
@@ -126,7 +126,7 @@ struct WeekCalendar: View {
 
     // 更新背景圆颜色
     private func updateCircleColor(animated: Bool = true) {
-        let targetColor = Color(red: 255/255, green: 245/255, blue: 245/255)
+        let targetColor = Color(red: 255/255, green: 235/255, blue: 239/255)
 
         if animated {
             withAnimation(.easeOut(duration: 0.3)) {
@@ -235,24 +235,24 @@ struct DayCellContent: View {
         let periodDayNumber = showPeriodBackground ? viewModel.getDayNumberInPeriod(date) : nil
 
         ZStack {
-            // 1. 底层：原有白色选中圆（保持不变）
+            // 1. 底层：选中日期背景圆
             if showBackground && state == .selected {
                 Circle()
-                    .fill(Color(red: 255/255, green: 245/255, blue: 245/255))
+                    .fill(Color(red: 255/255, green: 235/255, blue: 239/255))
                     .frame(width: cellSize, height: cellSize)
             }
 
             // 2. 中层：新增背景圈
             if showPeriodBackground {
-                // 实心浅红小圆（记录日至今天）
+                // 经期背景圆
                 Circle()
-                    .fill(Color(red: 253/255, green: 227/255, blue: 227/255))
+                    .fill(Color(red: 255/255, green: 135/255, blue: 165/255))
                     .blur(radius: geometry.size.height * 0.0003) // 经期圆模糊效果
                     .frame(width: smallCircleSize, height: smallCircleSize)
             } else if showPredictionBorder {
-                // 空心红色圆点虚线小圆（今天至第七天）
+                // 预测经期虚线圆边框
                 DottedCircle(dotCount: 18, dotRadius: 1.5)
-                    .foregroundColor(Color(red: 250/255, green: 212/255, blue: 212/255))
+                    .foregroundColor(Color(red: 255/255, green: 155/255, blue: 177/255))
                     .frame(width: smallCircleSize, height: smallCircleSize)
             }
 
@@ -260,7 +260,7 @@ struct DayCellContent: View {
             VStack(spacing: geometry.size.height * 0.0023) {
                 Text(date.shortDateString)
                     .font(.system(size: geometry.size.height * 0.0229, weight: fontWeight, design: .rounded)) // 日期数字字号
-                    .foregroundColor(showPeriodBackground ? .white : .black)
+                    .foregroundColor(showPeriodBackground ? .white : Color(red: 17/255, green: 24/255, blue: 39/255))
 
                 if isToday {
                     Circle()
@@ -275,9 +275,9 @@ struct DayCellContent: View {
                     HStack {
                         // 左上角角标
                         ZStack {
-                            // 角标背景圆
+                            // 经期角标背景圆
                             Circle()
-                                .fill(Color(red: 253/255, green: 227/255, blue: 227/255))
+                                .fill(Color(red: 255/255, green: 135/255, blue: 165/255))
                                 .blur(radius: geometry.size.height * 0.0003) // 角标边缘模糊效果
                                 .frame(
                                     width: geometry.size.width * 0.038, // 角标直径
