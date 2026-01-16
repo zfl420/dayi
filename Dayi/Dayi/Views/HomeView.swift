@@ -45,33 +45,8 @@ struct HomeView: View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
                 // ===== 整体背景色 =====
-                ZStack {
-                    // 非经期背景（3色渐变）
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(red: 254/255, green: 215/255, blue: 170/255), // 浅橙 orange-200
-                            Color(red: 214/255, green: 211/255, blue: 209/255), // 浅石灰 stone-300
-                            Color(red: 249/255, green: 247/255, blue: 244/255)  // #F9F7F4
-                        ]),
-                        startPoint: .bottomTrailing,
-                        endPoint: .topLeading
-                    )
+                Color.white
                     .ignoresSafeArea()
-                    .opacity(1 - periodRatio)
-
-                    // 经期背景（3色渐变，右下角颜色范围扩大）
-                    LinearGradient(
-                        gradient: Gradient(stops: [
-                            .init(color: Color(red: 255/255, green: 240/255, blue: 243/255), location: 0.0), // #FFF0F3
-                            .init(color: Color(red: 253/255, green: 164/255, blue: 175/255), location: 0.667), // rose-300 玫瑰粉
-                            .init(color: Color(red: 249/255, green: 168/255, blue: 212/255), location: 1.0)  // pink-300 粉红
-                        ]),
-                        startPoint: .bottomTrailing,
-                        endPoint: .topLeading
-                    )
-                    .ignoresSafeArea()
-                    .opacity(periodRatio)
-                }
 
                 VStack(spacing: 0) {
                     // ===== 上半部分区域 =====
@@ -79,7 +54,7 @@ struct HomeView: View {
                         // ===== 日期标题 =====
                         Text(viewModel.displayDateText)
                             .font(.system(size: geometry.size.height * 0.0188, weight: .medium, design: .rounded))
-                            .foregroundColor(.black)
+                            .foregroundColor(Color(red: 107/255, green: 114/255, blue: 128/255))
                             .padding(.top, geometry.size.height * 0.105)
 
                         // ===== 周历 =====
