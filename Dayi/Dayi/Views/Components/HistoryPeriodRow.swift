@@ -11,16 +11,16 @@ struct HistoryPeriodRow: View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.0141) {
             Text(period.dateRangeText)
                 .font(.pingFang(size: geometry.size.height * 0.0188, weight: .medium))
-                .foregroundColor(Color(red: 153/255, green: 153/255, blue: 153/255))
+                .foregroundColor(Color("Hex999999"))
 
             HStack(alignment: .center, spacing: geometry.size.width * 0.0204) {
                 RoundedRectangle(cornerRadius: geometry.size.height * 0.0135)
-                    .fill(Color(red: 255/255, green: 103/255, blue: 139/255))
+                    .fill(Color("HexFF678B"))
                     .frame(width: scaledBarWidth, height: geometry.size.height * 0.027)
 
                 Text("\(period.periodDays) 天")
                     .font(.pingFang(size: geometry.size.height * 0.0211, weight: .medium))
-                    .foregroundColor(Color(red: 255/255, green: 103/255, blue: 139/255))
+                    .foregroundColor(Color("HexFF678B"))
 
                 Spacer(minLength: 0)
             }

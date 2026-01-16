@@ -11,23 +11,23 @@ struct CurrentPeriodCard: View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.0188) {
             Text("当前经期：\(periodData.dateRangeText)")
                 .font(.pingFang(size: geometry.size.height * 0.0188, weight: .medium))
-                .foregroundColor(Color(red: 153/255, green: 153/255, blue: 153/255))
+                .foregroundColor(Color("Hex999999"))
 
             ZStack(alignment: .leading) {
                 // 底层：预测天数背景
                 RoundedRectangle(cornerRadius: geometry.size.height * 0.0135)
-                    .fill(Color(red: 255/255, green: 235/255, blue: 239/255))
+                    .fill(Color("HexFFEBEF"))
                     .frame(width: scaledBarWidth, height: geometry.size.height * 0.027)
 
                 // 顶层：深红色进度
                 RoundedRectangle(cornerRadius: geometry.size.height * 0.0135)
-                    .fill(Color(red: 255/255, green: 103/255, blue: 139/255))
+                    .fill(Color("HexFF678B"))
                     .frame(width: scaledBarWidth * periodRatio, height: geometry.size.height * 0.027)
                     .overlay(
                         // 天数文字定位在深红色进度条右侧末端
                         Text("\(periodData.elapsedPeriodDays) 天")
                             .font(.pingFang(size: geometry.size.height * 0.0211, weight: .medium))
-                            .foregroundColor(Color(red: 255/255, green: 103/255, blue: 139/255))
+                            .foregroundColor(Color("HexFF678B"))
                             .offset(x: scaledBarWidth * periodRatio + geometry.size.width * 0.0204, y: 0)
                         , alignment: .leading
                     )

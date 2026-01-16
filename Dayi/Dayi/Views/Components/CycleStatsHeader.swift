@@ -9,16 +9,16 @@ struct CycleStatsHeader: View {
         HStack(spacing: geometry.size.width * 0.0153) {
             Text("你的平均周期天数:")
                 .font(.pingFang(size: geometry.size.height * 0.024, weight: .bold))
-                .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
+                .foregroundColor(Color("Hex111827"))
 
             if let days = averageDays {
                 Text("\(days) 天")
                     .font(.pingFang(size: geometry.size.height * 0.024, weight: .bold))
-                    .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
+                    .foregroundColor(Color("Hex111827"))
             } else {
                 Text("暂无数据")
                     .font(.pingFang(size: geometry.size.height * 0.024, weight: .bold))
-                    .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
+                    .foregroundColor(Color("Hex111827"))
             }
         }
         .frame(maxWidth: .infinity)

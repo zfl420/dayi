@@ -9,6 +9,7 @@ struct HomeView: View {
     @State private var buttonRatio: CGFloat = 0 // 按钮过渡比例
     @State private var carouselOffset: CGFloat = 0 // 轮播组件的偏移
     @State private var carouselDragOffset: CGFloat = 0 // 轮播组件的拖动偏移
+    private let dateTitleColor = Color("Hex111827")
 
     init(viewModel: PeriodViewModel = PeriodViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -55,7 +56,7 @@ struct HomeView: View {
                         // ===== 日期标题 =====
                         Text(viewModel.displayDateText)
                             .font(.pingFang(size: geometry.size.height * 0.0229, weight: .regular))
-                            .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
+                            .foregroundColor(dateTitleColor)
                             .padding(.top, geometry.size.height * 0.105)
 
                         // ===== 周历 =====
@@ -78,9 +79,9 @@ struct HomeView: View {
                                         .fill(
                                             LinearGradient(
                                                 gradient: Gradient(stops: [
-                                                    .init(color: Color(red: 254/255, green: 255/255, blue: 255/255), location: 0.0),
-                                                    .init(color: Color(red: 255/255, green: 235/255, blue: 239/255), location: 0.4),
-                                                    .init(color: Color(red: 255/255, green: 214/255, blue: 224/255), location: 1.0)
+                                                    .init(color: Color("HexFEFFFF"), location: 0.0),
+                                                    .init(color: Color("HexFFEBEF"), location: 0.4),
+                                                    .init(color: Color("HexFFD6E0"), location: 1.0)
                                                 ]),
                                                 startPoint: UnitPoint(x: 0.2, y: 0.0),
                                                 endPoint: UnitPoint(x: 0.8, y: 1.0)
@@ -95,10 +96,10 @@ struct HomeView: View {
                                         .fill(
                                             LinearGradient(
                                                 gradient: Gradient(stops: [
-                                                    .init(color: Color(red: 254/255, green: 255/255, blue: 255/255), location: 0.0),
-                                                    .init(color: Color(red: 255/255, green: 235/255, blue: 239/255), location: 0.25),
-                                                    .init(color: Color(red: 255/255, green: 214/255, blue: 224/255), location: 0.5),
-                                                    .init(color: Color(red: 255/255, green: 103/255, blue: 139/255), location: 1.0)
+                                                    .init(color: Color("HexFEFFFF"), location: 0.0),
+                                                    .init(color: Color("HexFFEBEF"), location: 0.25),
+                                                    .init(color: Color("HexFFD6E0"), location: 0.5),
+                                                    .init(color: Color("HexFF678B"), location: 1.0)
                                                 ]),
                                                 startPoint: UnitPoint(x: 0.2, y: 0.0),
                                                 endPoint: UnitPoint(x: 0.8, y: 1.0)
@@ -248,7 +249,7 @@ struct HomeView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationLink(destination: CalendarView()) {
                     Image(systemName: "calendar")
-                        .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
+                        .foregroundColor(dateTitleColor)
                 }
             }
         }
@@ -277,15 +278,15 @@ struct GradientBackground: View {
     let periodRatio: CGFloat // 0 = 非经期，1 = 经期，中间值为过渡状态
 
     // 非经期渐变色
-    private let normalColor1 = Color(red: 254/255, green: 255/255, blue: 255/255)
-    private let normalColor2 = Color(red: 255/255, green: 247/255, blue: 249/255)
-    private let normalColor3 = Color(red: 255/255, green: 185/255, blue: 205/255)
+    private let normalColor1 = Color("HexFEFFFF")
+    private let normalColor2 = Color("HexFFF7F9")
+    private let normalColor3 = Color("HexFFB9CD")
 
     // 经期渐变色
-    private let periodColor1 = Color(red: 254/255, green: 255/255, blue: 255/255)
-    private let periodColor2 = Color(red: 255/255, green: 247/255, blue: 249/255)
-    private let periodColor3 = Color(red: 255/255, green: 227/255, blue: 235/255)
-    private let periodColor4 = Color(red: 255/255, green: 168/255, blue: 188/255)
+    private let periodColor1 = Color("HexFEFFFF")
+    private let periodColor2 = Color("HexFFF7F9")
+    private let periodColor3 = Color("HexFFE3EB")
+    private let periodColor4 = Color("HexFFA8BC")
 
     // 根据 periodRatio 插值计算各个渐变点的颜色
     private var gradientStops: [Gradient.Stop] {
@@ -437,14 +438,14 @@ struct PeriodStatus: View {
     private func titleText(_ text: String) -> some View {
         Text(text)
             .font(.pingFang(size: geometry.size.height * 0.0211, weight: .medium)) // 标题字号
-            .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
+            .foregroundColor(Color("Hex111827"))
     }
 
     // 天数文字样式
     private func dayText(_ text: String) -> some View {
         Text(text)
             .font(.pingFang(size: geometry.size.height * 0.06, weight: .semibold)) // 天数字号
-            .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
+            .foregroundColor(Color("Hex111827"))
     }
 }
 
@@ -460,13 +461,13 @@ struct EditButton: View {
             NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
                 Text("记录月经")
                     .font(.pingFang(size: geometry.size.height * 0.0188, weight: .bold))
-                    .foregroundColor(Color.white)
+                    .foregroundColor(Color("HexFFFFFF"))
                     .frame(height: geometry.size.height * 0.0468)
                     .padding(.horizontal, geometry.size.width * 0.0407)
-                    .background(Color(red: 255/255, green: 103/255, blue: 139/255))
+                    .background(Color("HexFF678B"))
                     .cornerRadius(geometry.size.height * 0.0234)
                     .blur(radius: geometry.size.height * 0.0003)
-                    .shadow(color: Color(red: 17/255, green: 24/255, blue: 39/255).opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
+                    .shadow(color: Color("Hex111827").opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
             }
             .simultaneousGesture(TapGesture().onEnded {
                 viewModel.openDatePicker()
@@ -477,13 +478,13 @@ struct EditButton: View {
             NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
                 Text("编辑月经日期")
                     .font(.pingFang(size: geometry.size.height * 0.0188, weight: .bold))
-                    .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
+                    .foregroundColor(Color("HexFF5A7D"))
                     .frame(height: geometry.size.height * 0.0468)
                     .padding(.horizontal, geometry.size.width * 0.0407)
-                    .background(Color(red: 255/255, green: 214/255, blue: 224/255))
+                    .background(Color("HexFFD6E0"))
                     .cornerRadius(geometry.size.height * 0.0234)
                     .blur(radius: geometry.size.height * 0.0003)
-                    .shadow(color: Color(red: 17/255, green: 24/255, blue: 39/255).opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
+                    .shadow(color: Color("Hex111827").opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
             }
             .simultaneousGesture(TapGesture().onEnded {
                 viewModel.openDatePicker()

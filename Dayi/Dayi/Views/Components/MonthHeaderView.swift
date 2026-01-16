@@ -21,7 +21,7 @@ struct MonthHeaderView: View {
             // 月份文字
             Text(headerText)
                 .font(.pingFang(size: geometry.size.height * 0.025, weight: .medium))
-                .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
+                .foregroundColor(Color("Hex111827"))
                 .fixedSize(horizontal: true, vertical: false)
 
             // 右边横线

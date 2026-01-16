@@ -11,17 +11,17 @@ struct HistoryCycleRow: View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.0141) {
             Text(cycle.dateRangeText)
                 .font(.pingFang(size: geometry.size.height * 0.0188, weight: .medium))
-                .foregroundColor(Color(red: 153/255, green: 153/255, blue: 153/255))
+                .foregroundColor(Color("Hex999999"))
 
             HStack(alignment: .center, spacing: geometry.size.width * 0.0204) {
                 ZStack(alignment: .leading) {
                     Rectangle()
-                        .fill(Color(red: 205/255, green: 205/255, blue: 205/255))
+                        .fill(Color("HexCDCDCD"))
                         .frame(width: scaledBarWidth, height: geometry.size.height * 0.027)
                         .cornerRadius(geometry.size.height * 0.0135)
 
                     Rectangle()
-                        .fill(Color(red: 255/255, green: 103/255, blue: 139/255))
+                        .fill(Color("HexFF678B"))
                         .frame(width: scaledBarWidth * periodRatio, height: geometry.size.height * 0.0325)
                         .cornerRadius(geometry.size.height * 0.0163)
                 }
@@ -29,7 +29,7 @@ struct HistoryCycleRow: View {
 
                 Text("\(cycle.cycleDays) 天")
                     .font(.pingFang(size: geometry.size.height * 0.0211, weight: .medium))
-                    .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
+                    .foregroundColor(Color("Hex111827"))
 
                 Spacer(minLength: 0)
             }

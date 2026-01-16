@@ -76,7 +76,7 @@ struct DatePickerDayCell: View {
 
     /// 灰色
     private var grayColor: Color {
-        Color(red: 180/255.0, green: 180/255.0, blue: 180/255.0)
+        Color("HexB4B4B4")
     }
 
     /// 日期数字颜色
@@ -86,7 +86,7 @@ struct DatePickerDayCell: View {
         } else if isFutureDate && !isExtendable {
             return grayColor
         }
-        return Color(red: 17/255, green: 24/255, blue: 39/255)
+        return Color("Hex111827")
     }
 
     /// 日期字重
@@ -105,7 +105,7 @@ struct DatePickerDayCell: View {
             if isToday {
                 Text("今天")
                     .font(.pingFang(size: geometry.size.height * 0.014 * 1.2, weight: .heavy))
-                    .foregroundColor(isSelected ? primaryColor : Color(red: 100/255.0, green: 100/255.0, blue: 100/255.0))
+                    .foregroundColor(isSelected ? primaryColor : Color("Hex646464"))
                     .padding(.bottom, geometry.size.height * 0.008 * 0.2)
             } else {
                 // 占位，保持布局一致
@@ -160,7 +160,7 @@ struct DatePickerDayCell: View {
     /// 未选中的选择按钮（灰色空心圆）
     private var unselectedCheckbox: some View {
         Circle()
-            .stroke(Color(red: 200/255.0, green: 200/255.0, blue: 200/255.0), lineWidth: 3)
+            .stroke(Color("HexC8C8C8"), lineWidth: 3)
             .frame(width: checkboxSize, height: checkboxSize)
     }
 
@@ -172,7 +172,7 @@ struct DatePickerDayCell: View {
                 .frame(width: checkboxSize, height: checkboxSize)
 
             Image(systemName: "checkmark")
-                .foregroundColor(.white)
+                .foregroundColor(Color("HexFFFFFF"))
                 .font(.pingFang(size: checkmarkSize, weight: checkmarkWeight))
         }
     }

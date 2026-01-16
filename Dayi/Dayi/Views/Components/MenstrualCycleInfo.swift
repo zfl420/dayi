@@ -64,7 +64,7 @@ struct MenstrualCycleInfo: View {
             // 标题区域
             Text("我的月经周期")
                 .font(.pingFang(size: geometry.size.height * 0.025, weight: .semibold)) // 标题字号
-                .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
+                .foregroundColor(Color("Hex111827"))
 
             // 3个独立的小卡片
             VStack(spacing: geometry.size.height * 0.012) {
@@ -105,12 +105,12 @@ struct MenstrualCycleInfo: View {
                 // 灰色小标题
                 Text(title)
                     .font(.pingFang(size: geometry.size.height * 0.018)) // 小标题字号
-                    .foregroundColor(Color(red: 107/255, green: 114/255, blue: 128/255)) // 灰色文字颜色
+                    .foregroundColor(Color("Hex6B7280")) // 灰色文字颜色
 
                 // 黑色粗体数据
                 Text(value)
                     .font(.pingFang(size: geometry.size.height * 0.023, weight: .medium)) // 数据字号
-                    .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
+                    .foregroundColor(Color("Hex111827"))
             }
 
             Spacer()
@@ -119,14 +119,14 @@ struct MenstrualCycleInfo: View {
             if isClickable {
                 Text("›")
                     .font(.pingFang(size: 30, weight: .regular))
-                    .foregroundColor(Color(red: 107/255, green: 114/255, blue: 128/255)) // 箭头颜色
+                    .foregroundColor(Color("Hex6B7280")) // 箭头颜色
                     .padding(.trailing, geometry.size.width * 0.0204) // 箭头右侧边距
             }
         }
         .frame(height: geometry.size.height * 0.0558) // 卡片高度
         .padding(.horizontal, geometry.size.width * 0.0407) // 卡片左右内边距
         .padding(.vertical, geometry.size.height * 0.0235) // 卡片上下内边距
-        .background(Color.white.opacity(0.5)) // 半透明白色背景
+        .background(Color("HexFFFFFF").opacity(0.5)) // 半透明白色背景
         .cornerRadius(geometry.size.width * 0.0305) // 卡片圆角
         .contentShape(Rectangle()) // 扩大可点击区域
 
@@ -145,7 +145,7 @@ struct MenstrualCycleInfo: View {
 #Preview {
     GeometryReader { geometry in
         ZStack {
-            Color(red: 248/255, green: 243/255, blue: 241/255)
+            Color("HexF8F3F1")
                 .ignoresSafeArea()
 
             MenstrualCycleInfo(

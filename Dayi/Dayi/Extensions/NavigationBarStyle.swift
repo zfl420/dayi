@@ -2,11 +2,11 @@ import UIKit
 
 enum NavigationBarStyle {
     static func applyDefault() {
-        apply(backgroundColor: UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 0.9))
+        apply(backgroundColor: UIColor(named: "HexFEFFFF") ?? .white)
     }
 
     static func applyPageBackground() {
-        apply(backgroundColor: UIColor(red: 254/255, green: 255/255, blue: 255/255, alpha: 1.0))
+        apply(backgroundColor: UIColor(named: "HexFEFFFF") ?? .white)
     }
 
     private static func apply(backgroundColor: UIColor) {
@@ -15,16 +15,16 @@ enum NavigationBarStyle {
         appearance.backgroundColor = backgroundColor
 
         appearance.titleTextAttributes = [
-            .foregroundColor: UIColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1),
+            .foregroundColor: UIColor(named: "Hex333333") ?? .black,
             .font: UIFont.systemFont(ofSize: 18, weight: .semibold)
         ]
 
         appearance.largeTitleTextAttributes = [
-            .foregroundColor: UIColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1)
+            .foregroundColor: UIColor(named: "Hex333333") ?? .black
         ]
 
         let backImage = UIImage(systemName: "chevron.left")?.withTintColor(
-            UIColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1),
+            UIColor(named: "Hex333333") ?? .black,
             renderingMode: .alwaysOriginal
         )
         appearance.setBackIndicatorImage(backImage, transitionMaskImage: backImage)
