@@ -10,11 +10,11 @@ struct AverageReferenceLine: View {
         if let avgDays = averageDays {
             VStack(spacing: 0) {
                 Text("平均")
-                    .font(.system(size: geometry.size.height * 0.0164, weight: .medium, design: .rounded))
+                    .font(.pingFang(size: geometry.size.height * 0.0164, weight: .medium))
                     .foregroundColor(Color(red: 153/255, green: 153/255, blue: 153/255))
                     .padding(.bottom, geometry.size.height * 0.003)
 
-                DashedVerticalLine(color: Color.black.opacity(0.3))
+                DashedVerticalLine(color: Color(red: 17/255, green: 24/255, blue: 39/255).opacity(0.3))
                     .frame(width: 1)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

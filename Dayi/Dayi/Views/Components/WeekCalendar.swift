@@ -33,7 +33,7 @@ struct WeekCalendar: View {
             HStack(spacing: spacing) {
                 ForEach(Array(viewModel.currentWeekDates.enumerated()), id: \.element) { index, date in
                     Text(getLabelForDate(date, index: index))
-                        .font(.system(size: geometry.size.height * 0.0141, weight: date.isSameDay(as: Date()) ? .bold : .medium, design: .rounded)) // 今天标签字号
+                        .font(.pingFang(size: geometry.size.height * 0.0141, weight: date.isSameDay(as: Date()) ? .bold : .medium)) // 今天标签字号
                         .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
                         .frame(width: cellWidth) // 星期标签宽度
                 }
@@ -259,7 +259,7 @@ struct DayCellContent: View {
             // 3. 顶层：日期文字（居中显示）
             VStack(spacing: geometry.size.height * 0.0023) {
                 Text(date.shortDateString)
-                    .font(.system(size: geometry.size.height * 0.0229, weight: fontWeight, design: .rounded)) // 日期数字字号
+                    .font(.pingFang(size: geometry.size.height * 0.0229, weight: fontWeight)) // 日期数字字号
                     .foregroundColor(showPeriodBackground ? .white : Color(red: 17/255, green: 24/255, blue: 39/255))
 
                 if isToday {
@@ -286,10 +286,9 @@ struct DayCellContent: View {
 
                             // 角标天数文字
                             Text("\(dayNumber)")
-                                .font(.system(
+                                .font(.pingFang(
                                     size: geometry.size.height * 0.0117, // 角标字号
-                                    weight: .bold,
-                                    design: .rounded
+                                    weight: .bold
                                 ))
                                 .foregroundColor(.white)
                         }

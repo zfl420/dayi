@@ -10,7 +10,7 @@ struct HistoryCycleRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.0141) {
             Text(cycle.dateRangeText)
-                .font(.system(size: geometry.size.height * 0.0188, weight: .medium, design: .rounded))
+                .font(.pingFang(size: geometry.size.height * 0.0188, weight: .medium))
                 .foregroundColor(Color(red: 153/255, green: 153/255, blue: 153/255))
 
             HStack(alignment: .center, spacing: geometry.size.width * 0.0204) {
@@ -28,8 +28,8 @@ struct HistoryCycleRow: View {
                 .frame(width: scaledBarWidth, height: geometry.size.height * 0.0325)
 
                 Text("\(cycle.cycleDays) 天")
-                    .font(.system(size: geometry.size.height * 0.0211, weight: .medium, design: .rounded))
-                    .foregroundColor(.black)
+                    .font(.pingFang(size: geometry.size.height * 0.0211, weight: .medium))
+                    .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
 
                 Spacer(minLength: 0)
             }

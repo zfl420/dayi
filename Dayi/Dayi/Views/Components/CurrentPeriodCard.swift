@@ -10,7 +10,7 @@ struct CurrentPeriodCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.0188) {
             Text("当前经期：\(periodData.dateRangeText)")
-                .font(.system(size: geometry.size.height * 0.0188, weight: .medium, design: .rounded))
+                .font(.pingFang(size: geometry.size.height * 0.0188, weight: .medium))
                 .foregroundColor(Color(red: 153/255, green: 153/255, blue: 153/255))
 
             ZStack(alignment: .leading) {
@@ -26,7 +26,7 @@ struct CurrentPeriodCard: View {
                     .overlay(
                         // 天数文字定位在深红色进度条右侧末端
                         Text("\(periodData.elapsedPeriodDays) 天")
-                            .font(.system(size: geometry.size.height * 0.0211, weight: .medium, design: .rounded))
+                            .font(.pingFang(size: geometry.size.height * 0.0211, weight: .medium))
                             .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
                             .offset(x: scaledBarWidth * periodRatio + geometry.size.width * 0.0204, y: 0)
                         , alignment: .leading

@@ -8,17 +8,17 @@ struct PeriodLengthStatsHeader: View {
     var body: some View {
         HStack(spacing: geometry.size.width * 0.0153) {
             Text("你的平均经期天数:")
-                .font(.system(size: geometry.size.height * 0.024, weight: .bold, design: .rounded))
-                .foregroundColor(.black)
+                .font(.pingFang(size: geometry.size.height * 0.024, weight: .bold))
+                .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
 
             if let days = averageDays {
                 Text("\(days) 天")
-                    .font(.system(size: geometry.size.height * 0.024, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
+                    .font(.pingFang(size: geometry.size.height * 0.024, weight: .bold))
+                    .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
             } else {
                 Text("暂无数据")
-                    .font(.system(size: geometry.size.height * 0.024, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
+                    .font(.pingFang(size: geometry.size.height * 0.024, weight: .bold))
+                    .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
             }
         }
         .frame(maxWidth: .infinity)

@@ -71,7 +71,7 @@ struct DatePickerDayCell: View {
     // MARK: - 颜色
 
     private var primaryColor: Color {
-        Color(red: 1.0, green: 90/255.0, blue: 125/255.0)
+        Color.datePickerAccent
     }
 
     /// 灰色
@@ -86,7 +86,7 @@ struct DatePickerDayCell: View {
         } else if isFutureDate && !isExtendable {
             return grayColor
         }
-        return .black
+        return Color(red: 17/255, green: 24/255, blue: 39/255)
     }
 
     /// 日期字重
@@ -104,19 +104,19 @@ struct DatePickerDayCell: View {
             // 今天标签
             if isToday {
                 Text("今天")
-                    .font(.system(size: geometry.size.height * 0.014 * 1.2, weight: .heavy, design: .rounded))
+                    .font(.pingFang(size: geometry.size.height * 0.014 * 1.2, weight: .heavy))
                     .foregroundColor(isSelected ? primaryColor : Color(red: 100/255.0, green: 100/255.0, blue: 100/255.0))
                     .padding(.bottom, geometry.size.height * 0.008 * 0.2)
             } else {
                 // 占位，保持布局一致
                 Text(" ")
-                    .font(.system(size: geometry.size.height * 0.014, design: .rounded))
+                    .font(.pingFang(size: geometry.size.height * 0.014))
                     .padding(.bottom, geometry.size.height * 0.008 * 0.2)
             }
 
             // 日期数字
             Text(date.shortDateString)
-                .font(.system(size: geometry.size.height * 0.025, weight: dateFontWeight, design: .rounded))
+                .font(.pingFang(size: geometry.size.height * 0.025, weight: dateFontWeight))
                 .foregroundColor(dateTextColor)
                 .padding(.bottom, geometry.size.height * 0.008 * 0.2)
 
@@ -173,7 +173,7 @@ struct DatePickerDayCell: View {
 
             Image(systemName: "checkmark")
                 .foregroundColor(.white)
-                .font(.system(size: checkmarkSize, weight: checkmarkWeight))
+                .font(.pingFang(size: checkmarkSize, weight: checkmarkWeight))
         }
     }
 
@@ -195,7 +195,7 @@ struct DatePickerDayCell: View {
             // 红色勾
             Image(systemName: "checkmark")
                 .foregroundColor(primaryColor)
-                .font(.system(size: checkmarkSize, weight: checkmarkWeight))
+                .font(.pingFang(size: checkmarkSize, weight: checkmarkWeight))
         }
     }
 

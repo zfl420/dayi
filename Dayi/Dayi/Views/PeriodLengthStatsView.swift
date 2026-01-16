@@ -13,7 +13,7 @@ struct PeriodLengthStatsView: View {
             let currentPeriod = viewModel.currentPeriod
 
             ZStack(alignment: .top) {
-                Color(red: 242/255, green: 242/255, blue: 242/255)
+                Color.pageBackground
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
@@ -65,5 +65,11 @@ struct PeriodLengthStatsView: View {
         }
         .navigationTitle("经期天数")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            NavigationBarStyle.applyPageBackground()
+        }
+        .onDisappear {
+            NavigationBarStyle.applyDefault()
+        }
     }
 }

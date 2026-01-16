@@ -10,7 +10,7 @@ struct DayCell: View {
             // 主圆形背景
             VStack(spacing: geometry.size.height * 0.0023) { // 2/852
                 Text(date.shortDateString)
-                    .font(.system(size: fontSize, weight: fontWeight, design: .rounded))
+                    .font(.pingFang(size: fontSize, weight: fontWeight))
                     .foregroundColor(textColor)
 
                 if isToday {
@@ -50,9 +50,9 @@ struct DayCell: View {
     private var textColor: Color {
         switch state {
         case .selected:
-            return Color(red: 0.0, green: 0.0, blue: 0.0)
+            return Color(red: 17/255, green: 24/255, blue: 39/255)
         default:
-            return Color(red: 0.0, green: 0.0, blue: 0.0)
+            return Color(red: 17/255, green: 24/255, blue: 39/255)
         }
     }
 

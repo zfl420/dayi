@@ -19,7 +19,7 @@ struct DatePickerSheetContent: View {
     @Environment(\.dismiss) private var dismiss
 
     private var topBackgroundColor: Color {
-        Color(red: 250/255.0, green: 250/255.0, blue: 250/255.0)  // #FAFAFA
+        Color.pageBackground
     }
 
     var body: some View {
@@ -31,7 +31,7 @@ struct DatePickerSheetContent: View {
             DatePickerToolbar(viewModel: viewModel, geometry: geometry, dismiss: dismiss)
                 .padding(.bottom, geometry.size.height * 0.02)
         }
-        .background(Color.white)
+        .background(Color.pageBackground)
         .iOS16SheetPresentation()
     }
 }
@@ -42,13 +42,13 @@ struct DatePickerFullScreenContent: View {
     @Environment(\.dismiss) private var dismiss
 
     private var topBackgroundColor: Color {
-        Color(red: 250/255.0, green: 250/255.0, blue: 250/255.0)  // #FAFAFA
+        Color.pageBackground
     }
 
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
-                // 背景：#FAFAFA 延伸到状态栏
+                // 背景延伸到状态栏
                 topBackgroundColor
                     .ignoresSafeArea()
 

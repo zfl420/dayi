@@ -13,7 +13,7 @@ struct VisibleMonthPreferenceKey: PreferenceKey {
 struct DatePickerContent: View {
     @ObservedObject var viewModel: PeriodViewModel
     let geometry: GeometryProxy
-    var topBackgroundColor: Color = Color(red: 250/255.0, green: 250/255.0, blue: 250/255.0)  // #FAFAFA
+    var topBackgroundColor: Color = Color.pageBackground
 
     // 防止自动滚动重复触发
     @State private var didAutoScrollToBottom = false
@@ -143,9 +143,9 @@ struct DatePickerContent: View {
                             .id("BOTTOM")
                     }
                     .padding(.vertical, geometry.size.height * 0.01)
-                    .background(Color.white)
+                    .background(topBackgroundColor)
                 }
-                .background(Color.white)
+                .background(topBackgroundColor)
                 .opacity(hasScrolledToBottom ? 1 : 0)  // ✅ 滚动完成前隐藏，防止闪动
                 // ✅ 完全移除 onPreferenceChange，避免滚动时触发任何状态变化
                 // "今天"按钮的显示逻辑改为始终显示，或在外层判断
@@ -185,7 +185,7 @@ struct DatePickerContent: View {
                 HStack(spacing: geometry.size.width * 0.01) {
                     ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { label in
                         Text(label)
-                            .font(.system(size: geometry.size.height * 0.0141, weight: .medium, design: .rounded))
+                            .font(.pingFang(size: geometry.size.height * 0.0141, weight: .medium))
                             .foregroundColor(Color(red: 90/255.0, green: 87/255.0, blue: 86/255.0))
                             .frame(maxWidth: .infinity)
                     }

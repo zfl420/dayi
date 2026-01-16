@@ -10,7 +10,7 @@ struct CurrentCycleCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.0188) {
             Text("当前周期：\(cycleData.dateRangeText)")
-                .font(.system(size: geometry.size.height * 0.0188, weight: .medium, design: .rounded))
+                .font(.pingFang(size: geometry.size.height * 0.0188, weight: .medium))
                 .foregroundColor(Color(red: 153/255, green: 153/255, blue: 153/255))
 
             ZStack(alignment: .leading) {
@@ -28,8 +28,8 @@ struct CurrentCycleCard: View {
                         .cornerRadius(geometry.size.height * 0.0135)
 
                     Text("\(cycleData.elapsedDays) 天")
-                        .font(.system(size: geometry.size.height * 0.0211, weight: .medium, design: .rounded))
-                        .foregroundColor(.black)
+                        .font(.pingFang(size: geometry.size.height * 0.0211, weight: .medium))
+                        .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
 
                     Spacer(minLength: 0)
                 }

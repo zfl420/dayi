@@ -63,7 +63,7 @@ struct MenstrualCycleInfo: View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.02) {
             // 标题区域
             Text("我的月经周期")
-                .font(.system(size: geometry.size.height * 0.025, weight: .semibold, design: .rounded)) // 标题字号
+                .font(.pingFang(size: geometry.size.height * 0.025, weight: .semibold)) // 标题字号
                 .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
 
             // 3个独立的小卡片
@@ -104,12 +104,12 @@ struct MenstrualCycleInfo: View {
             VStack(alignment: .leading, spacing: geometry.size.height * 0.0047) {
                 // 灰色小标题
                 Text(title)
-                    .font(.system(size: geometry.size.height * 0.018, design: .rounded)) // 小标题字号
+                    .font(.pingFang(size: geometry.size.height * 0.018)) // 小标题字号
                     .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 灰色文字颜色
 
                 // 黑色粗体数据
                 Text(value)
-                    .font(.system(size: geometry.size.height * 0.023, weight: .medium, design: .rounded)) // 数据字号
+                    .font(.pingFang(size: geometry.size.height * 0.023, weight: .medium)) // 数据字号
                     .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
             }
 
@@ -118,7 +118,7 @@ struct MenstrualCycleInfo: View {
             // 右侧箭头（仅可点击的卡片显示）
             if isClickable {
                 Text("›")
-                    .font(.system(size: 20, weight: .regular, design: .rounded))
+                    .font(.pingFang(size: 30, weight: .regular))
                     .foregroundColor(Color(red: 90/255, green: 87/255, blue: 86/255)) // 箭头颜色
                     .padding(.trailing, geometry.size.width * 0.0204) // 箭头右侧边距
             }

@@ -52,7 +52,7 @@ struct HomeView: View {
                     VStack(spacing: 0) {
                         // ===== 日期标题 =====
                         Text(viewModel.displayDateText)
-                            .font(.system(size: geometry.size.height * 0.0188, weight: .medium, design: .rounded))
+                            .font(.pingFang(size: geometry.size.height * 0.0188, weight: .medium))
                             .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
                             .padding(.top, geometry.size.height * 0.105)
 
@@ -74,11 +74,11 @@ struct HomeView: View {
                                         LinearGradient(
                                             gradient: Gradient(stops: [
                                                 .init(color: Color(red: 254/255, green: 255/255, blue: 255/255), location: 0.0),
-                                                .init(color: Color(red: 255/255, green: 235/255, blue: 239/255), location: 0.3),
+                                                .init(color: Color(red: 255/255, green: 235/255, blue: 239/255), location: 0.4),
                                                 .init(color: Color(red: 255/255, green: 214/255, blue: 224/255), location: 1.0)
                                             ]),
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
+                                            startPoint: UnitPoint(x: 0.2, y: 0.0),
+                                            endPoint: UnitPoint(x: 0.8, y: 1.0)
                                         )
                                     )
                                     .blur(radius: geometry.size.height * 0.005)
@@ -95,8 +95,8 @@ struct HomeView: View {
                                                 .init(color: Color(red: 255/255, green: 214/255, blue: 224/255), location: 0.5),
                                                 .init(color: Color(red: 255/255, green: 103/255, blue: 139/255), location: 1.0)
                                             ]),
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
+                                            startPoint: UnitPoint(x: 0.2, y: 0.0),
+                                            endPoint: UnitPoint(x: 0.8, y: 1.0)
                                         )
                                     )
                                     .blur(radius: geometry.size.height * 0.005)
@@ -430,14 +430,14 @@ struct PeriodStatus: View {
     // 标题文字样式
     private func titleText(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: geometry.size.height * 0.022, weight: .bold, design: .rounded)) // 标题字号
+            .font(.pingFang(size: geometry.size.height * 0.0211, weight: .regular)) // 标题字号
             .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
     }
 
     // 天数文字样式
     private func dayText(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: geometry.size.height * 0.054, weight: .bold, design: .rounded)) // 天数字号
+            .font(.pingFang(size: geometry.size.height * 0.06, weight: .semibold)) // 天数字号
             .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
     }
 }
@@ -453,14 +453,14 @@ struct EditButton: View {
             // 非经期按钮（淡出）
             NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
                 Text("记录月经")
-                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold, design: .rounded))
+                    .font(.pingFang(size: geometry.size.height * 0.0188, weight: .bold))
                     .foregroundColor(Color.white)
                     .padding(.horizontal, geometry.size.width * 0.0407)
                     .frame(height: geometry.size.height * 0.0468)
-                    .background(Color(red: 255/255, green: 90/255, blue: 125/255))
+                    .background(Color(red: 255/255, green: 103/255, blue: 139/255))
                     .cornerRadius(geometry.size.height * 0.0234)
                     .blur(radius: geometry.size.height * 0.0003)
-                    .shadow(color: Color.black.opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
+                    .shadow(color: Color(red: 17/255, green: 24/255, blue: 39/255).opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
             }
             .simultaneousGesture(TapGesture().onEnded {
                 viewModel.openDatePicker()
@@ -470,14 +470,14 @@ struct EditButton: View {
             // 经期按钮（淡入）
             NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
                 Text("编辑月经日期")
-                    .font(.system(size: geometry.size.height * 0.0188, weight: .bold, design: .rounded))
+                    .font(.pingFang(size: geometry.size.height * 0.0188, weight: .bold))
                     .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
                     .padding(.horizontal, geometry.size.width * 0.0407)
                     .frame(height: geometry.size.height * 0.0468)
-                    .background(Color.white)
+                    .background(Color(red: 255/255, green: 214/255, blue: 224/255))
                     .cornerRadius(geometry.size.height * 0.0234)
                     .blur(radius: geometry.size.height * 0.0003)
-                    .shadow(color: Color.black.opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
+                    .shadow(color: Color(red: 17/255, green: 24/255, blue: 39/255).opacity(0.02), radius: geometry.size.height * 0.0047, x: 0, y: geometry.size.height * 0.0023)
             }
             .simultaneousGesture(TapGesture().onEnded {
                 viewModel.openDatePicker()

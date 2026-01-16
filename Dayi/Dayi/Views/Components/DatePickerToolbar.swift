@@ -13,9 +13,9 @@ struct DatePickerToolbar: View {
                 viewModel.closeDatePicker()
                 dismiss()
             }) {
-                Text("取消")
-                    .font(.system(size: geometry.size.height * 0.0235, weight: .bold, design: .rounded))
-                    .foregroundColor(Color(red: 1.0, green: 90/255.0, blue: 125/255.0))
+                    Text("取消")
+                        .font(.pingFang(size: geometry.size.height * 0.0235, weight: .bold))
+                    .foregroundColor(Color.datePickerAccent)
             }
 
             Spacer()
@@ -26,11 +26,11 @@ struct DatePickerToolbar: View {
                     viewModel.scrollToToday()
                 }) {
                     Text("今天")
-                        .font(.system(size: geometry.size.height * 0.02, weight: .medium, design: .rounded))
-                        .foregroundColor(Color(red: 1.0, green: 90/255.0, blue: 125/255.0))
+                        .font(.pingFang(size: geometry.size.height * 0.02, weight: .medium))
+                        .foregroundColor(Color.datePickerAccent)
                         .padding(.horizontal, geometry.size.width * 0.05)
                         .padding(.vertical, geometry.size.height * 0.005)
-                        .background(Color(red: 1.0, green: 230/255.0, blue: 235/255.0))
+                        .background(Color.datePickerAccent.opacity(0.2))
                         .cornerRadius(geometry.size.height * 0.01)
                 }
                 .transition(.opacity)
@@ -43,9 +43,9 @@ struct DatePickerToolbar: View {
                 viewModel.savePeriodRecords()
                 dismiss()
             }) {
-                Text("保存")
-                    .font(.system(size: geometry.size.height * 0.0235, weight: .bold, design: .rounded))
-                    .foregroundColor(Color(red: 1.0, green: 90/255.0, blue: 125/255.0))
+                    Text("保存")
+                        .font(.pingFang(size: geometry.size.height * 0.0235, weight: .bold))
+                    .foregroundColor(Color.datePickerAccent)
             }
         }
         .padding(.horizontal, geometry.size.width * 0.05)
