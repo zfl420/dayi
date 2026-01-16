@@ -168,7 +168,11 @@ class PeriodViewModel: ObservableObject {
         if let lastPreviousPeriod = previousPeriods.last,
            let lastPeriodStart = lastPreviousPeriod.startDate {
             let daysSince = targetDate.daysSince(lastPeriodStart) + 1
-            return .afterPeriod(daysSinceLastPeriodStart: daysSince)
+
+            // 判断是否属于当前周期：如果最近的上一个经期是最后一个记录，则为当前周期
+            let isCurrentCycle = (lastPreviousPeriod.startDate == periodRecords.last?.startDate)
+
+            return .afterPeriod(daysSinceLastPeriodStart: daysSince, isCurrentCycle: isCurrentCycle)
         }
 
         // 兜底：在第一个经期之前

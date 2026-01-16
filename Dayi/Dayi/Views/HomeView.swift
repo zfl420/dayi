@@ -419,9 +419,9 @@ struct PeriodStatus: View {
                 titleText("经期")
                 dayText("第 \(dayNumber) 天")
 
-            case .afterPeriod(let daysSince):
+            case .afterPeriod(let daysSince, let isCurrentCycle):
                 // 情况3：经期后 - 双行布局
-                titleText("过去的月经周期")
+                titleText(isCurrentCycle ? "本次月经周期的" : "历史月经周期的")
                 dayText("第 \(daysSince) 天")
             }
         }

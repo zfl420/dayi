@@ -18,7 +18,8 @@ enum SelectedDateStatus {
 
     /// 在经期之后（非经期日期）
     /// - Parameter daysSinceLastPeriodStart: 距离最近上一个经期开始日的天数
-    case afterPeriod(daysSinceLastPeriodStart: Int)
+    /// - Parameter isCurrentCycle: 是否属于当前周期（最新周期）
+    case afterPeriod(daysSinceLastPeriodStart: Int, isCurrentCycle: Bool)
 
     /// 是否在经期内
     var isInPeriod: Bool {
