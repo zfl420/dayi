@@ -52,7 +52,7 @@ struct HomeView: View {
                     VStack(spacing: 0) {
                         // ===== 日期标题 =====
                         Text(viewModel.displayDateText)
-                            .font(.pingFang(size: geometry.size.height * 0.0188, weight: .medium))
+                            .font(.pingFang(size: geometry.size.height * 0.0229, weight: .regular))
                             .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
                             .padding(.top, geometry.size.height * 0.105)
 
