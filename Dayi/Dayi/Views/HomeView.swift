@@ -244,6 +244,14 @@ struct HomeView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NavigationLink(destination: CalendarView()) {
+                    Image(systemName: "calendar")
+                        .foregroundColor(Color(red: 17/255, green: 24/255, blue: 39/255))
+                }
+            }
+        }
         .iOS16ToolbarBackgroundHidden()
     }
 
@@ -453,8 +461,8 @@ struct EditButton: View {
                 Text("记录月经")
                     .font(.pingFang(size: geometry.size.height * 0.0188, weight: .bold))
                     .foregroundColor(Color.white)
-                    .padding(.horizontal, geometry.size.width * 0.0407)
                     .frame(height: geometry.size.height * 0.0468)
+                    .padding(.horizontal, geometry.size.width * 0.0407)
                     .background(Color(red: 255/255, green: 103/255, blue: 139/255))
                     .cornerRadius(geometry.size.height * 0.0234)
                     .blur(radius: geometry.size.height * 0.0003)
@@ -470,8 +478,8 @@ struct EditButton: View {
                 Text("编辑月经日期")
                     .font(.pingFang(size: geometry.size.height * 0.0188, weight: .bold))
                     .foregroundColor(Color(red: 255/255, green: 90/255, blue: 125/255))
-                    .padding(.horizontal, geometry.size.width * 0.0407)
                     .frame(height: geometry.size.height * 0.0468)
+                    .padding(.horizontal, geometry.size.width * 0.0407)
                     .background(Color(red: 255/255, green: 214/255, blue: 224/255))
                     .cornerRadius(geometry.size.height * 0.0234)
                     .blur(radius: geometry.size.height * 0.0003)
