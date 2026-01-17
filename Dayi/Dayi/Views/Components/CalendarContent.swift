@@ -19,36 +19,6 @@ struct CalendarContent: View {
     @State private var hasReachedStartLimit = false
     @State private var didScrollToTargetMonth = false
 
-    // 日期范围：今天往前 60 个月（5 年历史）+ 往后 14 天（两周）
-    private var startDate: Date {
-        let today = Date().startOfDay()
-        let calendar = Calendar.current
-        return calendar.date(byAdding: .month, value: -60, to: today) ?? today
-    }
-
-    private var futureEndDate: Date {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-
-        // weekday: 1=周日, 2=周一, ..., 7=周六
-        let weekday = calendar.component(.weekday, from: today)
-
-        // 距离"本周周日"的天数：周日->0，周一->6，周六->1
-        let daysUntilSunday = (8 - weekday) % 7
-
-        // 本周周日（当天若是周日则就是 today）
-        let endOfThisWeek = calendar.date(byAdding: .day, value: daysUntilSunday, to: today) ?? today
-
-        // 再往后 2 周（14 天），仍然是周日
-        return calendar.date(byAdding: .day, value: 14, to: endOfThisWeek) ?? endOfThisWeek
-    }
-
-    private var minStartDate: Date {
-        let calendar = Calendar.current
-        let components = DateComponents(year: 2000, month: 1, day: 1)
-        return calendar.date(from: components)?.startOfDay() ?? Date.distantPast
-    }
-
     var body: some View {
         ZStack(alignment: .top) {
             if monthSections.isEmpty {
@@ -146,9 +116,14 @@ struct CalendarContent: View {
     }
 
     private func loadInitialMonths() {
-        let allSections = MonthSection.generateMonthSections(from: startDate, to: futureEndDate)
-        monthSections = allSections.filter { hasPeriodInMonth($0) }
-        hasReachedStartLimit = startDate <= minStartDate
+        guard let range = recordedMonthRange() else {
+            monthSections = []
+            hasReachedStartLimit = true
+            return
+        }
+
+        monthSections = MonthSection.generateMonthSections(from: range.start, to: range.end)
+        hasReachedStartLimit = true
     }
 
     private func scrollToInitialPosition(using proxy: ScrollViewProxy) {
@@ -185,6 +160,10 @@ struct CalendarContent: View {
         guard hasScrolledToBottom else { return }
         guard !isLoadingPastMonths, !hasReachedStartLimit else { return }
         guard let firstSection = monthSections.first else { return }
+        guard let minStartDate = recordedMonthRange()?.start else {
+            hasReachedStartLimit = true
+            return
+        }
 
         let calendar = Calendar.current
         guard let firstMonthStart = calendar.date(from: DateComponents(year: firstSection.year, month: firstSection.month, day: 1)) else {
@@ -227,6 +206,23 @@ struct CalendarContent: View {
         section.days.contains { date in
             viewModel.shouldShowPeriodBackground(date) || viewModel.shouldShowPredictionBorder(date)
         }
+    }
+
+    private func recordedMonthRange() -> (start: Date, end: Date)? {
+        let calendar = Calendar.current
+        guard let earliest = viewModel.periodRecords.compactMap({ $0.startDate }).min(),
+              let latest = viewModel.periodRecords.compactMap({ $0.endDate }).max() else {
+            return nil
+        }
+
+        guard let startOfFirstMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: earliest)),
+              let startOfLastMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: latest)),
+              let dayRange = calendar.range(of: .day, in: .month, for: startOfLastMonth) else {
+            return nil
+        }
+
+        let endOfLastMonth = calendar.date(byAdding: .day, value: dayRange.count - 1, to: startOfLastMonth) ?? latest
+        return (startOfFirstMonth.startOfDay(), endOfLastMonth.startOfDay())
     }
 }
 

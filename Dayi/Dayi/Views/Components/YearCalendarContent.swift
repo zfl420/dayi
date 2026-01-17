@@ -11,24 +11,6 @@ struct YearCalendarContent: View {
     @State private var didAutoScrollToCurrentYear = false
     @State private var hasScrolledToCurrentYear = false
 
-    // 日期范围：今天往前 60 个月（5 年历史）+ 往后 14 天（两周）
-    private var startDate: Date {
-        let today = Date().startOfDay()
-        let calendar = Calendar.current
-        return calendar.date(byAdding: .month, value: -60, to: today) ?? today
-    }
-
-    private var futureEndDate: Date {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-
-        let weekday = calendar.component(.weekday, from: today)
-        let daysUntilSunday = (8 - weekday) % 7
-        let endOfThisWeek = calendar.date(byAdding: .day, value: daysUntilSunday, to: today) ?? today
-
-        return calendar.date(byAdding: .day, value: 14, to: endOfThisWeek) ?? endOfThisWeek
-    }
-
     private var yearSections: [YearSection] {
         let grouped = Dictionary(grouping: monthSections, by: { $0.year })
         return grouped.keys.sorted().map { year in
@@ -96,14 +78,28 @@ struct YearCalendarContent: View {
     }
 
     private func loadInitialMonths() {
-        let allSections = MonthSection.generateMonthSections(from: startDate, to: futureEndDate)
-        monthSections = allSections.filter { hasPeriodInMonth($0) }
+        guard let range = recordedMonthRange() else {
+            monthSections = []
+            return
+        }
+        monthSections = MonthSection.generateMonthSections(from: range.start, to: range.end)
     }
 
-    private func hasPeriodInMonth(_ section: MonthSection) -> Bool {
-        section.days.contains { date in
-            viewModel.shouldShowPeriodBackground(date) || viewModel.shouldShowPredictionBorder(date)
+    private func recordedMonthRange() -> (start: Date, end: Date)? {
+        let calendar = Calendar.current
+        guard let earliest = viewModel.periodRecords.compactMap({ $0.startDate }).min(),
+              let latest = viewModel.periodRecords.compactMap({ $0.endDate }).max() else {
+            return nil
         }
+
+        guard let startOfFirstMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: earliest)),
+              let startOfLastMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: latest)),
+              let dayRange = calendar.range(of: .day, in: .month, for: startOfLastMonth) else {
+            return nil
+        }
+
+        let endOfLastMonth = calendar.date(byAdding: .day, value: dayRange.count - 1, to: startOfLastMonth) ?? latest
+        return (startOfFirstMonth.startOfDay(), endOfLastMonth.startOfDay())
     }
 }
 
