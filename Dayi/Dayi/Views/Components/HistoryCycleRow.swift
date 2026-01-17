@@ -11,12 +11,12 @@ struct HistoryCycleRow: View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.0141) {
             Text(cycle.dateRangeText)
                 .font(.pingFang(size: geometry.size.height * 0.0188, weight: .medium))
-                .foregroundColor(Color("Hex999999"))
+                .foregroundColor(Color("HexB4B4B4"))
 
             HStack(alignment: .center, spacing: geometry.size.width * 0.0204) {
                 ZStack(alignment: .leading) {
                     Rectangle()
-                        .fill(Color("HexCDCDCD"))
+                        .fill(Color("HexB4B4B4"))
                         .frame(width: scaledBarWidth, height: geometry.size.height * 0.027)
                         .cornerRadius(geometry.size.height * 0.0135)
 

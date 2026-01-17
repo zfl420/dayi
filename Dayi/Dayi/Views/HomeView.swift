@@ -247,7 +247,7 @@ struct HomeView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationLink(destination: CalendarView()) {
+                NavigationLink(destination: CalendarView(viewModel: viewModel)) {
                     Image(systemName: "calendar")
                         .foregroundColor(dateTitleColor)
                 }
@@ -461,7 +461,7 @@ struct EditButton: View {
             NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
                 Text("记录月经")
                     .font(.pingFang(size: geometry.size.height * 0.0188, weight: .bold))
-                    .foregroundColor(Color("HexFFFFFF"))
+                    .foregroundColor(Color("HexFEFFFF"))
                     .frame(height: geometry.size.height * 0.0468)
                     .padding(.horizontal, geometry.size.width * 0.0407)
                     .background(Color("HexFF678B"))
@@ -478,7 +478,7 @@ struct EditButton: View {
             NavigationLink(destination: DatePickerFullScreenContent(viewModel: viewModel)) {
                 Text("编辑月经日期")
                     .font(.pingFang(size: geometry.size.height * 0.0188, weight: .bold))
-                    .foregroundColor(Color("HexFF5A7D"))
+                    .foregroundColor(Color("HexFF678B"))
                     .frame(height: geometry.size.height * 0.0468)
                     .padding(.horizontal, geometry.size.width * 0.0407)
                     .background(Color("HexFFD6E0"))

@@ -15,7 +15,7 @@ struct DayCell: View {
 
                 if isToday {
                     Circle()
-                        .fill(Color("Hex999999"))
+                        .fill(Color("HexB4B4B4"))
                         .frame(width: geometry.size.height * 0.0047, height: geometry.size.height * 0.0047) // 4/852
                 }
             }
@@ -41,7 +41,7 @@ struct DayCell: View {
     private var backgroundColor: Color {
         switch state {
         case .selected:
-            return Color("HexDCD5D2") // #DCD5D2
+            return Color("HexFFEBEF") // #DCD5D2
         default:
             return .clear
         }

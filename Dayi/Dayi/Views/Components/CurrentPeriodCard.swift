@@ -11,7 +11,7 @@ struct CurrentPeriodCard: View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.0188) {
             Text("当前经期：\(periodData.dateRangeText)")
                 .font(.pingFang(size: geometry.size.height * 0.0188, weight: .medium))
-                .foregroundColor(Color("Hex999999"))
+                .foregroundColor(Color("HexB4B4B4"))
 
             ZStack(alignment: .leading) {
                 // 底层：预测天数背景

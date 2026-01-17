@@ -186,7 +186,7 @@ struct DatePickerContent: View {
                     ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { label in
                         Text(label)
                             .font(.pingFang(size: geometry.size.height * 0.0141, weight: .medium))
-                            .foregroundColor(Color("Hex5A5756"))
+                            .foregroundColor(Color("Hex6B7280"))
                             .frame(maxWidth: .infinity)
                     }
                 }

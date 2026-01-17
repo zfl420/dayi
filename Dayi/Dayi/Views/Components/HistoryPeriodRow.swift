@@ -11,7 +11,7 @@ struct HistoryPeriodRow: View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.0141) {
             Text(period.dateRangeText)
                 .font(.pingFang(size: geometry.size.height * 0.0188, weight: .medium))
-                .foregroundColor(Color("Hex999999"))
+                .foregroundColor(Color("HexB4B4B4"))
 
             HStack(alignment: .center, spacing: geometry.size.width * 0.0204) {
                 RoundedRectangle(cornerRadius: geometry.size.height * 0.0135)

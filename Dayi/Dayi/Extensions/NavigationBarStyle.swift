@@ -15,16 +15,16 @@ enum NavigationBarStyle {
         appearance.backgroundColor = backgroundColor
 
         appearance.titleTextAttributes = [
-            .foregroundColor: UIColor(named: "Hex333333") ?? .black,
+            .foregroundColor: UIColor(named: "Hex111827") ?? .black,
             .font: UIFont.systemFont(ofSize: 18, weight: .semibold)
         ]
 
         appearance.largeTitleTextAttributes = [
-            .foregroundColor: UIColor(named: "Hex333333") ?? .black
+            .foregroundColor: UIColor(named: "Hex111827") ?? .black
         ]
 
         let backImage = UIImage(systemName: "chevron.left")?.withTintColor(
-            UIColor(named: "Hex333333") ?? .black,
+            UIColor(named: "Hex111827") ?? .black,
             renderingMode: .alwaysOriginal
         )
         appearance.setBackIndicatorImage(backImage, transitionMaskImage: backImage)

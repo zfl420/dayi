@@ -11,7 +11,7 @@ struct AverageReferenceLine: View {
             VStack(spacing: 0) {
                 Text("平均")
                     .font(.pingFang(size: geometry.size.height * 0.0164, weight: .medium))
-                    .foregroundColor(Color("Hex999999"))
+                    .foregroundColor(Color("HexB4B4B4"))
                     .padding(.bottom, geometry.size.height * 0.003)
 
                 DashedVerticalLine(color: Color("Hex111827").opacity(0.3))

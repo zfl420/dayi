@@ -105,7 +105,7 @@ struct DatePickerDayCell: View {
             if isToday {
                 Text("今天")
                     .font(.pingFang(size: geometry.size.height * 0.014 * 1.2, weight: .heavy))
-                    .foregroundColor(isSelected ? primaryColor : Color("Hex646464"))
+                    .foregroundColor(isSelected ? primaryColor : Color("Hex6B7280"))
                     .padding(.bottom, geometry.size.height * 0.008 * 0.2)
             } else {
                 // 占位，保持布局一致
@@ -160,7 +160,7 @@ struct DatePickerDayCell: View {
     /// 未选中的选择按钮（灰色空心圆）
     private var unselectedCheckbox: some View {
         Circle()
-            .stroke(Color("HexC8C8C8"), lineWidth: 3)
+            .stroke(Color("HexB4B4B4"), lineWidth: 3)
             .frame(width: checkboxSize, height: checkboxSize)
     }
 
@@ -172,7 +172,7 @@ struct DatePickerDayCell: View {
                 .frame(width: checkboxSize, height: checkboxSize)
 
             Image(systemName: "checkmark")
-                .foregroundColor(Color("HexFFFFFF"))
+                .foregroundColor(Color("HexFEFFFF"))
                 .font(.pingFang(size: checkmarkSize, weight: checkmarkWeight))
         }
     }

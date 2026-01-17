@@ -126,7 +126,7 @@ struct MenstrualCycleInfo: View {
         .frame(height: geometry.size.height * 0.0558) // 卡片高度
         .padding(.horizontal, geometry.size.width * 0.0407) // 卡片左右内边距
         .padding(.vertical, geometry.size.height * 0.0235) // 卡片上下内边距
-        .background(Color("HexFFFFFF").opacity(0.5)) // 半透明白色背景
+        .background(Color("HexFEFFFF").opacity(0.5)) // 半透明白色背景
         .cornerRadius(geometry.size.width * 0.0305) // 卡片圆角
         .contentShape(Rectangle()) // 扩大可点击区域
 
@@ -145,7 +145,7 @@ struct MenstrualCycleInfo: View {
 #Preview {
     GeometryReader { geometry in
         ZStack {
-            Color("HexF8F3F1")
+            Color("HexFEFFFF")
                 .ignoresSafeArea()
 
             MenstrualCycleInfo(

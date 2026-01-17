@@ -11,7 +11,7 @@ struct CurrentCycleCard: View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.0188) {
             Text("当前周期：\(cycleData.dateRangeText)")
                 .font(.pingFang(size: geometry.size.height * 0.0188, weight: .medium))
-                .foregroundColor(Color("Hex999999"))
+                .foregroundColor(Color("HexB4B4B4"))
 
             ZStack(alignment: .leading) {
                 // 底层：未过日期（浅灰色）- 最长
@@ -23,7 +23,7 @@ struct CurrentCycleCard: View {
                 // 中层：已过日期（中灰色）+ 天数文本
                 HStack(alignment: .center, spacing: geometry.size.width * 0.0204) {
                     Rectangle()
-                        .fill(Color("HexCDCDCD"))
+                        .fill(Color("HexB4B4B4"))
                         .frame(width: scaledBarWidth * elapsedRatio, height: geometry.size.height * 0.027)
                         .cornerRadius(geometry.size.height * 0.0135)
 

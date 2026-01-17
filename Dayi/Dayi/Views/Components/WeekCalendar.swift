@@ -260,11 +260,11 @@ struct DayCellContent: View {
             VStack(spacing: geometry.size.height * 0.0023) {
                 Text(date.shortDateString)
                     .font(.pingFang(size: geometry.size.height * 0.0229, weight: fontWeight)) // 日期数字字号
-                    .foregroundColor(showPeriodBackground ? Color("HexFFFFFF") : Color("Hex111827"))
+                    .foregroundColor(showPeriodBackground ? Color("HexFEFFFF") : Color("Hex111827"))
 
                 if isToday {
                     Circle()
-                        .fill(showPeriodBackground ? Color("HexFFFFFF") : Color("Hex999999")) // 今天标记圆点颜色
+                        .fill(showPeriodBackground ? Color("HexFEFFFF") : Color("HexB4B4B4")) // 今天标记圆点颜色
                         .frame(width: geometry.size.height * 0.0047, height: geometry.size.height * 0.0047) // 今天标记圆点尺寸
                 }
             }
@@ -290,7 +290,7 @@ struct DayCellContent: View {
                                     size: geometry.size.height * 0.0117, // 角标字号
                                     weight: .bold
                                 ))
-                                .foregroundColor(Color("HexFFFFFF"))
+                                .foregroundColor(Color("HexFEFFFF"))
                         }
                         Spacer()
                     }
