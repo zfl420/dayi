@@ -53,11 +53,23 @@ struct HomeView: View {
                 VStack(spacing: 0) {
                     // ===== 上半部分区域 =====
                     VStack(spacing: 0) {
-                        // ===== 日期标题 =====
-                        Text(viewModel.displayDateText)
-                            .font(.pingFang(size: geometry.size.height * 0.0229, weight: .regular))
-                            .foregroundColor(dateTitleColor)
-                            .padding(.top, geometry.size.height * 0.105)
+                        // ===== 日期标题与日历图标 =====
+                        HStack {
+                            // 左侧透明占位，与右侧日历图标等宽
+                            Image(systemName: "calendar")
+                                .foregroundColor(.clear)
+                            Spacer()
+                            Text(viewModel.displayDateText)
+                                .font(.pingFang(size: geometry.size.height * 0.0229, weight: .regular))
+                                .foregroundColor(dateTitleColor)
+                            Spacer()
+                            NavigationLink(destination: CalendarView(viewModel: viewModel)) {
+                                Image(systemName: "calendar")
+                                    .foregroundColor(dateTitleColor)
+                            }
+                        }
+                        .padding(.horizontal, geometry.size.width * 0.0407)
+                        .padding(.top, geometry.size.height * 0.09)
 
                         // ===== 周历 =====
                         WeekCalendar(
@@ -245,15 +257,7 @@ struct HomeView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationLink(destination: CalendarView(viewModel: viewModel)) {
-                    Image(systemName: "calendar")
-                        .foregroundColor(dateTitleColor)
-                }
-            }
-        }
-        .iOS16ToolbarBackgroundHidden()
+        .toolbar(.hidden, for: .navigationBar)
     }
 
     var body: some View {
